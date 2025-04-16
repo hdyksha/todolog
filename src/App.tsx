@@ -3,6 +3,12 @@ import './App.css';
 import { Task } from './types/Task';
 import { apiService, TaskFile } from './services/ApiService';
 
+// コンポーネントのインポート
+import FileManager from './components/FileManager/FileManager';
+import TaskForm from './components/TaskForm/TaskForm';
+import TaskList from './components/TaskList/TaskList';
+import ArchiveSection from './components/ArchiveSection/ArchiveSection';
+
 // 日付ごとにグループ化されたタスクの型
 interface TasksByDate {
   [date: string]: Task[];
@@ -250,51 +256,9 @@ function App() {
     setTasks(tasks.filter(task => task.id !== id));
   };
 
-  // 日付フォーマット（ファイル選択用）
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
-  };
-
-  // 日付フォーマット（タスクグループ用）
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    // 日付を YYYY-MM-DD 形式に変換
-    const dateToday = today.toISOString().split('T')[0];
-    const dateYesterday = yesterday.toISOString().split('T')[0];
-    const dateTask = dateString;
-    
-    if (dateTask === dateToday) {
-      return '今日';
-    } else if (dateTask === dateYesterday) {
-      return '昨日';
-    } else {
-      return new Intl.DateTimeFormat('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      }).format(date);
-    }
-  };
-
   // アーカイブの表示/非表示を切り替え
   const toggleArchiveVisibility = () => {
     setShowArchived(!showArchived);
-  };
-
-  // アーカイブのタスク数を計算
-  const countArchivedTasks = () => {
-    return Object.values(archivedTasks).reduce((count, tasks) => count + tasks.length, 0);
   };
 
   return (
@@ -303,147 +267,46 @@ function App() {
       
       {error && <div className="error-message">{error}</div>}
       
-      <div className="file-manager">
-        <h2>タスクファイル</h2>
-        
-        <div className="file-selector">
-          <select 
-            value={currentFile} 
-            onChange={(e) => loadTasksFromFile(e.target.value)}
-            disabled={fileLoading || taskFiles.length === 0}
-          >
-            {taskFiles.length === 0 ? (
-              <option value="">ファイルがありません</option>
-            ) : (
-              taskFiles.map(file => (
-                <option key={file.name} value={file.name}>
-                  {file.name} ({formatDateTime(file.lastModified)})
-                </option>
-              ))
-            )}
-          </select>
-          
-          {currentFile && (
-            <button 
-              onClick={() => deleteFile(currentFile)}
-              disabled={fileLoading}
-              className="delete-file-btn"
-            >
-              削除
-            </button>
-          )}
-        </div>
-        
-        <div className="new-file-form">
-          <input
-            type="text"
-            value={newFileName}
-            onChange={(e) => setNewFileName(e.target.value)}
-            placeholder="新しいファイル名..."
-            disabled={fileLoading}
-          />
-          <button 
-            onClick={createNewFile}
-            disabled={fileLoading || !newFileName.trim()}
-          >
-            作成
-          </button>
-        </div>
-      </div>
+      <FileManager
+        currentFile={currentFile}
+        taskFiles={taskFiles}
+        newFileName={newFileName}
+        fileLoading={fileLoading}
+        onFileSelect={loadTasksFromFile}
+        onDeleteFile={deleteFile}
+        onNewFileNameChange={setNewFileName}
+        onCreateFile={createNewFile}
+      />
       
-      <div className="task-form">
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="新しいタスクを入力..."
-          onKeyPress={(e) => e.key === 'Enter' && addTask()}
-          disabled={!currentFile}
-        />
-        <button 
-          onClick={addTask}
-          disabled={!currentFile}
-        >
-          追加
-        </button>
-      </div>
+      <TaskForm
+        newTask={newTask}
+        currentFile={currentFile}
+        onNewTaskChange={setNewTask}
+        onAddTask={addTask}
+      />
       
       {/* アクティブなタスク */}
-      <div className="task-list active-tasks">
-        {!currentFile ? (
-          <p className="no-file">ファイルを選択または作成してください</p>
-        ) : loading ? (
-          <p className="loading">読み込み中...</p>
-        ) : Object.keys(activeTasks).length === 0 ? (
-          <p className="no-tasks">アクティブなタスクはありません</p>
-        ) : (
-          Object.keys(activeTasks).map(date => (
-            <div key={date} className="task-group">
-              <h3 className="date-header">{formatDate(date)}</h3>
-              {activeTasks[date].map(task => (
-                <div key={task.id} className="task-item">
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => toggleTask(task.id)}
-                  />
-                  <span className="task-text">{task.text}</span>
-                  <span className="task-time">
-                    {new Date(task.createdAt).toLocaleTimeString('ja-JP', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                  <button onClick={() => deleteTask(task.id)} className="delete-btn">
-                    削除
-                  </button>
-                </div>
-              ))}
-            </div>
-          ))
-        )}
-      </div>
+      {!currentFile ? (
+        <p className="no-file">ファイルを選択または作成してください</p>
+      ) : (
+        <TaskList
+          tasksByDate={activeTasks}
+          isLoading={loading}
+          emptyMessage="アクティブなタスクはありません"
+          onToggleTask={toggleTask}
+          onDeleteTask={deleteTask}
+        />
+      )}
       
       {/* アーカイブセクション */}
-      {countArchivedTasks() > 0 && (
-        <div className="archive-section">
-          <div className="archive-header" onClick={toggleArchiveVisibility}>
-            <h2>アーカイブ済みタスク ({countArchivedTasks()})</h2>
-            <span className={`toggle-icon ${showArchived ? 'open' : 'closed'}`}>
-              {showArchived ? '▼' : '▶'}
-            </span>
-          </div>
-          
-          {showArchived && (
-            <div className="task-list archived-tasks">
-              {Object.keys(archivedTasks).map(date => (
-                <div key={date} className="task-group archived">
-                  <h3 className="date-header archived">{formatDate(date)}</h3>
-                  {archivedTasks[date].map(task => (
-                    <div key={task.id} className="task-item archived">
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={() => toggleTask(task.id)}
-                      />
-                      <span className="task-text">{task.text}</span>
-                      <span className="task-time">
-                        {new Date(task.createdAt).toLocaleTimeString('ja-JP', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                      <button onClick={() => deleteTask(task.id)} className="delete-btn">
-                        削除
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <ArchiveSection
+        archivedTasks={archivedTasks}
+        showArchived={showArchived}
+        isLoading={loading}
+        onToggleVisibility={toggleArchiveVisibility}
+        onToggleTask={toggleTask}
+        onDeleteTask={deleteTask}
+      />
     </div>
   );
 }
