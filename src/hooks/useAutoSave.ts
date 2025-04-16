@@ -33,12 +33,16 @@ export function useAutoSave(tasks: Task[], currentFile: string, options: AutoSav
   const loadAutoSaveConfig = useCallback(async () => {
     try {
       const config = await apiService.getConfig();
-      setAutoSaveInterval(interval || config.autoSaveInterval);
-      return config.autoSaveInterval;
+      const saveInterval = interval || (config && config.autoSaveInterval) || 60000;
+      setAutoSaveInterval(saveInterval);
+      return saveInterval;
     } catch (err) {
       console.error('自動保存の設定の読み込みに失敗しました:', err);
       setError('自動保存の設定の読み込みに失敗しました');
-      return 60000; // デフォルト値
+      // デフォルト値を返す
+      const defaultInterval = 60000;
+      setAutoSaveInterval(defaultInterval);
+      return defaultInterval;
     }
   }, [interval]);
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import './TaskForm.css';
 
 interface TaskFormProps {
   newTask: string;
@@ -15,23 +16,34 @@ const TaskForm: React.FC<TaskFormProps> = ({
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      onAddTask();
+      handleAddTask();
     }
   };
 
+  const handleAddTask = () => {
+    onAddTask();
+  };
+
   return (
-    <div className="task-form">
-      <input
-        type="text"
-        value={newTask}
-        onChange={e => onNewTaskChange(e.target.value)}
-        placeholder="新しいタスクを入力..."
-        onKeyPress={handleKeyPress}
-        disabled={!currentFile}
-      />
-      <button onClick={onAddTask} disabled={!currentFile}>
-        追加
-      </button>
+    <div className="task-form" data-testid="task-form">
+      <div className="task-form-row">
+        <input
+          type="text"
+          value={newTask}
+          onChange={e => onNewTaskChange(e.target.value)}
+          placeholder="新しいタスクを入力..."
+          onKeyPress={handleKeyPress}
+          disabled={!currentFile}
+          className="task-input"
+        />
+        <button
+          onClick={handleAddTask}
+          disabled={!currentFile || !newTask.trim()}
+          className="add-task-btn"
+        >
+          追加
+        </button>
+      </div>
     </div>
   );
 };
