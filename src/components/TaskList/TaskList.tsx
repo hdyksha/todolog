@@ -14,6 +14,7 @@ interface TaskListProps {
   emptyMessage?: string;
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
+  onUpdateTask: (id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
@@ -23,6 +24,7 @@ const TaskList: React.FC<TaskListProps> = ({
   emptyMessage = 'タスクはありません',
   onToggleTask,
   onDeleteTask,
+  onUpdateTask,
 }) => {
   if (isLoading) {
     return <p className="loading">読み込み中...</p>;
@@ -42,6 +44,7 @@ const TaskList: React.FC<TaskListProps> = ({
           isArchived={isArchived}
           onToggleTask={onToggleTask}
           onDeleteTask={onDeleteTask}
+          onUpdateTask={onUpdateTask}
         />
       ))}
     </div>

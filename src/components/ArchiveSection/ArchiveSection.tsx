@@ -15,6 +15,7 @@ interface ArchiveSectionProps {
   onToggleVisibility: () => void;
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
+  onUpdateTask: (id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => void;
 }
 
 const ArchiveSection: React.FC<ArchiveSectionProps> = ({
@@ -24,6 +25,7 @@ const ArchiveSection: React.FC<ArchiveSectionProps> = ({
   onToggleVisibility,
   onToggleTask,
   onDeleteTask,
+  onUpdateTask,
 }) => {
   // アーカイブのタスク数を計算
   const countArchivedTasks = () => {
@@ -48,6 +50,7 @@ const ArchiveSection: React.FC<ArchiveSectionProps> = ({
           emptyMessage="アーカイブされたタスクはありません"
           onToggleTask={onToggleTask}
           onDeleteTask={onDeleteTask}
+          onUpdateTask={onUpdateTask}
         />
       )}
     </div>

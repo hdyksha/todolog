@@ -8,6 +8,7 @@ interface TaskGroupProps {
   isArchived?: boolean;
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
+  onUpdateTask: (id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => void;
 }
 
 const TaskGroup: React.FC<TaskGroupProps> = ({
@@ -16,6 +17,7 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
   isArchived = false,
   onToggleTask,
   onDeleteTask,
+  onUpdateTask,
 }) => {
   // 日付フォーマット
   const formatDate = (dateString: string) => {
@@ -52,6 +54,7 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
           isArchived={isArchived}
           onToggle={onToggleTask}
           onDelete={onDeleteTask}
+          onUpdateTask={onUpdateTask}
         />
       ))}
     </div>

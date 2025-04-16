@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import App from '../../App';
 import { AppProvider } from '../../contexts/AppContext';
+import { ErrorProvider } from '../../contexts/ErrorContext';
 import { apiService } from '../../services/ApiService';
 
 // APIサービスのモック
@@ -42,9 +43,11 @@ describe('ファイル選択とタスク表示の統合テスト', () => {
 
   test('アプリケーション起動時にファイル一覧が読み込まれる', async () => {
     render(
-      <AppProvider>
-        <App />
-      </AppProvider>
+      <ErrorProvider>
+        <AppProvider>
+          <App />
+        </AppProvider>
+      </ErrorProvider>
     );
 
     // ファイル一覧が読み込まれるのを待つ

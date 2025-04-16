@@ -1,150 +1,129 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
-
-// コンテキストのインポート
-import { AppProvider, AppInitializer, useArchiveContext } from './contexts/AppContext';
-import { useFileContext } from './contexts/FileContext';
-import { useTaskContext } from './contexts/TaskContext';
-import { useAutoSaveContext } from './contexts/AutoSaveContext';
-
-// コンポーネントのインポート
 import FileManager from './components/FileManager/FileManager';
 import TaskForm from './components/TaskForm/TaskForm';
 import TaskList from './components/TaskList/TaskList';
 import ArchiveSection from './components/ArchiveSection/ArchiveSection';
-import ErrorDisplay from './components/ErrorDisplay/ErrorDisplay';
+import { useAppContext } from './contexts/AppContext';
 
-// メインアプリケーションコンポーネント
-const AppContent: React.FC = () => {
-  // コンテキストからデータと関数を取得
+const App: React.FC = () => {
   const {
+    activeTasks,
+    archivedTasks,
+    newTask,
+    loading,
     taskFiles,
     currentFile,
     newFileName,
     fileLoading,
-    setCurrentFile,
-    setNewFileName,
-    createNewFile,
-    deleteFile,
-  } = useFileContext();
-
-  const {
-    newTask,
-    activeTasks,
-    archivedTasks,
-    loading,
+    showArchived,
+    isAutoSaving,
+    lastSaved,
+    error,
     setNewTask,
+    setNewFileName,
+    setCurrentFile,
+    setShowArchived,
     loadTasksFromFile,
     addTask,
     toggleTask,
     deleteTask,
-    resetTasks,
-  } = useTaskContext();
+    updateTask,
+    createFile,
+    deleteFile,
+    clearError,
+  } = useAppContext();
 
-  const { isAutoSaving, lastSaved } = useAutoSaveContext();
+  // ファイル一覧を読み込む
+  useEffect(() => {
+    if (taskFiles.length > 0 && !currentFile) {
+      // デフォルトで最初のファイルを選択
+      setCurrentFile(taskFiles[0].name);
+    }
+  }, [taskFiles, currentFile, setCurrentFile]);
 
-  const { showArchived, toggleArchiveVisibility } = useArchiveContext();
+  // ファイルが選択されたらタスクを読み込む
+  useEffect(() => {
+    if (currentFile) {
+      loadTasksFromFile(currentFile);
+    }
+  }, [currentFile, loadTasksFromFile]);
 
-  // ファイル選択時の処理
-  const handleFileSelect = async (filename: string) => {
-    setCurrentFile(filename);
-    await loadTasksFromFile(filename);
-  };
-
-  // ファイル削除時の処理
-  const handleDeleteFile = async (filename: string) => {
-    const result = await deleteFile(filename);
-    if (result.success && result.nextFile) {
-      await loadTasksFromFile(result.nextFile);
-    } else if (result.success && !result.nextFile) {
-      resetTasks();
+  // タスク追加ハンドラー
+  const handleAddTask = () => {
+    if (newTask.trim()) {
+      addTask(newTask);
     }
   };
 
-  // 新しいファイル作成時の処理
-  const handleCreateFile = async () => {
-    const newFile = await createNewFile();
-    if (newFile) {
-      resetTasks();
-    }
-  };
-
-  // 自動保存ステータス表示
-  const renderAutoSaveStatus = () => {
-    if (isAutoSaving) {
-      return <div className="auto-save-status">保存中...</div>;
-    }
-    if (lastSaved) {
-      return (
-        <div className="last-saved-status">
-          最終保存: {new Date(lastSaved).toLocaleTimeString()}
-        </div>
-      );
-    }
-    return null;
+  // アーカイブ表示切り替えハンドラー
+  const toggleArchiveVisibility = () => {
+    setShowArchived(!showArchived);
   };
 
   return (
     <div className="App">
       <h1>TODOログ</h1>
 
-      <ErrorDisplay />
+      {error && (
+        <div className="error-message" onClick={clearError}>
+          {error}
+          <span className="close-error">×</span>
+        </div>
+      )}
 
       <FileManager
         currentFile={currentFile}
         taskFiles={taskFiles}
         newFileName={newFileName}
         fileLoading={fileLoading}
-        onFileSelect={handleFileSelect}
-        onDeleteFile={handleDeleteFile}
+        onFileSelect={setCurrentFile}
+        onDeleteFile={deleteFile}
         onNewFileNameChange={setNewFileName}
-        onCreateFile={handleCreateFile}
+        onCreateFile={() => createFile(newFileName)}
       />
 
       <TaskForm
         newTask={newTask}
         currentFile={currentFile}
         onNewTaskChange={setNewTask}
-        onAddTask={() => addTask(newTask)}
+        onAddTask={handleAddTask}
       />
 
-      {/* アクティブなタスク */}
-      {!currentFile ? (
-        <p className="no-file">ファイルを選択または作成してください</p>
+      {loading ? (
+        <div className="loading">読み込み中...</div>
+      ) : !currentFile ? (
+        <div className="no-file">ファイルを選択してください</div>
+      ) : Object.keys(activeTasks).length === 0 && Object.keys(archivedTasks).length === 0 ? (
+        <div className="no-tasks">タスクがありません</div>
       ) : (
-        <TaskList
-          tasksByDate={activeTasks}
-          isLoading={loading}
-          emptyMessage="アクティブなタスクはありません"
-          onToggleTask={toggleTask}
-          onDeleteTask={deleteTask}
-        />
+        <>
+          <TaskList
+            tasksByDate={activeTasks}
+            isLoading={loading}
+            onToggleTask={toggleTask}
+            onDeleteTask={deleteTask}
+            onUpdateTask={updateTask}
+          />
+
+          <ArchiveSection
+            archivedTasks={archivedTasks}
+            showArchived={showArchived}
+            isLoading={loading}
+            onToggleVisibility={toggleArchiveVisibility}
+            onToggleTask={toggleTask}
+            onDeleteTask={deleteTask}
+            onUpdateTask={updateTask}
+          />
+        </>
       )}
 
-      {/* アーカイブセクション */}
-      <ArchiveSection
-        archivedTasks={archivedTasks}
-        showArchived={showArchived}
-        isLoading={loading}
-        onToggleVisibility={toggleArchiveVisibility}
-        onToggleTask={toggleTask}
-        onDeleteTask={deleteTask}
-      />
-
-      {renderAutoSaveStatus()}
+      {isAutoSaving && <div className="auto-save-status">保存中...</div>}
+      {!isAutoSaving && lastSaved && (
+        <div className="last-saved-status">最終保存: {lastSaved.toLocaleTimeString()}</div>
+      )}
     </div>
   );
 };
-
-// アプリケーションのルートコンポーネント
-function App() {
-  return (
-    <AppProvider>
-      <AppInitializer>
-        <AppContent />
-      </AppInitializer>
-    </AppProvider>
-  );
-}
 
 export default App;
