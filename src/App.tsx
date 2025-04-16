@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Task } from './types/Task';
-import { apiService, TaskFile } from './services/ApiService';
+
+// カスタムフックのインポート
+import { useTaskFiles } from './hooks/useTaskFiles';
+import { useTasks } from './hooks/useTasks';
+import { useAutoSave } from './hooks/useAutoSave';
 
 // コンポーネントのインポート
 import FileManager from './components/FileManager/FileManager';
@@ -9,251 +12,84 @@ import TaskForm from './components/TaskForm/TaskForm';
 import TaskList from './components/TaskList/TaskList';
 import ArchiveSection from './components/ArchiveSection/ArchiveSection';
 
-// 日付ごとにグループ化されたタスクの型
-interface TasksByDate {
-  [date: string]: Task[];
-}
-
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [activeTasks, setActiveTasks] = useState<TasksByDate>({});
-  const [archivedTasks, setArchivedTasks] = useState<TasksByDate>({});
-  const [newTask, setNewTask] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [saveTimer, setSaveTimer] = useState<number | null>(null);
+  // カスタムフックの使用
+  const {
+    taskFiles,
+    currentFile,
+    newFileName,
+    fileLoading,
+    error: fileError,
+    setNewFileName,
+    loadTaskFiles,
+    createNewFile,
+    deleteFile
+  } = useTaskFiles();
+
+  const {
+    tasks,
+    activeTasks,
+    archivedTasks,
+    newTask,
+    loading,
+    error: taskError,
+    setNewTask,
+    loadTasksFromFile,
+    addTask,
+    toggleTask,
+    deleteTask,
+    resetTasks
+  } = useTasks();
+
+  const {
+    isAutoSaving,
+    lastSaved,
+    error: autoSaveError,
+    saveTasksNow
+  } = useAutoSave(tasks, currentFile, {
+    onSaveSuccess: () => console.log(`タスクを自動保存しました: ${currentFile}`),
+    onSaveError: (err) => console.error(`タスクの自動保存エラー: ${err}`)
+  });
+
+  // アーカイブの表示/非表示状態
   const [showArchived, setShowArchived] = useState(true);
-  
-  // ファイル関連の状態
-  const [taskFiles, setTaskFiles] = useState<TaskFile[]>([]);
-  const [currentFile, setCurrentFile] = useState<string>('');
-  const [newFileName, setNewFileName] = useState('');
-  const [fileLoading, setFileLoading] = useState(false);
 
-  // タスクを日付ごとにグループ化し、アクティブとアーカイブに分ける
-  const groupAndSeparateTasks = (tasks: Task[]) => {
-    const active: TasksByDate = {};
-    const archived: TasksByDate = {};
-    
-    // タスクを日付でソート（新しい順）
-    const sortedTasks = [...tasks].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    
-    sortedTasks.forEach(task => {
-      // 日付部分のみを抽出（YYYY-MM-DD）
-      const date = new Date(task.createdAt).toISOString().split('T')[0];
-      
-      // 完了済みタスクとそれ以外で分ける
-      const targetGroup = task.completed ? archived : active;
-      
-      if (!targetGroup[date]) {
-        targetGroup[date] = [];
-      }
-      
-      targetGroup[date].push(task);
-    });
-    
-    return { active, archived };
-  };
-
-  // ファイル一覧を読み込む
-  const loadTaskFiles = async () => {
-    try {
-      setFileLoading(true);
-      const files = await apiService.getTaskFiles();
-      setTaskFiles(files);
-      
-      // 初回読み込み時に最初のファイルを選択
-      if (files.length > 0 && !currentFile) {
-        setCurrentFile(files[0].name);
-        await loadTasksFromFile(files[0].name);
-      }
-    } catch (err) {
-      setError('ファイル一覧の読み込みに失敗しました');
-      console.error('ファイル一覧の読み込みエラー:', err);
-    } finally {
-      setFileLoading(false);
-    }
-  };
-
-  // 特定のファイルからタスクを読み込む
-  const loadTasksFromFile = async (filename: string) => {
-    if (!filename) return;
-    
-    try {
-      setLoading(true);
-      const loadedTasks = await apiService.getTasks(filename);
-      setTasks(loadedTasks);
-      
-      // タスクをアクティブとアーカイブに分ける
-      const { active, archived } = groupAndSeparateTasks(loadedTasks);
-      setActiveTasks(active);
-      setArchivedTasks(archived);
-      
-      setCurrentFile(filename);
-      setError(null);
-    } catch (err) {
-      setError(`タスクの読み込みに失敗しました: ${filename}`);
-      console.error(`タスクの読み込みエラー (${filename}):`, err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 新しいファイルを作成
-  const createNewFile = async () => {
-    if (!newFileName.trim()) {
-      setError('ファイル名を入力してください');
-      return;
-    }
-    
-    // .json 拡張子を自動追加
-    let filename = newFileName.trim();
-    if (!filename.endsWith('.json')) {
-      filename += '.json';
-    }
-    
-    try {
-      setFileLoading(true);
-      await apiService.createTaskFile(filename);
-      setNewFileName('');
-      await loadTaskFiles();
-      setCurrentFile(filename);
-      setTasks([]);
-      setActiveTasks({});
-      setArchivedTasks({});
-    } catch (err: any) {
-      setError(err.message || 'ファイルの作成に失敗しました');
-    } finally {
-      setFileLoading(false);
-    }
-  };
-
-  // ファイルを削除
-  const deleteFile = async (filename: string) => {
-    if (!filename) return;
-    
-    if (!window.confirm(`ファイル "${filename}" を削除してもよろしいですか？`)) {
-      return;
-    }
-    
-    try {
-      setFileLoading(true);
-      await apiService.deleteTaskFile(filename);
-      
-      // 現在のファイルが削除された場合は別のファイルを選択
-      if (currentFile === filename) {
-        const remainingFiles = taskFiles.filter(file => file.name !== filename);
-        if (remainingFiles.length > 0) {
-          setCurrentFile(remainingFiles[0].name);
-          await loadTasksFromFile(remainingFiles[0].name);
-        } else {
-          setCurrentFile('');
-          setTasks([]);
-          setActiveTasks({});
-          setArchivedTasks({});
-        }
-      }
-      
-      await loadTaskFiles();
-    } catch (err) {
-      setError('ファイルの削除に失敗しました');
-    } finally {
-      setFileLoading(false);
-    }
-  };
+  // エラーメッセージの統合
+  const error = fileError || taskError || autoSaveError;
 
   // アプリケーション起動時にファイル一覧を読み込む
   useEffect(() => {
-    loadTaskFiles();
-    
-    // 自動保存の設定
-    const setupAutoSave = async () => {
-      try {
-        const config = await apiService.getConfig();
-        
-        if (saveTimer) {
-          window.clearInterval(saveTimer);
-        }
-        
-        const timerId = window.setInterval(async () => {
-          if (tasks.length > 0 && currentFile) {
-            await apiService.saveTasks(currentFile, tasks);
-            console.log(`タスクを自動保存しました: ${currentFile}`);
-          }
-        }, config.autoSaveInterval);
-        
-        setSaveTimer(timerId);
-      } catch (err) {
-        console.error('自動保存の設定に失敗しました:', err);
+    const initializeApp = async () => {
+      const selectedFile = await loadTaskFiles();
+      if (selectedFile) {
+        await loadTasksFromFile(selectedFile);
       }
     };
 
-    setupAutoSave();
+    initializeApp();
+  }, [loadTaskFiles, loadTasksFromFile]);
 
-    // コンポーネントのアンマウント時に自動保存を停止
-    return () => {
-      if (saveTimer) {
-        window.clearInterval(saveTimer);
-      }
-    };
-  }, []);
+  // ファイル選択時の処理
+  const handleFileSelect = async (filename: string) => {
+    await loadTasksFromFile(filename);
+  };
 
-  // タスクが変更されたときに保存
-  useEffect(() => {
-    const saveTasks = async () => {
-      if (tasks.length > 0 && !loading && currentFile) {
-        try {
-          await apiService.saveTasks(currentFile, tasks);
-          console.log(`タスクを保存しました: ${currentFile}`);
-        } catch (err) {
-          console.error(`タスクの保存エラー (${currentFile}):`, err);
-        }
-      }
-    };
-
-    saveTasks();
-  }, [tasks, loading, currentFile]);
-
-  // タスクが変更されたときにグループ化を更新
-  useEffect(() => {
-    const { active, archived } = groupAndSeparateTasks(tasks);
-    setActiveTasks(active);
-    setArchivedTasks(archived);
-  }, [tasks]);
-
-  // 新しいタスクを追加
-  const addTask = () => {
-    if (!currentFile) {
-      setError('先にファイルを選択または作成してください');
-      return;
-    }
-    
-    if (newTask.trim() !== '') {
-      const newTaskItem: Task = {
-        id: Date.now().toString(),
-        text: newTask,
-        completed: false,
-        createdAt: new Date().toISOString()
-      };
-      setTasks([...tasks, newTaskItem]);
-      setNewTask('');
+  // ファイル削除時の処理
+  const handleDeleteFile = async (filename: string) => {
+    const result = await deleteFile(filename);
+    if (result.success && result.nextFile) {
+      await loadTasksFromFile(result.nextFile);
+    } else if (result.success && !result.nextFile) {
+      resetTasks();
     }
   };
 
-  // タスクの完了状態を切り替え
-  const toggleTask = (id: string) => {
-    setTasks(
-      tasks.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  // タスクを削除
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  // 新しいファイル作成時の処理
+  const handleCreateFile = async () => {
+    const newFile = await createNewFile();
+    if (newFile) {
+      resetTasks();
+    }
   };
 
   // アーカイブの表示/非表示を切り替え
@@ -272,17 +108,17 @@ function App() {
         taskFiles={taskFiles}
         newFileName={newFileName}
         fileLoading={fileLoading}
-        onFileSelect={loadTasksFromFile}
-        onDeleteFile={deleteFile}
+        onFileSelect={handleFileSelect}
+        onDeleteFile={handleDeleteFile}
         onNewFileNameChange={setNewFileName}
-        onCreateFile={createNewFile}
+        onCreateFile={handleCreateFile}
       />
       
       <TaskForm
         newTask={newTask}
         currentFile={currentFile}
         onNewTaskChange={setNewTask}
-        onAddTask={addTask}
+        onAddTask={() => addTask(newTask)}
       />
       
       {/* アクティブなタスク */}
@@ -307,6 +143,16 @@ function App() {
         onToggleTask={toggleTask}
         onDeleteTask={deleteTask}
       />
+      
+      {/* 自動保存ステータス（オプション） */}
+      {isAutoSaving && (
+        <div className="auto-save-status">保存中...</div>
+      )}
+      {lastSaved && (
+        <div className="last-saved-status">
+          最終保存: {new Date(lastSaved).toLocaleTimeString()}
+        </div>
+      )}
     </div>
   );
 }
