@@ -5,6 +5,7 @@ import React, {
   useCallback,
   ReactNode,
   useEffect,
+  useRef,
 } from 'react';
 import { useTasks } from '../hooks/useTasks';
 import { useTaskFiles } from '../hooks/useTaskFiles';
@@ -50,23 +51,26 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // タスク管理フック
+  const taskHook = useTasks();
   const {
     tasks,
     activeTasks,
     archivedTasks,
     newTask,
-    loading,
     setNewTask,
+    loading: tasksLoading,
+    error: tasksError,
     loadTasksFromFile: loadTasks,
-    saveTasksToFile,
     addTask: addTaskBase,
     toggleTask,
     deleteTask,
     updateTask,
     resetTasks,
-  } = useTasks();
+    fetchAvailableFiles,
+  } = taskHook;
 
   // ファイル管理フック
+  const fileHook = useTaskFiles();
   const {
     taskFiles,
     fileLoading,
@@ -77,7 +81,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     loadTaskFiles,
     createNewFile,
     deleteFile: deleteFileBase,
-  } = useTaskFiles();
+  } = fileHook;
 
   // 初期化時にファイル一覧を読み込む
   useEffect(() => {
@@ -85,26 +89,43 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [loadTaskFiles]);
 
   // 自動保存フック
+  const autoSaveHook = useAutoSave(tasks, currentFile, {
+    onSaveSuccess: () => {
+      console.log(`タスクを自動保存しました: ${currentFile}`);
+    },
+    onSaveError: (error: unknown) => {
+      console.error(`タスクの自動保存に失敗しました: ${error}`);
+    },
+  });
+
   const {
     isAutoSaving,
     lastSaved,
     error: autoSaveError,
     saveTasksNow,
     clearError: clearAutoSaveError,
-  } = useAutoSave(tasks, currentFile, {
-    onSaveSuccess: () => {
-      console.log(`タスクを自動保存しました: ${currentFile}`);
-    },
-    onSaveError: error => {
-      console.error(`タスクの自動保存に失敗しました: ${error}`);
-    },
-  });
+  } = autoSaveHook;
+
+  // 現在のファイル名を追跡するためのref
+  const lastSavedFileRef = useRef<string>('');
+
+  // タスクが変更されたときに即時保存（ただし現在選択中のファイルにのみ保存）
+  useEffect(() => {
+    if (currentFile && lastSavedFileRef.current === currentFile) {
+      // 現在のファイルが最後に保存したファイルと同じ場合のみ保存
+      saveTasksNow();
+    } else if (currentFile) {
+      // ファイルが切り替わった場合は、現在のファイル名を記録するだけ
+      lastSavedFileRef.current = currentFile;
+      console.log(`AppContext: ファイルを切り替えました: ${currentFile}`);
+    }
+  }, [tasks, currentFile, saveTasksNow]);
 
   // アーカイブ表示状態
   const [showArchived, setShowArchived] = useState(true);
 
   // エラー状態
-  const [error, setError] = useState<string | null>(null);
+  const [appError, setAppError] = useState<string | null>(null);
 
   // タスクをファイルから読み込む
   const loadTasksFromFile = useCallback(
@@ -112,10 +133,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       try {
         await loadTasks(filename);
       } catch (err) {
-        setError(`タスクの読み込みに失敗しました: ${err}`);
+        setAppError(`タスクの読み込みに失敗しました: ${err}`);
       }
     },
-    [loadTasks]
+    [loadTasks, setAppError]
   );
 
   // タスクを追加する（期限日付き）
@@ -130,10 +151,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           updateTask(result.data.id, { dueDate });
         }
       } catch (err) {
-        setError(`タスクの追加に失敗しました: ${err}`);
+        setAppError(`タスクの追加に失敗しました: ${err}`);
       }
     },
-    [addTaskBase, updateTask]
+    [addTaskBase, updateTask, setAppError]
   );
 
   // ファイルを作成する
@@ -143,10 +164,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         await createNewFile();
         await loadTaskFiles();
       } catch (err) {
-        setError(`ファイルの作成に失敗しました: ${err}`);
+        setAppError(`ファイルの作成に失敗しました: ${err}`);
       }
     },
-    [createNewFile, loadTaskFiles]
+    [createNewFile, loadTaskFiles, setAppError]
   );
 
   // ファイルを削除する
@@ -161,15 +182,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           setCurrentFile('');
         }
       } catch (err) {
-        setError(`ファイルの削除に失敗しました: ${err}`);
+        setAppError(`ファイルの削除に失敗しました: ${err}`);
       }
     },
-    [deleteFileBase, loadTaskFiles, currentFile, resetTasks, setCurrentFile]
+    [deleteFileBase, loadTaskFiles, currentFile, resetTasks, setCurrentFile, setAppError]
   );
 
   // エラーをクリア
   const clearError = useCallback(() => {
-    setError(null);
+    setAppError(null);
     clearAutoSaveError();
   }, [clearAutoSaveError]);
 
@@ -179,22 +200,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     activeTasks,
     archivedTasks,
     newTask,
-    loading,
+    loading: tasksLoading || fileLoading,
     taskFiles,
-    currentFile,
+    currentFile: currentFile || '',
     newFileName,
     fileLoading,
     showArchived,
     isAutoSaving,
     lastSaved,
-    error: error || autoSaveError,
+    error: appError || tasksError || autoSaveError,
     setNewTask,
     setNewFileName,
     setCurrentFile,
     setShowArchived,
     loadTasksFromFile,
     addTask,
-    toggleTask,
+    toggleTask: (id: string) => {
+      console.log(`AppContext: タスク ${id} の完了状態を切り替えます`);
+      return toggleTask(id);
+    },
     deleteTask,
     updateTask,
     createFile,

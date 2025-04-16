@@ -38,6 +38,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (taskFiles.length > 0 && !currentFile) {
       // デフォルトで最初のファイルを選択
+      console.log(`初期ファイルを選択: ${taskFiles[0].name}`);
       setCurrentFile(taskFiles[0].name);
     }
   }, [taskFiles, currentFile, setCurrentFile]);
@@ -45,6 +46,7 @@ const App: React.FC = () => {
   // ファイルが選択されたらタスクを読み込む
   useEffect(() => {
     if (currentFile) {
+      console.log(`ファイルからタスクを読み込み: ${currentFile}`);
       loadTasksFromFile(currentFile);
     }
   }, [currentFile, loadTasksFromFile]);

@@ -286,6 +286,7 @@ class ApiService {
         );
       }
 
+      console.log(`API: ${filename} から ${response.data?.length || 0} 件のタスクを取得しました`);
       return response.data || [];
     });
   }
@@ -295,6 +296,7 @@ class ApiService {
    */
   async saveTasks(filename: string, tasks: Task[]): Promise<boolean> {
     return retryWithBackoff(async () => {
+      console.log(`API: ${filename} に ${tasks.length} 件のタスクを保存します`);
       const response = await fetchApi<{ success: boolean }>(
         `/tasks/${encodeURIComponent(filename)}`,
         {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useAutoSave } from '../hooks/useAutoSave';
+import { useAutoSave, AutoSaveHook } from '../hooks/useAutoSave';
 import { Task } from '../types/Task';
 
 // コンテキストの型定義
@@ -31,6 +31,7 @@ export const AutoSaveProvider: React.FC<AutoSaveProviderProps> = ({
   onSaveError,
 }) => {
   const autoSaveHook = useAutoSave(tasks, currentFile, {
+    interval: 60000,
     onSaveSuccess,
     onSaveError,
   });

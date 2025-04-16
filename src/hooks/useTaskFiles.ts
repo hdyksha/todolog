@@ -25,10 +25,12 @@ export function useTaskFiles() {
     try {
       setFileLoading(true);
       const files = await apiService.getTaskFiles();
+      console.log(`ファイル一覧を読み込みました: ${files.length} 件`);
       setTaskFiles(files);
 
       // 初回読み込み時に最初のファイルを選択
       if (files.length > 0 && !currentFile) {
+        console.log(`初期ファイルを選択します: ${files[0].name}`);
         setCurrentFile(files[0].name);
         return files[0].name; // 選択されたファイル名を返す
       }

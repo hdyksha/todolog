@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useTasks, TaskOperationResult } from '../hooks/useTasks';
+import { useTasks } from '../hooks/useTasks';
 import { Task } from '../types/Task';
+import { TaskOperationResult } from '../types/TaskOperationResult';
 
 // コンテキストの型定義
 interface TaskContextType {
@@ -14,11 +15,11 @@ interface TaskContextType {
 
   // アクション
   setNewTask: (text: string) => void;
-  loadTasksFromFile: (filename: string) => Promise<TaskOperationResult>;
-  saveTasksToFile: (filename: string) => Promise<TaskOperationResult>;
+  loadTasksFromFile: (filename: string) => Promise<TaskOperationResult<boolean>>;
+  saveTasksToFile: (filename: string) => Promise<TaskOperationResult<boolean>>;
   addTask: (text: string) => TaskOperationResult<Task>;
   toggleTask: (id: string) => TaskOperationResult<Task>;
-  deleteTask: (id: string) => TaskOperationResult;
+  deleteTask: (id: string) => TaskOperationResult<boolean>;
   updateTask: (
     id: string,
     updates: Partial<Omit<Task, 'id' | 'createdAt'>>

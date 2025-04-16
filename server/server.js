@@ -200,7 +200,9 @@ app.delete('/api/files/:filename', (req, res) => {
 // 特定のファイルからタスクを取得
 app.get('/api/tasks/:filename', (req, res) => {
   const filename = req.params.filename;
+  console.log(`サーバー: ${filename} からタスクを読み込みます`);
   const tasks = loadTasks(filename);
+  console.log(`サーバー: ${filename} から ${tasks.length} 件のタスクを読み込みました`);
   res.json(tasks);
 });
 
@@ -213,11 +215,14 @@ app.post('/api/tasks/:filename', (req, res) => {
     return res.status(400).json({ error: 'タスクデータは配列である必要があります' });
   }
   
+  console.log(`サーバー: ${filename} に ${tasks.length} 件のタスクを保存します`);
   const success = saveTasks(filename, tasks);
   
   if (success) {
+    console.log(`サーバー: ${filename} にタスクを保存しました`);
     res.json({ success: true, message: `タスクを ${filename} に保存しました` });
   } else {
+    console.error(`サーバー: ${filename} へのタスク保存に失敗しました`);
     res.status(500).json({ error: `タスクの保存に失敗しました (${filename})` });
   }
 });
