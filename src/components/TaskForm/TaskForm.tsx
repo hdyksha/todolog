@@ -20,7 +20,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   };
 
   return (
-    <div className="task-form">
+    <div className="task-form" data-testid="task-form">
       <input
         type="text"
         value={newTask}

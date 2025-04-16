@@ -22,7 +22,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isArchived = false, onToggle,
       <input type="checkbox" checked={task.completed} onChange={() => onToggle(task.id)} />
       <span className="task-text">{task.text}</span>
       <span className="task-time">{formatTime(task.createdAt)}</span>
-      <button onClick={() => onDelete(task.id)} className="delete-btn">
+      <button onClick={() => onDelete(task.id)} className="delete-btn" title="タスクを削除">
         削除
       </button>
     </div>
