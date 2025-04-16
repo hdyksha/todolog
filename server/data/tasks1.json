@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1",
+    "text": "サンプルタスク1",
+    "completed": false,
+    "createdAt": "2023-04-16T10:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "text": "サンプルタスク2",
+    "completed": true,
+    "createdAt": "2023-04-16T11:00:00.000Z"
+  }
+]

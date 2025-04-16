@@ -1,0 +1,5 @@
+{
+  "dataStoragePath": "./data",
+  "tasksFileName": "tasks.json",
+  "autoSaveInterval": 60000
+}
