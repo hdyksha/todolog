@@ -22,26 +22,26 @@ export function useTasks() {
   const groupedTasks = useMemo(() => {
     const active: TasksByDate = {};
     const archived: TasksByDate = {};
-    
+
     // タスクを日付でソート（新しい順）
-    const sortedTasks = [...tasks].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    const sortedTasks = [...tasks].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-    
+
     sortedTasks.forEach(task => {
       // 日付部分のみを抽出（YYYY-MM-DD）
       const date = new Date(task.createdAt).toISOString().split('T')[0];
-      
+
       // 完了済みタスクとそれ以外で分ける
       const targetGroup = task.completed ? archived : active;
-      
+
       if (!targetGroup[date]) {
         targetGroup[date] = [];
       }
-      
+
       targetGroup[date].push(task);
     });
-    
+
     return { active, archived };
   }, [tasks]);
 
@@ -50,7 +50,7 @@ export function useTasks() {
    */
   const loadTasksFromFile = useCallback(async (filename: string) => {
     if (!filename) return false;
-    
+
     try {
       setLoading(true);
       const loadedTasks = await apiService.getTasks(filename);
@@ -69,32 +69,35 @@ export function useTasks() {
   /**
    * タスクをファイルに保存
    */
-  const saveTasksToFile = useCallback(async (filename: string) => {
-    if (!filename || tasks.length === 0) return false;
-    
-    try {
-      await apiService.saveTasks(filename, tasks);
-      return true;
-    } catch (err) {
-      setError(`タスクの保存に失敗しました: ${filename}`);
-      console.error(`タスクの保存エラー (${filename}):`, err);
-      return false;
-    }
-  }, [tasks]);
+  const saveTasksToFile = useCallback(
+    async (filename: string) => {
+      if (!filename || tasks.length === 0) return false;
+
+      try {
+        await apiService.saveTasks(filename, tasks);
+        return true;
+      } catch (err) {
+        setError(`タスクの保存に失敗しました: ${filename}`);
+        console.error(`タスクの保存エラー (${filename}):`, err);
+        return false;
+      }
+    },
+    [tasks]
+  );
 
   /**
    * 新しいタスクを追加
    */
   const addTask = useCallback((text: string) => {
     if (text.trim() === '') return false;
-    
+
     const newTaskItem: Task = {
       id: Date.now().toString(),
       text: text.trim(),
       completed: false,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
-    
+
     setTasks(prevTasks => [...prevTasks, newTaskItem]);
     setNewTask('');
     return true;
@@ -105,9 +108,7 @@ export function useTasks() {
    */
   const toggleTask = useCallback((id: string) => {
     setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
+      prevTasks.map(task => (task.id === id ? { ...task, completed: !task.completed } : task))
     );
   }, []);
 
@@ -146,6 +147,6 @@ export function useTasks() {
     toggleTask,
     deleteTask,
     resetTasks,
-    clearError
+    clearError,
   };
 }

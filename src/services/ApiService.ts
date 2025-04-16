@@ -30,7 +30,7 @@ class ApiService {
       // デフォルト設定を返す
       return {
         dataStoragePath: './data',
-        autoSaveInterval: 60000
+        autoSaveInterval: 60000,
       };
     }
   }
@@ -45,11 +45,11 @@ class ApiService {
         },
         body: JSON.stringify(config),
       });
-      
+
       if (!response.ok) {
         throw new Error(`設定の更新に失敗しました: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
       return result.config;
     } catch (error) {
@@ -82,12 +82,12 @@ class ApiService {
         },
         body: JSON.stringify({ filename }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `ファイルの作成に失敗しました: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
       return result.file;
     } catch (error) {
@@ -102,12 +102,12 @@ class ApiService {
       const response = await fetch(`${API_BASE_URL}/files/${encodeURIComponent(filename)}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `ファイルの削除に失敗しました: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
       return result.success;
     } catch (error) {
@@ -140,11 +140,11 @@ class ApiService {
         },
         body: JSON.stringify(tasks),
       });
-      
+
       if (!response.ok) {
         throw new Error(`タスクの保存に失敗しました: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
       return result.success;
     } catch (error) {

@@ -25,7 +25,7 @@ export function useTaskFiles() {
       setFileLoading(true);
       const files = await apiService.getTaskFiles();
       setTaskFiles(files);
-      
+
       // 初回読み込み時に最初のファイルを選択
       if (files.length > 0 && !currentFile) {
         setCurrentFile(files[0].name);
@@ -49,13 +49,13 @@ export function useTaskFiles() {
       setError('ファイル名を入力してください');
       return null;
     }
-    
+
     // .json 拡張子を自動追加
     let filename = newFileName.trim();
     if (!filename.endsWith('.json')) {
       filename += '.json';
     }
-    
+
     try {
       setFileLoading(true);
       await apiService.createTaskFile(filename);
@@ -74,38 +74,41 @@ export function useTaskFiles() {
   /**
    * ファイルを削除
    */
-  const deleteFile = useCallback(async (filename: string): Promise<DeleteFileResult> => {
-    if (!filename) return { success: false, nextFile: null };
-    
-    if (!window.confirm(`ファイル "${filename}" を削除してもよろしいですか？`)) {
-      return { success: false, nextFile: null };
-    }
-    
-    try {
-      setFileLoading(true);
-      await apiService.deleteTaskFile(filename);
-      
-      // 現在のファイルが削除された場合は別のファイルを選択
-      if (currentFile === filename) {
-        const remainingFiles = taskFiles.filter(file => file.name !== filename);
-        if (remainingFiles.length > 0) {
-          setCurrentFile(remainingFiles[0].name);
-          return { success: true, nextFile: remainingFiles[0].name };
-        } else {
-          setCurrentFile('');
-          return { success: true, nextFile: null };
-        }
+  const deleteFile = useCallback(
+    async (filename: string): Promise<DeleteFileResult> => {
+      if (!filename) return { success: false, nextFile: null };
+
+      if (!window.confirm(`ファイル "${filename}" を削除してもよろしいですか？`)) {
+        return { success: false, nextFile: null };
       }
-      
-      await loadTaskFiles();
-      return { success: true, nextFile: null };
-    } catch (err) {
-      setError('ファイルの削除に失敗しました');
-      return { success: false, nextFile: null };
-    } finally {
-      setFileLoading(false);
-    }
-  }, [currentFile, taskFiles, loadTaskFiles]);
+
+      try {
+        setFileLoading(true);
+        await apiService.deleteTaskFile(filename);
+
+        // 現在のファイルが削除された場合は別のファイルを選択
+        if (currentFile === filename) {
+          const remainingFiles = taskFiles.filter(file => file.name !== filename);
+          if (remainingFiles.length > 0) {
+            setCurrentFile(remainingFiles[0].name);
+            return { success: true, nextFile: remainingFiles[0].name };
+          } else {
+            setCurrentFile('');
+            return { success: true, nextFile: null };
+          }
+        }
+
+        await loadTaskFiles();
+        return { success: true, nextFile: null };
+      } catch (err) {
+        setError('ファイルの削除に失敗しました');
+        return { success: false, nextFile: null };
+      } finally {
+        setFileLoading(false);
+      }
+    },
+    [currentFile, taskFiles, loadTaskFiles]
+  );
 
   /**
    * エラーをクリア
@@ -125,6 +128,6 @@ export function useTaskFiles() {
     loadTaskFiles,
     createNewFile,
     deleteFile,
-    clearError
+    clearError,
   };
 }

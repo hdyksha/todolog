@@ -23,7 +23,7 @@ function App() {
     setNewFileName,
     loadTaskFiles,
     createNewFile,
-    deleteFile
+    deleteFile,
   } = useTaskFiles();
 
   const {
@@ -38,17 +38,19 @@ function App() {
     addTask,
     toggleTask,
     deleteTask,
-    resetTasks
+    resetTasks,
   } = useTasks();
 
   const {
     isAutoSaving,
     lastSaved,
     error: autoSaveError,
-    saveTasksNow
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    saveTasksNow,
   } = useAutoSave(tasks, currentFile, {
+    // eslint-disable-next-line no-console
     onSaveSuccess: () => console.log(`タスクを自動保存しました: ${currentFile}`),
-    onSaveError: (err) => console.error(`タスクの自動保存エラー: ${err}`)
+    onSaveError: err => console.error(`タスクの自動保存エラー: ${err}`),
   });
 
   // アーカイブの表示/非表示状態
@@ -97,12 +99,27 @@ function App() {
     setShowArchived(!showArchived);
   };
 
+  // 自動保存ステータス（オプション）
+  const renderAutoSaveStatus = () => {
+    if (isAutoSaving) {
+      return <div className="auto-save-status">保存中...</div>;
+    }
+    if (lastSaved) {
+      return (
+        <div className="last-saved-status">
+          最終保存: {new Date(lastSaved).toLocaleTimeString()}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="App">
       <h1>TODOログ</h1>
-      
+
       {error && <div className="error-message">{error}</div>}
-      
+
       <FileManager
         currentFile={currentFile}
         taskFiles={taskFiles}
@@ -113,14 +130,14 @@ function App() {
         onNewFileNameChange={setNewFileName}
         onCreateFile={handleCreateFile}
       />
-      
+
       <TaskForm
         newTask={newTask}
         currentFile={currentFile}
         onNewTaskChange={setNewTask}
         onAddTask={() => addTask(newTask)}
       />
-      
+
       {/* アクティブなタスク */}
       {!currentFile ? (
         <p className="no-file">ファイルを選択または作成してください</p>
@@ -133,7 +150,7 @@ function App() {
           onDeleteTask={deleteTask}
         />
       )}
-      
+
       {/* アーカイブセクション */}
       <ArchiveSection
         archivedTasks={archivedTasks}
@@ -143,16 +160,8 @@ function App() {
         onToggleTask={toggleTask}
         onDeleteTask={deleteTask}
       />
-      
-      {/* 自動保存ステータス（オプション） */}
-      {isAutoSaving && (
-        <div className="auto-save-status">保存中...</div>
-      )}
-      {lastSaved && (
-        <div className="last-saved-status">
-          最終保存: {new Date(lastSaved).toLocaleTimeString()}
-        </div>
-      )}
+
+      {renderAutoSaveStatus()}
     </div>
   );
 }

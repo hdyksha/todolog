@@ -14,7 +14,7 @@ const FileSelector: React.FC<FileSelectorProps> = ({
   taskFiles,
   fileLoading,
   onFileSelect,
-  onDeleteFile
+  onDeleteFile,
 }) => {
   // 日付フォーマット（ファイル選択用）
   const formatDateTime = (dateString: string) => {
@@ -24,15 +24,15 @@ const FileSelector: React.FC<FileSelectorProps> = ({
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   };
 
   return (
     <div className="file-selector">
-      <select 
-        value={currentFile} 
-        onChange={(e) => onFileSelect(e.target.value)}
+      <select
+        value={currentFile}
+        onChange={e => onFileSelect(e.target.value)}
         disabled={fileLoading || taskFiles.length === 0}
       >
         {taskFiles.length === 0 ? (
@@ -45,9 +45,9 @@ const FileSelector: React.FC<FileSelectorProps> = ({
           ))
         )}
       </select>
-      
+
       {currentFile && (
-        <button 
+        <button
           onClick={() => onDeleteFile(currentFile)}
           disabled={fileLoading}
           className="delete-file-btn"

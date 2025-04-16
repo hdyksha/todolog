@@ -23,7 +23,7 @@ const ArchiveSection: React.FC<ArchiveSectionProps> = ({
   isLoading,
   onToggleVisibility,
   onToggleTask,
-  onDeleteTask
+  onDeleteTask,
 }) => {
   // アーカイブのタスク数を計算
   const countArchivedTasks = () => {
@@ -38,12 +38,8 @@ const ArchiveSection: React.FC<ArchiveSectionProps> = ({
 
   return (
     <div className="archive-section">
-      <ArchiveHeader
-        count={archivedCount}
-        isOpen={showArchived}
-        onToggle={onToggleVisibility}
-      />
-      
+      <ArchiveHeader count={archivedCount} isOpen={showArchived} onToggle={onToggleVisibility} />
+
       {showArchived && (
         <TaskList
           tasksByDate={archivedTasks}

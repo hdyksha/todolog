@@ -11,7 +11,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   newTask,
   currentFile,
   onNewTaskChange,
-  onAddTask
+  onAddTask,
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -24,15 +24,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
       <input
         type="text"
         value={newTask}
-        onChange={(e) => onNewTaskChange(e.target.value)}
+        onChange={e => onNewTaskChange(e.target.value)}
         placeholder="新しいタスクを入力..."
         onKeyPress={handleKeyPress}
         disabled={!currentFile}
       />
-      <button 
-        onClick={onAddTask}
-        disabled={!currentFile}
-      >
+      <button onClick={onAddTask} disabled={!currentFile}>
         追加
       </button>
     </div>

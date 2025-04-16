@@ -209,7 +209,9 @@ h3.date-header.archived {
   background-color: #d32f2f;
 }
 
-.loading, .no-tasks, .no-file {
+.loading,
+.no-tasks,
+.no-file {
   padding: 20px;
   text-align: center;
   color: #757575;

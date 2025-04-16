@@ -11,21 +11,18 @@ const NewFileForm: React.FC<NewFileFormProps> = ({
   newFileName,
   fileLoading,
   onNewFileNameChange,
-  onCreateFile
+  onCreateFile,
 }) => {
   return (
     <div className="new-file-form">
       <input
         type="text"
         value={newFileName}
-        onChange={(e) => onNewFileNameChange(e.target.value)}
+        onChange={e => onNewFileNameChange(e.target.value)}
         placeholder="新しいファイル名..."
         disabled={fileLoading}
       />
-      <button 
-        onClick={onCreateFile}
-        disabled={fileLoading || !newFileName.trim()}
-      >
+      <button onClick={onCreateFile} disabled={fileLoading || !newFileName.trim()}>
         作成
       </button>
     </div>

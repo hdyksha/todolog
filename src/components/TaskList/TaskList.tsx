@@ -22,7 +22,7 @@ const TaskList: React.FC<TaskListProps> = ({
   isArchived = false,
   emptyMessage = 'タスクはありません',
   onToggleTask,
-  onDeleteTask
+  onDeleteTask,
 }) => {
   if (isLoading) {
     return <p className="loading">読み込み中...</p>;

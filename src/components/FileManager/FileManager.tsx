@@ -22,12 +22,12 @@ const FileManager: React.FC<FileManagerProps> = ({
   onFileSelect,
   onDeleteFile,
   onNewFileNameChange,
-  onCreateFile
+  onCreateFile,
 }) => {
   return (
     <div className="file-manager">
       <h2>タスクファイル</h2>
-      
+
       <FileSelector
         currentFile={currentFile}
         taskFiles={taskFiles}
@@ -35,7 +35,7 @@ const FileManager: React.FC<FileManagerProps> = ({
         onFileSelect={onFileSelect}
         onDeleteFile={onDeleteFile}
       />
-      
+
       <NewFileForm
         newFileName={newFileName}
         fileLoading={fileLoading}
