@@ -1,0 +1,133 @@
+.error-message {
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 4px;
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.error-icon {
+  font-size: 1.2em;
+  margin-right: 8px;
+}
+
+.error-title {
+  flex-grow: 1;
+  font-weight: 500;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.error-close:hover {
+  opacity: 1;
+}
+
+.error-details {
+  margin-top: 8px;
+  font-size: 0.9em;
+}
+
+.error-details details {
+  margin-left: 28px;
+}
+
+.error-details summary {
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.error-details p {
+  margin: 8px 0;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  word-break: break-word;
+}
+
+.error-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.retry-button {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.retry-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* エラータイプ別のスタイル */
+.error-network {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  color: #856404;
+}
+
+.error-server {
+  background-color: #f8d7da;
+  border-left: 4px solid #dc3545;
+  color: #721c24;
+}
+
+.error-validation {
+  background-color: #d1ecf1;
+  border-left: 4px solid #17a2b8;
+  color: #0c5460;
+}
+
+.error-not_found {
+  background-color: #e2e3e5;
+  border-left: 4px solid #6c757d;
+  color: #383d41;
+}
+
+.error-permission {
+  background-color: #f8d7da;
+  border-left: 4px solid #dc3545;
+  color: #721c24;
+}
+
+.error-unknown {
+  background-color: #f8d7da;
+  border-left: 4px solid #dc3545;
+  color: #721c24;
+}

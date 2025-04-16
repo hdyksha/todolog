@@ -2,6 +2,7 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import { FileProvider, useFileContext } from './FileContext';
 import { TaskProvider, useTaskContext } from './TaskContext';
 import { AutoSaveProvider } from './AutoSaveContext';
+import { ErrorProvider } from './ErrorContext';
 
 // アプリケーション全体のコンテキストを統合するプロバイダー
 interface AppProviderProps {
@@ -51,15 +52,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   return (
-    <FileProvider>
-      <TaskProvider>
-        <ConnectedAutoSaveProvider>
-          <ArchiveContext.Provider value={{ showArchived, toggleArchiveVisibility }}>
-            {children}
-          </ArchiveContext.Provider>
-        </ConnectedAutoSaveProvider>
-      </TaskProvider>
-    </FileProvider>
+    <ErrorProvider autoClearTimeout={0}>
+      <FileProvider>
+        <TaskProvider>
+          <ConnectedAutoSaveProvider>
+            <ArchiveContext.Provider value={{ showArchived, toggleArchiveVisibility }}>
+              {children}
+            </ArchiveContext.Provider>
+          </ConnectedAutoSaveProvider>
+        </TaskProvider>
+      </FileProvider>
+    </ErrorProvider>
   );
 };
 

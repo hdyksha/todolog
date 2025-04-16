@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { apiService, TaskFile } from '../services/ApiService';
+import { useErrorContext } from '../contexts/ErrorContext';
 
 // ファイル削除の結果型
 interface DeleteFileResult {
@@ -15,7 +16,7 @@ export function useTaskFiles() {
   const [currentFile, setCurrentFile] = useState<string>('');
   const [newFileName, setNewFileName] = useState('');
   const [fileLoading, setFileLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { handleError } = useErrorContext();
 
   /**
    * ファイル一覧を読み込む
@@ -33,20 +34,21 @@ export function useTaskFiles() {
       }
       return null;
     } catch (err) {
-      setError('ファイル一覧の読み込みに失敗しました');
-      console.error('ファイル一覧の読み込みエラー:', err);
+      handleError(err, async () => {
+        await loadTaskFiles();
+      });
       return null;
     } finally {
       setFileLoading(false);
     }
-  }, [currentFile]);
+  }, [currentFile, handleError]);
 
   /**
    * 新しいファイルを作成
    */
   const createNewFile = useCallback(async () => {
     if (!newFileName.trim()) {
-      setError('ファイル名を入力してください');
+      handleError(new Error('ファイル名を入力してください'));
       return null;
     }
 
@@ -63,13 +65,15 @@ export function useTaskFiles() {
       await loadTaskFiles();
       setCurrentFile(filename);
       return filename;
-    } catch (err: any) {
-      setError(err.message || 'ファイルの作成に失敗しました');
+    } catch (err) {
+      handleError(err, async () => {
+        await createNewFile();
+      });
       return null;
     } finally {
       setFileLoading(false);
     }
-  }, [newFileName, loadTaskFiles]);
+  }, [newFileName, loadTaskFiles, handleError]);
 
   /**
    * ファイルを削除
@@ -101,20 +105,22 @@ export function useTaskFiles() {
         await loadTaskFiles();
         return { success: true, nextFile: null };
       } catch (err) {
-        setError('ファイルの削除に失敗しました');
+        handleError(err, async () => {
+          await deleteFile(filename);
+        });
         return { success: false, nextFile: null };
       } finally {
         setFileLoading(false);
       }
     },
-    [currentFile, taskFiles, loadTaskFiles]
+    [currentFile, taskFiles, loadTaskFiles, handleError]
   );
 
   /**
    * エラーをクリア
    */
   const clearError = useCallback(() => {
-    setError(null);
+    // エラーコンテキストを使用するため不要
   }, []);
 
   return {
@@ -122,7 +128,7 @@ export function useTaskFiles() {
     currentFile,
     newFileName,
     fileLoading,
-    error,
+    error: null, // エラーコンテキストを使用するため不要
     setCurrentFile,
     setNewFileName,
     loadTaskFiles,

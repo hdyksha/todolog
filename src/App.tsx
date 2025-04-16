@@ -12,6 +12,7 @@ import FileManager from './components/FileManager/FileManager';
 import TaskForm from './components/TaskForm/TaskForm';
 import TaskList from './components/TaskList/TaskList';
 import ArchiveSection from './components/ArchiveSection/ArchiveSection';
+import ErrorDisplay from './components/ErrorDisplay/ErrorDisplay';
 
 // メインアプリケーションコンポーネント
 const AppContent: React.FC = () => {
@@ -21,7 +22,6 @@ const AppContent: React.FC = () => {
     currentFile,
     newFileName,
     fileLoading,
-    error: fileError,
     setCurrentFile,
     setNewFileName,
     createNewFile,
@@ -33,7 +33,6 @@ const AppContent: React.FC = () => {
     activeTasks,
     archivedTasks,
     loading,
-    error: taskError,
     setNewTask,
     loadTasksFromFile,
     addTask,
@@ -42,12 +41,9 @@ const AppContent: React.FC = () => {
     resetTasks,
   } = useTaskContext();
 
-  const { isAutoSaving, lastSaved, error: autoSaveError } = useAutoSaveContext();
+  const { isAutoSaving, lastSaved } = useAutoSaveContext();
 
   const { showArchived, toggleArchiveVisibility } = useArchiveContext();
-
-  // エラーメッセージの統合
-  const error = fileError || taskError || autoSaveError;
 
   // ファイル選択時の処理
   const handleFileSelect = async (filename: string) => {
@@ -92,7 +88,7 @@ const AppContent: React.FC = () => {
     <div className="App">
       <h1>TODOログ</h1>
 
-      {error && <div className="error-message">{error}</div>}
+      <ErrorDisplay />
 
       <FileManager
         currentFile={currentFile}
