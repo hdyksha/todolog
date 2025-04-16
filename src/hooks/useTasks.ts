@@ -1,10 +1,15 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Task } from '../types/Task';
+import { Task, TasksByDate, createTask, validateTask } from '../types/Task';
 import { apiService } from '../services/ApiService';
+import { useErrorContext } from '../contexts/ErrorContext';
 
-// 日付ごとにグループ化されたタスクの型
-export interface TasksByDate {
-  [date: string]: Task[];
+/**
+ * タスク操作の結果を表す型
+ */
+export interface TaskOperationResult<T = void> {
+  success: boolean;
+  data?: T;
+  error?: string;
 }
 
 /**
@@ -14,7 +19,7 @@ export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { handleError } = useErrorContext();
 
   /**
    * タスクを日付ごとにグループ化し、アクティブとアーカイブに分ける
@@ -48,89 +53,179 @@ export function useTasks() {
   /**
    * 特定のファイルからタスクを読み込む
    */
-  const loadTasksFromFile = useCallback(async (filename: string) => {
-    if (!filename) return false;
+  const loadTasksFromFile = useCallback(
+    async (filename: string): Promise<TaskOperationResult> => {
+      if (!filename) return { success: false, error: 'ファイル名が指定されていません' };
 
-    try {
-      setLoading(true);
-      const loadedTasks = await apiService.getTasks(filename);
-      setTasks(loadedTasks);
-      setError(null);
-      return true;
-    } catch (err) {
-      setError(`タスクの読み込みに失敗しました: ${filename}`);
-      console.error(`タスクの読み込みエラー (${filename}):`, err);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      try {
+        setLoading(true);
+        const loadedTasks = await apiService.getTasks(filename);
+        setTasks(loadedTasks);
+        return { success: true };
+      } catch (error) {
+        handleError(error, async () => {
+          await loadTasksFromFile(filename);
+        });
+        return { success: false, error: `タスクの読み込みに失敗しました: ${error}` };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [handleError]
+  );
 
   /**
    * タスクをファイルに保存
    */
   const saveTasksToFile = useCallback(
-    async (filename: string) => {
-      if (!filename || tasks.length === 0) return false;
+    async (filename: string): Promise<TaskOperationResult> => {
+      if (!filename) return { success: false, error: 'ファイル名が指定されていません' };
+      if (tasks.length === 0) return { success: true }; // 空のタスクリストも有効
 
       try {
-        await apiService.saveTasks(filename, tasks);
-        return true;
-      } catch (err) {
-        setError(`タスクの保存に失敗しました: ${filename}`);
-        console.error(`タスクの保存エラー (${filename}):`, err);
-        return false;
+        const success = await apiService.saveTasks(filename, tasks);
+        if (!success) {
+          return { success: false, error: 'タスクの保存に失敗しました' };
+        }
+        return { success: true };
+      } catch (error) {
+        handleError(error, async () => {
+          await saveTasksToFile(filename);
+        });
+        return { success: false, error: `タスクの保存に失敗しました: ${error}` };
       }
     },
-    [tasks]
+    [tasks, handleError]
   );
 
   /**
    * 新しいタスクを追加
    */
-  const addTask = useCallback((text: string) => {
-    if (text.trim() === '') return false;
+  const addTask = useCallback((text: string): TaskOperationResult<Task> => {
+    if (!text.trim()) {
+      return { success: false, error: 'タスクのテキストを入力してください' };
+    }
 
-    const newTaskItem: Task = {
-      id: Date.now().toString(),
-      text: text.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const newTaskObj = createTask(text.trim());
+      const validationResult = validateTask(newTaskObj);
 
-    setTasks(prevTasks => [...prevTasks, newTaskItem]);
-    setNewTask('');
-    return true;
+      if (!validationResult.isValid) {
+        return {
+          success: false,
+          error: validationResult.errors.map(e => e.message).join(', '),
+        };
+      }
+
+      setTasks(prevTasks => [...prevTasks, newTaskObj]);
+      setNewTask('');
+      return { success: true, data: newTaskObj };
+    } catch (error) {
+      return { success: false, error: `タスクの作成に失敗しました: ${error}` };
+    }
   }, []);
 
   /**
    * タスクの完了状態を切り替え
    */
-  const toggleTask = useCallback((id: string) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task => (task.id === id ? { ...task, completed: !task.completed } : task))
-    );
+  const toggleTask = useCallback((id: string): TaskOperationResult<Task> => {
+    let updatedTask: Task | undefined;
+
+    try {
+      setTasks(prevTasks => {
+        const updatedTasks = prevTasks.map(task => {
+          if (task.id === id) {
+            updatedTask = {
+              ...task,
+              completed: !task.completed,
+              updatedAt: new Date().toISOString(),
+            };
+            return updatedTask;
+          }
+          return task;
+        });
+        return updatedTasks;
+      });
+
+      if (!updatedTask) {
+        return { success: false, error: 'タスクが見つかりませんでした' };
+      }
+
+      return { success: true, data: updatedTask };
+    } catch (error) {
+      return { success: false, error: `タスクの更新に失敗しました: ${error}` };
+    }
   }, []);
 
   /**
    * タスクを削除
    */
-  const deleteTask = useCallback((id: string) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+  const deleteTask = useCallback((id: string): TaskOperationResult => {
+    try {
+      let deletedTask: Task | undefined;
+
+      setTasks(prevTasks => {
+        deletedTask = prevTasks.find(task => task.id === id);
+        return prevTasks.filter(task => task.id !== id);
+      });
+
+      if (!deletedTask) {
+        return { success: false, error: 'タスクが見つかりませんでした' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: `タスクの削除に失敗しました: ${error}` };
+    }
   }, []);
+
+  /**
+   * タスクを更新
+   */
+  const updateTask = useCallback(
+    (id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): TaskOperationResult<Task> => {
+      try {
+        let updatedTask: Task | undefined;
+
+        setTasks(prevTasks => {
+          const updatedTasks = prevTasks.map(task => {
+            if (task.id === id) {
+              updatedTask = {
+                ...task,
+                ...updates,
+                updatedAt: new Date().toISOString(),
+              };
+
+              const validationResult = validateTask(updatedTask);
+              if (!validationResult.isValid) {
+                throw new Error(validationResult.errors.map(e => e.message).join(', '));
+              }
+
+              return updatedTask;
+            }
+            return task;
+          });
+          return updatedTasks;
+        });
+
+        if (!updatedTask) {
+          return { success: false, error: 'タスクが見つかりませんでした' };
+        }
+
+        return { success: true, data: updatedTask };
+      } catch (error) {
+        return { success: false, error: `タスクの更新に失敗しました: ${error}` };
+      }
+    },
+    []
+  );
 
   /**
    * タスクをリセット
    */
   const resetTasks = useCallback(() => {
     setTasks([]);
-  }, []);
-
-  /**
-   * エラーをクリア
-   */
-  const clearError = useCallback(() => {
-    setError(null);
+    setNewTask('');
   }, []);
 
   return {
@@ -139,14 +234,15 @@ export function useTasks() {
     archivedTasks: groupedTasks.archived,
     newTask,
     loading,
-    error,
+    error: null, // エラーコンテキストを使用するため不要
     setNewTask,
     loadTasksFromFile,
     saveTasksToFile,
     addTask,
     toggleTask,
     deleteTask,
+    updateTask,
     resetTasks,
-    clearError,
+    clearError: () => {}, // エラーコンテキストを使用するため不要
   };
 }

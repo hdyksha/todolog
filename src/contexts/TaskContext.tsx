@@ -1,24 +1,28 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useTasks, TasksByDate } from '../hooks/useTasks';
+import { useTasks, TaskOperationResult } from '../hooks/useTasks';
 import { Task } from '../types/Task';
 
 // コンテキストの型定義
 interface TaskContextType {
   // 状態
   tasks: Task[];
-  activeTasks: TasksByDate;
-  archivedTasks: TasksByDate;
+  activeTasks: Record<string, Task[]>;
+  archivedTasks: Record<string, Task[]>;
   newTask: string;
   loading: boolean;
   error: string | null;
 
   // アクション
   setNewTask: (text: string) => void;
-  loadTasksFromFile: (filename: string) => Promise<boolean>;
-  saveTasksToFile: (filename: string) => Promise<boolean>;
-  addTask: (text: string) => boolean;
-  toggleTask: (id: string) => void;
-  deleteTask: (id: string) => void;
+  loadTasksFromFile: (filename: string) => Promise<TaskOperationResult>;
+  saveTasksToFile: (filename: string) => Promise<TaskOperationResult>;
+  addTask: (text: string) => TaskOperationResult<Task>;
+  toggleTask: (id: string) => TaskOperationResult<Task>;
+  deleteTask: (id: string) => TaskOperationResult;
+  updateTask: (
+    id: string,
+    updates: Partial<Omit<Task, 'id' | 'createdAt'>>
+  ) => TaskOperationResult<Task>;
   resetTasks: () => void;
   clearError: () => void;
 }
