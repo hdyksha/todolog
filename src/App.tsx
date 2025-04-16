@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './App.css';
 
-// カスタムフックのインポート
-import { useTaskFiles } from './hooks/useTaskFiles';
-import { useTasks } from './hooks/useTasks';
-import { useAutoSave } from './hooks/useAutoSave';
+// コンテキストのインポート
+import { AppProvider, AppInitializer, useArchiveContext } from './contexts/AppContext';
+import { useFileContext } from './contexts/FileContext';
+import { useTaskContext } from './contexts/TaskContext';
+import { useAutoSaveContext } from './contexts/AutoSaveContext';
 
 // コンポーネントのインポート
 import FileManager from './components/FileManager/FileManager';
@@ -12,25 +13,25 @@ import TaskForm from './components/TaskForm/TaskForm';
 import TaskList from './components/TaskList/TaskList';
 import ArchiveSection from './components/ArchiveSection/ArchiveSection';
 
-function App() {
-  // カスタムフックの使用
+// メインアプリケーションコンポーネント
+const AppContent: React.FC = () => {
+  // コンテキストからデータと関数を取得
   const {
     taskFiles,
     currentFile,
     newFileName,
     fileLoading,
     error: fileError,
+    setCurrentFile,
     setNewFileName,
-    loadTaskFiles,
     createNewFile,
     deleteFile,
-  } = useTaskFiles();
+  } = useFileContext();
 
   const {
-    tasks,
+    newTask,
     activeTasks,
     archivedTasks,
-    newTask,
     loading,
     error: taskError,
     setNewTask,
@@ -39,40 +40,18 @@ function App() {
     toggleTask,
     deleteTask,
     resetTasks,
-  } = useTasks();
+  } = useTaskContext();
 
-  const {
-    isAutoSaving,
-    lastSaved,
-    error: autoSaveError,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    saveTasksNow,
-  } = useAutoSave(tasks, currentFile, {
-    // eslint-disable-next-line no-console
-    onSaveSuccess: () => console.log(`タスクを自動保存しました: ${currentFile}`),
-    onSaveError: err => console.error(`タスクの自動保存エラー: ${err}`),
-  });
+  const { isAutoSaving, lastSaved, error: autoSaveError } = useAutoSaveContext();
 
-  // アーカイブの表示/非表示状態
-  const [showArchived, setShowArchived] = useState(true);
+  const { showArchived, toggleArchiveVisibility } = useArchiveContext();
 
   // エラーメッセージの統合
   const error = fileError || taskError || autoSaveError;
 
-  // アプリケーション起動時にファイル一覧を読み込む
-  useEffect(() => {
-    const initializeApp = async () => {
-      const selectedFile = await loadTaskFiles();
-      if (selectedFile) {
-        await loadTasksFromFile(selectedFile);
-      }
-    };
-
-    initializeApp();
-  }, [loadTaskFiles, loadTasksFromFile]);
-
   // ファイル選択時の処理
   const handleFileSelect = async (filename: string) => {
+    setCurrentFile(filename);
     await loadTasksFromFile(filename);
   };
 
@@ -94,12 +73,7 @@ function App() {
     }
   };
 
-  // アーカイブの表示/非表示を切り替え
-  const toggleArchiveVisibility = () => {
-    setShowArchived(!showArchived);
-  };
-
-  // 自動保存ステータス（オプション）
+  // 自動保存ステータス表示
   const renderAutoSaveStatus = () => {
     if (isAutoSaving) {
       return <div className="auto-save-status">保存中...</div>;
@@ -163,6 +137,17 @@ function App() {
 
       {renderAutoSaveStatus()}
     </div>
+  );
+};
+
+// アプリケーションのルートコンポーネント
+function App() {
+  return (
+    <AppProvider>
+      <AppInitializer>
+        <AppContent />
+      </AppInitializer>
+    </AppProvider>
   );
 }
 
