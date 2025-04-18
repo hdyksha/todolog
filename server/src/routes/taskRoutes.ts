@@ -18,4 +18,14 @@ taskRoutes.post('/tasks', taskController.createTask);
 taskRoutes.put('/tasks/:id', taskController.updateTask);
 taskRoutes.delete('/tasks/:id', taskController.deleteTask);
 taskRoutes.put('/tasks/:id/toggle', taskController.toggleTaskCompletion);
+taskRoutes.put('/tasks/:id/memo', taskController.updateTaskMemo);
 taskRoutes.get('/categories', taskController.getCategories);
+
+// バックアップと復元のエンドポイント
+taskRoutes.post('/backups', taskController.createBackup);
+taskRoutes.get('/backups', taskController.listBackups);
+taskRoutes.post('/backups/:filename/restore', taskController.restoreFromBackup);
+
+// エクスポート/インポートのエンドポイント
+taskRoutes.get('/export', taskController.exportTasks);
+taskRoutes.post('/import', taskController.importTasks);
