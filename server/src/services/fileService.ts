@@ -1,6 +1,11 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Task } from '../types';
+import { fileURLToPath } from 'url';
+import { Task } from '../types/index.js';
+
+// ESM環境でのディレクトリ名取得
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // データファイルの名前
 const DATA_FILE = 'todolog-data.json';

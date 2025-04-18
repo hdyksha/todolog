@@ -12,7 +12,7 @@ TodoLogアプリケーションのバックエンド部分の詳細設計につ�
 - **データ永続化**: ファイルシステム (fs/promises)
 - **バリデーション**: Zod
 - **ロギング**: Winston
-- **テスト**: Jest
+- **テスト**: Vitest
 - **API文書化**: Swagger/OpenAPI
 
 ## プロジェクト構造
@@ -626,13 +626,15 @@ LOG_LEVEL=info
   "version": "1.0.0",
   "description": "TodoLog application backend",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn src/index.ts",
-    "test": "jest",
-    "lint": "eslint src/**/*.ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
+    "lint": "biome lint src",
+    "format": "biome format --write src"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -644,21 +646,16 @@ LOG_LEVEL=info
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.5.3",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
-    "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
     "@types/supertest": "^2.0.12",
     "@types/uuid": "^9.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "@typescript-eslint/parser": "^5.57.1",
-    "eslint": "^8.38.0",
-    "jest": "^29.5.0",
-    "prettier": "^2.8.7",
     "supertest": "^6.3.3",
-    "ts-jest": "^29.1.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "vitest": "^1.0.4"
   }
 }
 ```

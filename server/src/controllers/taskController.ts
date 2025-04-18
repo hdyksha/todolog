@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { TaskService } from '../services/taskService';
-import { Priority } from '../types';
+import { TaskService } from '../services/taskService.js';
+import { Priority } from '../types/index.js';
 
 /**
  * タスク関連のAPIエンドポイントを処理するコントローラークラス

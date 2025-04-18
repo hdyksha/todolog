@@ -1,7 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { taskRoutes } from './routes/taskRoutes';
+import { fileURLToPath } from 'url';
+import { taskRoutes } from './routes/taskRoutes.js';
+
+// ESM環境でのディレクトリ名取得
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export function createApp() {
   const app = express();

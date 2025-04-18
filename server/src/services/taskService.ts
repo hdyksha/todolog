@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { FileService } from './fileService';
-import { Task, Priority } from '../types';
+import { FileService } from './fileService.js';
+import { Task, Priority } from '../types/index.js';
 
 /**
  * タスク管理に関するサービスクラス

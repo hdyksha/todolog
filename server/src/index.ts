@@ -1,6 +1,11 @@
-import { createApp } from './app';
+import { createApp } from './app.js';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+
+// ESM環境でのディレクトリ名取得
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // .envファイルの読み込み
 dotenv.config();
