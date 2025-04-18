@@ -2,8 +2,7 @@
 // ファイル操作に関するサービス
 
 // Node.jsのファイルシステムAPIをインポート
-// ブラウザ環境では、Electronやタデスクトップアプリケーションとして実行する場合に使用
-// Web環境では、LocalStorageやIndexedDBに置き換える必要がある
+// このサービスはElectronやNode.js環境で実行することを前提としています
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -72,25 +71,3 @@ export async function importData<T>(filePath: string): Promise<T> {
     throw error;
   }
 }
-
-// Web環境用のモック実装（開発時に使用）
-export const webStorage = {
-  saveData: <T>(key: string, data: T): void => {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (error) {
-      console.error('データの保存に失敗しました:', error);
-      throw error;
-    }
-  },
-  
-  loadData: <T>(key: string): T | null => {
-    try {
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) as T : null;
-    } catch (error) {
-      console.error('データの読み込みに失敗しました:', error);
-      throw error;
-    }
-  }
-};

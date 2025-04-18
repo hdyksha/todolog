@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Task, Priority, TaskFilter, TaskSort } from '../types';
-import { webStorage } from '../services/fileService';
-
-// ローカルストレージのキー
-const STORAGE_KEY = 'todolog-tasks';
+import { saveData, loadData } from '../services/fileService';
 
 /**
  * タスク管理のカスタムフック
@@ -27,8 +24,8 @@ export function useTasks() {
     const loadTasks = async () => {
       try {
         setLoading(true);
-        // Web環境ではローカルストレージからデータを読み込む
-        const data = webStorage.loadData<Task[]>(STORAGE_KEY);
+        // ファイルからデータを読み込む
+        const data = await loadData<Task[]>();
         
         // 日付文字列をDateオブジェクトに変換
         const parsedTasks = data ? data.map(task => ({
@@ -52,11 +49,9 @@ export function useTasks() {
   // データ変更時の保存
   useEffect(() => {
     if (!loading) {
-      try {
-        webStorage.saveData(STORAGE_KEY, tasks);
-      } catch (err) {
+      saveData(tasks).catch(err => {
         setError(err instanceof Error ? err : new Error('Failed to save tasks'));
-      }
+      });
     }
   }, [tasks, loading]);
 

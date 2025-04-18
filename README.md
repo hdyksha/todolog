@@ -28,6 +28,42 @@ TodoLogは、シンプルで使いやすいタスク管理アプリケーショ�
 - **テスト**: Vitest + React Testing Library
 - **ファイル操作**: Node.js fs/promises API
 
+## 実行方法
+
+### 開発環境のセットアップ
+
+```bash
+# 依存関係のインストール
+npm install
+
+# 開発サーバーの起動
+npm run dev
+```
+
+### ビルドと実行
+
+```bash
+# プロダクションビルド
+npm run build
+
+# ビルド結果のプレビュー
+npm run preview
+```
+
+### テスト実行
+
+```bash
+# テストの実行
+npm test
+
+# カバレッジレポートの生成
+npm run coverage
+```
+
+## 注意事項
+
+このアプリケーションはElectronやNode.js環境で実行することを前提としています。ブラウザ環境では、ファイルシステムへのアクセス制限があるため、データの永続化機能は動作しません。
+
 ## アプリケーション設計
 
 ### データモデル

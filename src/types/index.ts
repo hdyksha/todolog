@@ -1,4 +1,4 @@
-// タスクの優先度を表す列挙型
+// タスクの優先度
 export enum Priority {
   High = 'high',
   Medium = 'medium',
@@ -20,17 +20,14 @@ export interface Task {
 
 // タスクフィルターの型定義
 export interface TaskFilter {
-  status?: 'all' | 'completed' | 'active';
+  status: 'all' | 'completed' | 'active';
   priority?: Priority;
   category?: string;
   searchTerm?: string;
 }
 
 // タスクソートの型定義
-export type SortField = 'title' | 'dueDate' | 'priority' | 'createdAt' | 'updatedAt';
-export type SortDirection = 'asc' | 'desc';
-
 export interface TaskSort {
-  field: SortField;
-  direction: SortDirection;
+  field: 'title' | 'priority' | 'dueDate' | 'createdAt' | 'updatedAt';
+  direction: 'asc' | 'desc';
 }

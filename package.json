@@ -1,52 +1,34 @@
 {
   "name": "todolog",
   "private": true,
-  "version": "1.0.0",
-  "description": "タスク管理アプリケーション",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "biome lint src",
-    "format": "biome format --write src",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hdyksha/todolog.git"
-  },
-  "keywords": [
-    "todo",
-    "task",
-    "management",
-    "react",
-    "typescript"
-  ],
-  "author": "",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/hdyksha/todolog/issues"
-  },
-  "homepage": "https://github.com/hdyksha/todolog#readme",
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "uuid": "^11.1.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-react": "^4.4.0",
-    "jsdom": "^26.1.0",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.1",
-    "vitest": "^3.1.1"
+    "@biomejs/biome": "1.5.3",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@types/node": "^20.10.4",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/uuid": "^9.0.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "jsdom": "^23.0.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
   }
 }
