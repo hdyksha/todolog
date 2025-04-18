@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { TaskService } from '../services/taskService.js';
-import { CreateTaskSchema, UpdateTaskSchema } from '../models/task.model.js';
+import { CreateTaskSchema, UpdateTaskSchema, TaskFilterSchema, MemoUpdateSchema } from '../models/task.model.js';
 import { logger } from '../utils/logger.js';
 import { z } from 'zod';
+import { BadRequestError, NotFoundError, ValidationError } from '../utils/error.js';
 
 export class TaskController {
   private taskService: TaskService;
@@ -14,42 +15,19 @@ export class TaskController {
   // タスク一覧の取得
   getAllTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // クエリパラメータの取得
-      const { category, completed, priority, sortBy, sortOrder } = req.query;
+      // クエリパラメータの取得と検証
+      const filterResult = TaskFilterSchema.safeParse(req.query);
       
-      // フィルタリングとソートのオプション
-      const options: {
-        category?: string;
-        completed?: boolean;
-        priority?: string;
-        sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority';
-        sortOrder?: 'asc' | 'desc';
-      } = {};
-      
-      // クエリパラメータの処理
-      if (category && typeof category === 'string') {
-        options.category = category;
+      if (!filterResult.success) {
+        next(new ValidationError(filterResult.error));
+        return;
       }
       
-      if (completed !== undefined) {
-        options.completed = completed === 'true';
-      }
-      
-      if (priority && typeof priority === 'string') {
-        options.priority = priority;
-      }
-      
-      if (sortBy && typeof sortBy === 'string' && 
-          ['createdAt', 'updatedAt', 'dueDate', 'priority'].includes(sortBy)) {
-        options.sortBy = sortBy as 'createdAt' | 'updatedAt' | 'dueDate' | 'priority';
-      }
-      
-      if (sortOrder && typeof sortOrder === 'string' && 
-          ['asc', 'desc'].includes(sortOrder)) {
-        options.sortOrder = sortOrder as 'asc' | 'desc';
-      }
-      
+      const options = filterResult.data;
       const tasks = await this.taskService.getAllTasks(options);
+      
+      // キャッシュヘッダーの設定
+      res.setHeader('Cache-Control', 'private, max-age=10');
       res.status(200).json(tasks);
     } catch (error) {
       next(error);
@@ -63,10 +41,12 @@ export class TaskController {
       const task = await this.taskService.getTaskById(id);
 
       if (!task) {
-        res.status(404).json({ error: 'タスクが見つかりません' });
+        next(new NotFoundError(`ID: ${id} のタスクが見つかりません`));
         return;
       }
 
+      // キャッシュヘッダーの設定
+      res.setHeader('Cache-Control', 'private, max-age=30');
       res.status(200).json(task);
     } catch (error) {
       next(error);
@@ -83,10 +63,7 @@ export class TaskController {
       res.status(201).json(newTask);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ 
-          error: 'バリデーションエラー', 
-          details: error.errors 
-        });
+        next(new ValidationError(error));
         return;
       }
       next(error);
@@ -104,17 +81,14 @@ export class TaskController {
       const updatedTask = await this.taskService.updateTask(id, taskData);
 
       if (!updatedTask) {
-        res.status(404).json({ error: 'タスクが見つかりません' });
+        next(new NotFoundError(`ID: ${id} のタスクが見つかりません`));
         return;
       }
 
       res.status(200).json(updatedTask);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ 
-          error: 'バリデーションエラー', 
-          details: error.errors 
-        });
+        next(new ValidationError(error));
         return;
       }
       next(error);
@@ -128,7 +102,7 @@ export class TaskController {
       const result = await this.taskService.deleteTask(id);
 
       if (!result) {
-        res.status(404).json({ error: 'タスクが見つかりません' });
+        next(new NotFoundError(`ID: ${id} のタスクが見つかりません`));
         return;
       }
 
@@ -145,7 +119,7 @@ export class TaskController {
       const updatedTask = await this.taskService.toggleTaskCompletion(id);
 
       if (!updatedTask) {
-        res.status(404).json({ error: 'タスクが見つかりません' });
+        next(new NotFoundError(`ID: ${id} のタスクが見つかりません`));
         return;
       }
 
@@ -154,31 +128,32 @@ export class TaskController {
       next(error);
     }
   };
-  
-  // タスクのメモ更新
+
+  // タスクのメモを更新
   updateTaskMemo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const { memo } = req.body;
       
-      if (typeof memo !== 'string') {
-        res.status(400).json({ error: 'メモは文字列である必要があります' });
-        return;
-      }
+      // リクエストボディのバリデーション
+      const memoData = MemoUpdateSchema.parse(req.body);
       
-      const updatedTask = await this.taskService.updateTaskMemo(id, memo);
+      const updatedTask = await this.taskService.updateTaskMemo(id, memoData.memo);
 
       if (!updatedTask) {
-        res.status(404).json({ error: 'タスクが見つかりません' });
+        next(new NotFoundError(`ID: ${id} のタスクが見つかりません`));
         return;
       }
 
       res.status(200).json(updatedTask);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        next(new ValidationError(error));
+        return;
+      }
       next(error);
     }
   };
-  
+
   // カテゴリ一覧の取得
   getCategories = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -188,40 +163,18 @@ export class TaskController {
       next(error);
     }
   };
-  
-  // データのバックアップを作成
+
+  // バックアップの作成
   createBackup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const backupFilename = await this.taskService.createBackup();
-      res.status(200).json({ 
-        message: 'バックアップが作成されました',
-        backupFilename 
-      });
+      const backupFile = await this.taskService.createBackup();
+      res.status(201).json({ filename: backupFile });
     } catch (error) {
       next(error);
     }
   };
-  
-  // バックアップからデータを復元
-  restoreFromBackup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { filename } = req.params;
-      
-      await this.taskService.restoreFromBackup(filename);
-      res.status(200).json({ 
-        message: 'バックアップから復元しました',
-        restoredFrom: filename 
-      });
-    } catch (error) {
-      if ((error as Error).message.includes('存在しません')) {
-        res.status(404).json({ error: (error as Error).message });
-        return;
-      }
-      next(error);
-    }
-  };
-  
-  // 利用可能なバックアップ一覧を取得
+
+  // バックアップ一覧の取得
   listBackups = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const backups = await this.taskService.listBackups();
@@ -230,50 +183,40 @@ export class TaskController {
       next(error);
     }
   };
-  
-  // タスクデータをエクスポート
+
+  // バックアップからの復元
+  restoreFromBackup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { filename } = req.params;
+      await this.taskService.restoreFromBackup(filename);
+      res.status(200).json({ message: 'バックアップから復元しました' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // タスクデータのエクスポート
   exportTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const tasks = await this.taskService.exportTasks();
-      
-      // Content-Dispositionヘッダーを設定してダウンロードを促す
-      const filename = `todolog-export-${new Date().toISOString().slice(0, 10)}.json`;
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.setHeader('Content-Type', 'application/json');
-      
+      const tasks = await this.taskService.getAllTasks({});
       res.status(200).json(tasks);
     } catch (error) {
       next(error);
     }
   };
-  
-  // タスクデータをインポート
+
+  // タスクデータのインポート
   importTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const tasks = req.body;
       
-      // 配列であることを確認
       if (!Array.isArray(tasks)) {
-        res.status(400).json({ error: 'タスクデータは配列である必要があります' });
+        next(new BadRequestError('タスクデータは配列形式である必要があります'));
         return;
       }
       
-      // 各タスクの基本的な検証
-      for (const task of tasks) {
-        if (!task.id || !task.title || task.completed === undefined) {
-          res.status(400).json({ 
-            error: 'タスクデータの形式が不正です',
-            invalidTask: task 
-          });
-          return;
-        }
-      }
-      
       await this.taskService.importTasks(tasks);
-      res.status(200).json({ 
-        message: 'タスクデータをインポートしました',
-        count: tasks.length 
-      });
+      res.status(200).json({ message: 'タスクデータをインポートしました' });
     } catch (error) {
       next(error);
     }

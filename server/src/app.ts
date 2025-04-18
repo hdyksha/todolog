@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url';
 import { taskRoutes } from './routes/taskRoutes.js';
 import { requestLogger } from './utils/logger.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
+import { setupSecurity } from './middleware/security.js';
+import { setupRateLimiter } from './middleware/rate-limiter.js';
+import { etagMiddleware, cacheControl } from './middleware/cache.js';
 import { env } from './config/env.js';
 
 // ESM環境でのディレクトリ名取得
@@ -14,13 +17,22 @@ const __dirname = path.dirname(__filename);
 export function createApp() {
   const app = express();
 
-  // ミドルウェアの設定
+  // セキュリティ設定
+  setupSecurity(app);
+  
+  // 基本ミドルウェアの設定
   app.use(cors());
   app.use(express.json());
   app.use(requestLogger);
+  
+  // レート制限の設定
+  setupRateLimiter(app);
+  
+  // キャッシュ関連のミドルウェア
+  app.use(etagMiddleware);
 
   // ヘルスチェックエンドポイント
-  app.get('/health', (req, res) => {
+  app.get('/health', cacheControl(60), (req, res) => {
     res.status(200).json({ 
       status: 'ok', 
       timestamp: new Date().toISOString() 
