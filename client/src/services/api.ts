@@ -6,10 +6,17 @@ const API_BASE_URL = '/api';
 
 /**
  * タスク一覧を取得する
+ * @param forceRefresh キャッシュを無視して強制的に再取得するかどうか
  * @returns タスクの配列
  */
-export async function fetchTasks(): Promise<Task[]> {
-  const response = await fetch(`${API_BASE_URL}/tasks`);
+export async function fetchTasks(forceRefresh = false): Promise<Task[]> {
+  const response = await fetch(`${API_BASE_URL}/tasks`, {
+    cache: forceRefresh ? 'no-store' : 'default',
+    headers: {
+      'Pragma': forceRefresh ? 'no-cache' : '',
+      'Cache-Control': forceRefresh ? 'no-cache' : ''
+    }
+  });
   if (!response.ok) {
     throw new Error('タスクの取得に失敗しました');
   }
@@ -19,10 +26,17 @@ export async function fetchTasks(): Promise<Task[]> {
 /**
  * 特定のタスクを取得する
  * @param id タスクID
+ * @param forceRefresh キャッシュを無視して強制的に再取得するかどうか
  * @returns タスク
  */
-export async function fetchTaskById(id: string): Promise<Task> {
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}`);
+export async function fetchTaskById(id: string, forceRefresh = false): Promise<Task> {
+  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+    cache: forceRefresh ? 'no-store' : 'default',
+    headers: {
+      'Pragma': forceRefresh ? 'no-cache' : '',
+      'Cache-Control': forceRefresh ? 'no-cache' : ''
+    }
+  });
   if (!response.ok) {
     throw new Error('タスクの取得に失敗しました');
   }
@@ -45,6 +59,8 @@ export async function createTask(taskData: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
     },
     body: JSON.stringify(taskData),
   });
@@ -70,6 +86,8 @@ export async function updateTask(
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
     },
     body: JSON.stringify(updates),
   });
@@ -88,6 +106,10 @@ export async function updateTask(
 export async function deleteTask(id: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
     method: 'DELETE',
+    headers: {
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
+    }
   });
   
   if (!response.ok) {
@@ -106,6 +128,8 @@ export async function toggleTaskCompletion(id: string, completed?: boolean): Pro
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
     },
     body: JSON.stringify({ completed }),
   });
@@ -128,6 +152,8 @@ export async function updateTaskMemo(id: string, memo: string): Promise<Task> {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
     },
     body: JSON.stringify({ memo }),
   });
@@ -141,10 +167,17 @@ export async function updateTaskMemo(id: string, memo: string): Promise<Task> {
 
 /**
  * カテゴリ一覧を取得する
+ * @param forceRefresh キャッシュを無視して強制的に再取得するかどうか
  * @returns カテゴリの配列
  */
-export async function fetchCategories(): Promise<string[]> {
-  const response = await fetch(`${API_BASE_URL}/categories`);
+export async function fetchCategories(forceRefresh = false): Promise<string[]> {
+  const response = await fetch(`${API_BASE_URL}/categories`, {
+    cache: forceRefresh ? 'no-store' : 'default',
+    headers: {
+      'Pragma': forceRefresh ? 'no-cache' : '',
+      'Cache-Control': forceRefresh ? 'no-cache' : ''
+    }
+  });
   if (!response.ok) {
     throw new Error('カテゴリの取得に失敗しました');
   }

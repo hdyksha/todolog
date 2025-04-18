@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Task, Priority } from './types';
 import { useTasks } from './hooks/useTasks';
+import Notification from './components/Notification';
 import './App.css';
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
     tasks,
     loading,
     error,
+    notification,
     addTask,
     updateTask,
     deleteTask,
@@ -99,6 +101,14 @@ function App() {
       <footer className="app-footer">
         <p>TodoLog &copy; 2025</p>
       </footer>
+
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => {}}
+        />
+      )}
     </div>
   );
 }

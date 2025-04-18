@@ -4,6 +4,7 @@ import { CreateTaskSchema, UpdateTaskSchema, TaskFilterSchema, MemoUpdateSchema 
 import { logger } from '../utils/logger.js';
 import { z } from 'zod';
 import { BadRequestError, NotFoundError, ValidationError } from '../utils/error.js';
+import { updateTaskDataTimestamp } from '../middleware/cache.js';
 
 export class TaskController {
   private taskService: TaskService;
@@ -60,6 +61,10 @@ export class TaskController {
       const taskData = CreateTaskSchema.parse(req.body);
       
       const newTask = await this.taskService.createTask(taskData);
+      
+      // タスクデータのタイムスタンプを更新
+      updateTaskDataTimestamp();
+      
       res.status(201).json(newTask);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -85,6 +90,9 @@ export class TaskController {
         return;
       }
 
+      // タスクデータのタイムスタンプを更新
+      updateTaskDataTimestamp();
+      
       res.status(200).json(updatedTask);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -106,6 +114,9 @@ export class TaskController {
         return;
       }
 
+      // タスクデータのタイムスタンプを更新
+      updateTaskDataTimestamp();
+      
       res.status(204).end();
     } catch (error) {
       next(error);
@@ -123,6 +134,9 @@ export class TaskController {
         return;
       }
 
+      // タスクデータのタイムスタンプを更新
+      updateTaskDataTimestamp();
+      
       res.status(200).json(updatedTask);
     } catch (error) {
       next(error);
@@ -144,6 +158,9 @@ export class TaskController {
         return;
       }
 
+      // タスクデータのタイムスタンプを更新
+      updateTaskDataTimestamp();
+      
       res.status(200).json(updatedTask);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -189,6 +206,10 @@ export class TaskController {
     try {
       const { filename } = req.params;
       await this.taskService.restoreFromBackup(filename);
+      
+      // タスクデータのタイムスタンプを更新
+      updateTaskDataTimestamp();
+      
       res.status(200).json({ message: 'バックアップから復元しました' });
     } catch (error) {
       next(error);
@@ -216,6 +237,10 @@ export class TaskController {
       }
       
       await this.taskService.importTasks(tasks);
+      
+      // タスクデータのタイムスタンプを更新
+      updateTaskDataTimestamp();
+      
       res.status(200).json({ message: 'タスクデータをインポートしました' });
     } catch (error) {
       next(error);
