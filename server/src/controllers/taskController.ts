@@ -1,190 +1,132 @@
-import { Request, Response } from 'express';
-import { TaskService } from '../services/taskService.js';
-import { Priority } from '../types/index.js';
+import { Request, Response, NextFunction } from 'express';
+import { TaskService } from '../services/task.service.js';
+import { CreateTaskSchema, UpdateTaskSchema } from '../models/task.model.js';
+import { logger } from '../utils/logger.js';
+import { z } from 'zod';
 
-/**
- * タスク関連のAPIエンドポイントを処理するコントローラークラス
- */
 export class TaskController {
   private taskService: TaskService;
 
-  /**
-   * コンストラクタ
-   * @param taskService タスクサービス
-   */
   constructor(taskService: TaskService) {
     this.taskService = taskService;
   }
 
-  /**
-   * タスク一覧を取得する
-   * @param req リクエスト
-   * @param res レスポンス
-   */
-  async getTasks(req: Request, res: Response): Promise<void> {
+  // タスク一覧の取得
+  getAllTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const tasks = await this.taskService.getAllTasks();
-      res.json(tasks);
+      res.status(200).json(tasks);
     } catch (error) {
-      console.error('タスク一覧の取得に失敗しました:', error);
-      res.status(500).json({ error: 'タスク一覧の取得に失敗しました' });
+      next(error);
     }
-  }
+  };
 
-  /**
-   * 特定のタスクを取得する
-   * @param req リクエスト
-   * @param res レスポンス
-   */
-  async getTaskById(req: Request, res: Response): Promise<void> {
+  // 特定のタスクの取得
+  getTaskById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
       const task = await this.taskService.getTaskById(id);
-      
+
       if (!task) {
         res.status(404).json({ error: 'タスクが見つかりません' });
         return;
       }
-      
-      res.json(task);
-    } catch (error) {
-      console.error('タスクの取得に失敗しました:', error);
-      res.status(500).json({ error: 'タスクの取得に失敗しました' });
-    }
-  }
 
-  /**
-   * 新しいタスクを作成する
-   * @param req リクエスト
-   * @param res レスポンス
-   */
-  async createTask(req: Request, res: Response): Promise<void> {
+      res.status(200).json(task);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // タスクの作成
+  createTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { title, priority, category, dueDate, memo } = req.body;
+      // リクエストボディのバリデーション
+      const taskData = CreateTaskSchema.parse(req.body);
       
-      if (!title || typeof title !== 'string') {
-        res.status(400).json({ error: 'タイトルは必須です' });
+      const newTask = await this.taskService.createTask(taskData);
+      res.status(201).json(newTask);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ 
+          error: 'バリデーションエラー', 
+          details: error.errors 
+        });
         return;
       }
-      
-      const task = await this.taskService.createTask({
-        title,
-        priority: priority as Priority,
-        category,
-        dueDate,
-        memo,
-      });
-      
-      res.status(201).json(task);
-    } catch (error) {
-      console.error('タスクの作成に失敗しました:', error);
-      res.status(500).json({ error: 'タスクの作成に失敗しました' });
+      next(error);
     }
-  }
+  };
 
-  /**
-   * タスクを更新する
-   * @param req リクエスト
-   * @param res レスポンス
-   */
-  async updateTask(req: Request, res: Response): Promise<void> {
+  // タスクの更新
+  updateTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const { title, completed, priority, category, dueDate, memo } = req.body;
       
-      const updatedTask = await this.taskService.updateTask(id, {
-        title,
-        completed,
-        priority,
-        category,
-        dueDate,
-        memo,
-      });
+      // リクエストボディのバリデーション
+      const taskData = UpdateTaskSchema.parse(req.body);
       
+      const updatedTask = await this.taskService.updateTask(id, taskData);
+
       if (!updatedTask) {
         res.status(404).json({ error: 'タスクが見つかりません' });
         return;
       }
-      
-      res.json(updatedTask);
-    } catch (error) {
-      console.error('タスクの更新に失敗しました:', error);
-      res.status(500).json({ error: 'タスクの更新に失敗しました' });
-    }
-  }
 
-  /**
-   * タスクを削除する
-   * @param req リクエスト
-   * @param res レスポンス
-   */
-  async deleteTask(req: Request, res: Response): Promise<void> {
+      res.status(200).json(updatedTask);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ 
+          error: 'バリデーションエラー', 
+          details: error.errors 
+        });
+        return;
+      }
+      next(error);
+    }
+  };
+
+  // タスクの削除
+  deleteTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const success = await this.taskService.deleteTask(id);
-      
-      if (!success) {
+      const result = await this.taskService.deleteTask(id);
+
+      if (!result) {
         res.status(404).json({ error: 'タスクが見つかりません' });
         return;
       }
-      
-      res.json({ message: 'タスクが削除されました' });
-    } catch (error) {
-      console.error('タスクの削除に失敗しました:', error);
-      res.status(500).json({ error: 'タスクの削除に失敗しました' });
-    }
-  }
 
-  /**
-   * タスクの完了状態を切り替える
-   * @param req リクエスト
-   * @param res レスポンス
-   */
-  async toggleTaskCompletion(req: Request, res: Response): Promise<void> {
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+  // タスクの完了状態を切り替え
+  toggleTaskCompletion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const { completed } = req.body;
-      
-      const updatedTask = await this.taskService.toggleTaskCompletion(id, completed);
-      
+      const updatedTask = await this.taskService.toggleTaskCompletion(id);
+
       if (!updatedTask) {
         res.status(404).json({ error: 'タスクが見つかりません' });
         return;
       }
-      
-      res.json(updatedTask);
-    } catch (error) {
-      console.error('タスクの完了状態の切り替えに失敗しました:', error);
-      res.status(500).json({ error: 'タスクの完了状態の切り替えに失敗しました' });
-    }
-  }
 
-  /**
-   * タスクのメモを更新する
-   * @param req リクエスト
-   * @param res レスポンス
-   */
-  async updateTaskMemo(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const { memo } = req.body;
-      
-      if (typeof memo !== 'string') {
-        res.status(400).json({ error: 'メモは文字列である必要があります' });
-        return;
-      }
-      
-      const updatedTask = await this.taskService.updateTaskMemo(id, memo);
-      
-      if (!updatedTask) {
-        res.status(404).json({ error: 'タスクが見つかりません' });
-        return;
-      }
-      
-      res.json(updatedTask);
+      res.status(200).json(updatedTask);
     } catch (error) {
-      console.error('メモの更新に失敗しました:', error);
-      res.status(500).json({ error: 'メモの更新に失敗しました' });
+      next(error);
     }
-  }
+  };
+  
+  // カテゴリ一覧の取得
+  getCategories = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const categories = await this.taskService.getCategories();
+      res.status(200).json(categories);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -1,104 +1,75 @@
-import { promises as fs } from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { Task } from '../types/index.js';
-
-// ESM環境でのディレクトリ名取得
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// データファイルの名前
-const DATA_FILE = 'todolog-data.json';
-
-// データディレクトリのパス
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
-
-// データファイルのパス
-const DATA_PATH = path.join(DATA_DIR, DATA_FILE);
+import { logger } from '../utils/logger.js';
 
 /**
- * ファイル操作に関するサービスクラス
+ * ファイル操作を担当するサービスクラス
  */
 export class FileService {
+  private dataDir: string;
+
   /**
-   * コンストラクタ
-   * データディレクトリを初期化する
+   * FileServiceのコンストラクタ
+   * @param dataDir データディレクトリのパス（デフォルトは環境変数またはdata/）
    */
-  constructor() {
-    this.initDataDir();
+  constructor(dataDir?: string) {
+    this.dataDir = dataDir || process.env.DATA_DIR || './data';
+    this.ensureDataDir().catch(err => {
+      logger.error('データディレクトリの作成に失敗しました', { error: err.message });
+    });
   }
 
   /**
-   * データディレクトリを初期化する
+   * データディレクトリが存在することを確認し、なければ作成する
    */
-  private async initDataDir(): Promise<void> {
+  private async ensureDataDir(): Promise<void> {
     try {
-      await fs.mkdir(DATA_DIR, { recursive: true });
-      console.log(`データディレクトリを初期化しました: ${DATA_DIR}`);
+      await fs.access(this.dataDir);
     } catch (error) {
-      console.error('データディレクトリの初期化に失敗しました:', error);
+      logger.info(`データディレクトリを作成します: ${this.dataDir}`);
+      await fs.mkdir(this.dataDir, { recursive: true });
     }
   }
 
   /**
-   * タスクデータを読み込む
-   * @returns タスクの配列
+   * ファイルからデータを読み込む
+   * @param filename ファイル名
+   * @param defaultValue ファイルが存在しない場合のデフォルト値
+   * @returns 読み込んだデータ
    */
-  async readTasks(): Promise<Task[]> {
+  async readFile<T>(filename: string, defaultValue: T): Promise<T> {
+    await this.ensureDataDir();
+    const filePath = path.join(this.dataDir, filename);
+    
     try {
-      const data = await fs.readFile(DATA_PATH, 'utf-8');
-      return JSON.parse(data) as Task[];
+      const data = await fs.readFile(filePath, 'utf8');
+      return JSON.parse(data) as T;
     } catch (error) {
-      // ファイルが存在しない場合は空の配列を返す
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return [];
+        logger.info(`ファイルが存在しないためデフォルト値を返します: ${filename}`);
+        return defaultValue;
       }
-      console.error('データの読み込みに失敗しました:', error);
-      throw error;
+      logger.error(`ファイルの読み込みに失敗しました: ${filename}`, { error: (error as Error).message });
+      throw new Error(`ファイルの読み込みに失敗しました: ${(error as Error).message}`);
     }
   }
 
   /**
-   * タスクデータを保存する
-   * @param tasks 保存するタスクの配列
+   * データをファイルに書き込む
+   * @param filename ファイル名
+   * @param data 書き込むデータ
    */
-  async writeTasks(tasks: Task[]): Promise<void> {
+  async writeFile<T>(filename: string, data: T): Promise<void> {
+    await this.ensureDataDir();
+    const filePath = path.join(this.dataDir, filename);
+    
     try {
-      await fs.writeFile(DATA_PATH, JSON.stringify(tasks, null, 2), 'utf-8');
+      await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+      logger.debug(`ファイルに書き込みました: ${filename}`);
     } catch (error) {
-      console.error('データの保存に失敗しました:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * タスクデータをエクスポートする
-   * @param exportPath エクスポート先のファイルパス
-   */
-  async exportTasks(exportPath: string): Promise<void> {
-    try {
-      const tasks = await this.readTasks();
-      await fs.writeFile(exportPath, JSON.stringify(tasks, null, 2), 'utf-8');
-    } catch (error) {
-      console.error('データのエクスポートに失敗しました:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * タスクデータをインポートする
-   * @param importPath インポート元のファイルパス
-   * @returns インポートしたタスクの配列
-   */
-  async importTasks(importPath: string): Promise<Task[]> {
-    try {
-      const data = await fs.readFile(importPath, 'utf-8');
-      const tasks = JSON.parse(data) as Task[];
-      await this.writeTasks(tasks);
-      return tasks;
-    } catch (error) {
-      console.error('データのインポートに失敗しました:', error);
-      throw error;
+      logger.error(`ファイルの書き込みに失敗しました: ${filename}`, { error: (error as Error).message });
+      throw new Error(`ファイルの書き込みに失敗しました: ${(error as Error).message}`);
     }
   }
 }

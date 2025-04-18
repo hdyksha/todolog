@@ -30,17 +30,6 @@ export function createApp() {
   // APIルートの設定
   app.use('/api', taskRoutes);
 
-  // 本番環境では静的ファイルを提供
-  if (env.NODE_ENV === 'production') {
-    // クライアントのビルドディレクトリを静的ファイルとして提供
-    app.use(express.static(path.join(__dirname, '../../client/dist')));
-
-    // その他のリクエストはすべてindex.htmlにリダイレクト
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
-    });
-  }
-
   // エラーハンドリングミドルウェア
   app.use(notFoundHandler);
   app.use(errorHandler);

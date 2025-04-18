@@ -1,6 +1,6 @@
 import winston from 'winston';
-import { env } from '../config/env.js';
 import { Request, Response, NextFunction } from 'express';
+import { env } from '../config/env.js';
 
 // ロガーの設定
 export const logger = winston.createLogger({
