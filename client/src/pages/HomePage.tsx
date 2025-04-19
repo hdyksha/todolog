@@ -1,20 +1,26 @@
 import { useState } from 'react';
-import { useTasks, useToggleTaskCompletion, useDeleteTask } from '../services/api/taskApi';
+import { Link } from 'react-router-dom';
+import { useTasks, useToggleTaskCompletion, useDeleteTask, useCreateTask } from '../services/api/taskApi';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { Spinner } from '../components/ui/Spinner';
 import { useNotification } from '../store/NotificationContext';
+import { Priority } from '../types';
 
 export function HomePage() {
   const { data: tasks, isLoading, isError, error } = useTasks();
   const toggleTaskMutation = useToggleTaskCompletion();
   const deleteTaskMutation = useDeleteTask();
+  const createTaskMutation = useCreateTask();
   const { showNotification } = useNotification();
   
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleToggleCompletion = async (id: string) => {
     try {
       await toggleTaskMutation.mutateAsync(id);
+      // 成功メッセージは表示しない（UI上で即座に反映されるため）
     } catch (err) {
       showNotification(
         err instanceof Error ? err.message : 'タスクの状態変更に失敗しました',
@@ -34,6 +40,34 @@ export function HomePage() {
           'error'
         );
       }
+    }
+  };
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newTaskTitle.trim()) {
+      showNotification('タスク名を入力してください', 'warning');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      await createTaskMutation.mutateAsync({
+        title: newTaskTitle.trim(),
+        priority: Priority.Medium, // デフォルト優先度
+      });
+      
+      setNewTaskTitle('');
+      showNotification('新しいタスクを作成しました', 'success');
+    } catch (err) {
+      showNotification(
+        err instanceof Error ? err.message : 'タスクの作成に失敗しました',
+        'error'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -68,7 +102,28 @@ export function HomePage() {
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">タスク一覧</h2>
         
-        {/* タスク追加フォームは後で実装 */}
+        {/* タスク追加フォーム */}
+        <form onSubmit={handleCreateTask} className="mb-6">
+          <div className="flex gap-2">
+            <div className="flex-grow">
+              <Input
+                type="text"
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                placeholder="新しいタスクを入力..."
+                className="mb-0"
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              追加
+            </Button>
+          </div>
+        </form>
         
         {tasks && tasks.length === 0 ? (
           <div className="bg-slate-100 dark:bg-slate-800 p-8 text-center rounded-lg border border-slate-200 dark:border-slate-700">
@@ -86,15 +141,16 @@ export function HomePage() {
                       type="checkbox"
                       checked={task.completed}
                       onChange={() => handleToggleCompletion(task.id)}
-                      className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
+                      className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
                     />
-                    <span
-                      className={`ml-3 flex-grow ${
+                    <Link 
+                      to={`/tasks/${task.id}`}
+                      className={`ml-3 flex-grow hover:underline ${
                         task.completed ? 'line-through text-slate-500 dark:text-slate-400' : ''
                       }`}
                     >
                       {task.title}
-                    </span>
+                    </Link>
                     <div className="flex space-x-2">
                       <Button
                         variant="ghost"
