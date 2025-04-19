@@ -4,6 +4,7 @@ import { useTasks, useToggleTaskCompletion, useDeleteTask, useCreateTask } from 
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Spinner } from '../components/ui/Spinner';
+import { TaskToggle } from '../components/ui/TaskToggle';
 import { useNotification } from '../store/NotificationContext';
 import { Priority } from '../types';
 
@@ -136,11 +137,9 @@ export function HomePage() {
               {tasks?.map((task) => (
                 <li key={task.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
                   <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={task.completed}
+                    <TaskToggle
+                      completed={task.completed}
                       onChange={() => handleToggleCompletion(task.id)}
-                      className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <Link 
                       to={`/tasks/${task.id}`}
