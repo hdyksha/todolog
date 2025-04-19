@@ -18,6 +18,25 @@ export enum Priority {
   Low = 'low'
 }
 
+// タスク作成の入力型
+export interface CreateTaskInput {
+  title: string;
+  priority?: Priority;
+  category?: string;
+  dueDate?: string;
+  memo?: string;
+}
+
+// タスク更新の入力型
+export interface UpdateTaskInput {
+  title?: string;
+  completed?: boolean;
+  priority?: Priority;
+  category?: string;
+  dueDate?: string;
+  memo?: string;
+}
+
 // タスクフィルターの型定義
 export interface TaskFilter {
   status?: 'all' | 'completed' | 'active';
@@ -38,4 +57,25 @@ export interface Notification {
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
   duration?: number;
+}
+
+// ページネーションの型定義
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+}
+
+// APIレスポンスの型定義
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  status: number;
+}
+
+// APIエラーの型定義
+export interface ApiError {
+  message: string;
+  status: number;
+  errors?: Record<string, string[]>;
 }
