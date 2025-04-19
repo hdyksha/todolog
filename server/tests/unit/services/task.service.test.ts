@@ -1,37 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { Task } from '../../../src/models/task.model.js';
+import { TaskService } from '../../../src/services/taskService.js';
 
 // UUIDのモック
 vi.mock('uuid', () => ({
-  v4: () => 'mocked-uuid'
+  v4: vi.fn().mockReturnValue('mocked-uuid')
 }));
-
-// 現在時刻のモック
-const mockDate = new Date('2025-01-01T00:00:00Z');
-vi.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
-
-// FileServiceのモック
-vi.mock('../../../src/services/file.service.js', () => {
-  const mockTasks: Task[] = [];
-  
-  return {
-    FileService: vi.fn().mockImplementation(() => ({
-      readFile: vi.fn().mockImplementation((filename, defaultValue) => {
-        if (filename === 'tasks.json') {
-          return Promise.resolve([...mockTasks]);
-        }
-        return Promise.resolve(defaultValue);
-      }),
-      writeFile: vi.fn().mockImplementation((filename, data) => {
-        if (filename === 'tasks.json') {
-          mockTasks.length = 0;
-          mockTasks.push(...data);
-        }
-        return Promise.resolve();
-      }),
-    })),
-  };
-});
 
 // ロガーのモック
 vi.mock('../../../src/utils/logger.js', () => ({
@@ -43,19 +17,52 @@ vi.mock('../../../src/utils/logger.js', () => ({
   },
 }));
 
-// モックの後にインポート
-import { TaskService } from '../../../src/services/task.service.js';
-import { FileService } from '../../../src/services/file.service.js';
-
 describe('TaskService', () => {
+  // 現在時刻のモック
+  const mockDate = new Date('2025-01-01T00:00:00Z');
+  const originalDate = global.Date;
+  
+  // FileServiceのモック
+  const mockTasks: Task[] = [];
+  const mockFileService = {
+    readFile: vi.fn().mockImplementation((filename: string, defaultValue: any) => {
+      if (filename === 'tasks.json') {
+        return Promise.resolve([...mockTasks]);
+      }
+      return Promise.resolve(defaultValue);
+    }),
+    writeFile: vi.fn().mockImplementation((filename: string, data: any) => {
+      if (filename === 'tasks.json') {
+        mockTasks.length = 0;
+        mockTasks.push(...data);
+      }
+      return Promise.resolve();
+    }),
+    createBackup: vi.fn().mockResolvedValue('backup-filename'),
+    restoreFromBackup: vi.fn().mockResolvedValue(undefined),
+    listBackups: vi.fn().mockResolvedValue(['backup1', 'backup2']),
+  };
+
   let taskService: TaskService;
-  let fileService: FileService;
-  
+
   beforeEach(() => {
-    fileService = new FileService();
-    taskService = new TaskService(fileService);
+    vi.clearAllMocks();
+    mockTasks.length = 0;
+    
+    // Dateのモック
+    global.Date = vi.fn(() => mockDate) as any;
+    global.Date.now = vi.fn(() => mockDate.getTime());
+    global.Date.parse = originalDate.parse;
+    global.Date.UTC = originalDate.UTC;
+    global.Date.prototype = originalDate.prototype;
+    
+    taskService = new TaskService(mockFileService as any);
   });
-  
+
+  afterEach(() => {
+    global.Date = originalDate;
+  });
+
   it('タスクを作成できるべき', async () => {
     const taskData = {
       title: 'テストタスク',

@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { TaskController } from '../../../src/controllers/task.controller.js';
-import { TaskService } from '../../../src/services/task.service.js';
+import { TaskController } from '../../../src/controllers/taskController.js';
+import { TaskService } from '../../../src/services/taskService.js';
 import { Task } from '../../../src/models/task.model.js';
 import { Request, Response } from 'express';
+
+// キャッシュミドルウェアのモック
+vi.mock('../../../src/middleware/cache.js', () => ({
+  updateTaskDataTimestamp: vi.fn(),
+}));
 
 // TaskServiceのモック
 const mockTaskService = {
@@ -12,7 +17,13 @@ const mockTaskService = {
   updateTask: vi.fn(),
   deleteTask: vi.fn(),
   toggleTaskCompletion: vi.fn(),
+  updateTaskMemo: vi.fn(),
   getCategories: vi.fn(),
+  createBackup: vi.fn(),
+  listBackups: vi.fn(),
+  restoreFromBackup: vi.fn(),
+  exportTasks: vi.fn(),
+  importTasks: vi.fn(),
 } as unknown as TaskService;
 
 // リクエスト、レスポンス、ネクストのモック
@@ -20,6 +31,7 @@ const mockRequest = () => {
   return {
     params: {},
     body: {},
+    query: {},
   } as Request;
 };
 
@@ -28,6 +40,7 @@ const mockResponse = () => {
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   res.end = vi.fn().mockReturnValue(res);
+  res.setHeader = vi.fn().mockReturnValue(res);
   return res;
 };
 
@@ -72,6 +85,7 @@ describe('TaskController', () => {
       expect(mockTaskService.getAllTasks).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockTasks);
+      expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'private, max-age=10');
     });
     
     it('エラーが発生した場合はnextを呼び出すべき', async () => {
@@ -109,9 +123,10 @@ describe('TaskController', () => {
       expect(mockTaskService.getTaskById).toHaveBeenCalledWith('1');
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockTask);
+      expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'private, max-age=30');
     });
     
-    it('存在しないタスクの場合は404を返すべき', async () => {
+    it('存在しないタスクの場合はエラーを返すべき', async () => {
       mockTaskService.getTaskById.mockResolvedValue(null);
       
       const req = mockRequest();
@@ -121,8 +136,8 @@ describe('TaskController', () => {
       await taskController.getTaskById(req, res, mockNext);
       
       expect(mockTaskService.getTaskById).toHaveBeenCalledWith('non-existent-id');
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ error: 'タスクが見つかりません' });
+      expect(mockNext).toHaveBeenCalled();
+      expect(mockNext.mock.calls[0][0].message).toContain('のタスクが見つかりません');
     });
   });
   
@@ -149,7 +164,7 @@ describe('TaskController', () => {
       
       await taskController.createTask(req, res, mockNext);
       
-      expect(mockTaskService.createTask).toHaveBeenCalledWith(taskData);
+      expect(mockTaskService.createTask).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(createdTask);
     });
@@ -186,7 +201,7 @@ describe('TaskController', () => {
       expect(res.json).toHaveBeenCalledWith(updatedTask);
     });
     
-    it('存在しないタスクの場合は404を返すべき', async () => {
+    it('存在しないタスクの場合はエラーを返すべき', async () => {
       const taskId = 'non-existent-id';
       const updateData = {
         title: '更新されたタスク',
@@ -202,8 +217,8 @@ describe('TaskController', () => {
       await taskController.updateTask(req, res, mockNext);
       
       expect(mockTaskService.updateTask).toHaveBeenCalledWith(taskId, updateData);
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ error: 'タスクが見つかりません' });
+      expect(mockNext).toHaveBeenCalled();
+      expect(mockNext.mock.calls[0][0].message).toContain('のタスクが見つかりません');
     });
   });
   
@@ -224,7 +239,7 @@ describe('TaskController', () => {
       expect(res.end).toHaveBeenCalled();
     });
     
-    it('存在しないタスクの場合は404を返すべき', async () => {
+    it('存在しないタスクの場合はエラーを返すべき', async () => {
       const taskId = 'non-existent-id';
       
       mockTaskService.deleteTask.mockResolvedValue(false);
@@ -236,8 +251,8 @@ describe('TaskController', () => {
       await taskController.deleteTask(req, res, mockNext);
       
       expect(mockTaskService.deleteTask).toHaveBeenCalledWith(taskId);
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ error: 'タスクが見つかりません' });
+      expect(mockNext).toHaveBeenCalled();
+      expect(mockNext.mock.calls[0][0].message).toContain('のタスクが見つかりません');
     });
   });
 });

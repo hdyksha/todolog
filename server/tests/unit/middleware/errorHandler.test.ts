@@ -7,6 +7,7 @@ vi.mock('../../../src/utils/logger.js', () => ({
   logger: {
     error: vi.fn(),
     info: vi.fn(),
+    warn: vi.fn(), // warn関数を追加
   },
 }));
 
@@ -33,10 +34,12 @@ describe('Error Handlers', () => {
 
     it('エラーメッセージを含むJSONを返すべき', () => {
       notFoundHandler(req, res);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        error: 'Not Found',
-        message: expect.stringContaining('/test/not-found'),
-      }));
+      expect(res.json).toHaveBeenCalledWith({
+        error: {
+          code: 'NOT_FOUND',
+          message: expect.stringContaining('/test/not-found'),
+        }
+      });
     });
   });
 
@@ -82,17 +85,23 @@ describe('Error Handlers', () => {
     it('開発環境では実際のエラーメッセージを返すべき', () => {
       process.env.NODE_ENV = 'development';
       errorHandler(err, req, res, next);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: 'テストエラー',
-      }));
+      expect(res.json).toHaveBeenCalledWith({
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'テストエラー',
+        }
+      });
     });
 
     it('本番環境ではジェネリックなエラーメッセージを返すべき', () => {
       process.env.NODE_ENV = 'production';
       errorHandler(err, req, res, next);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: '内部サーバーエラーが発生しました',
-      }));
+      expect(res.json).toHaveBeenCalledWith({
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: '内部サーバーエラーが発生しました',
+        }
+      });
     });
   });
 });
