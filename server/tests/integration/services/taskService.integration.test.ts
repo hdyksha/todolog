@@ -1,3 +1,6 @@
+// 環境変数の設定（最初に行う必要がある）
+process.env.NODE_ENV = 'test';
+
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
@@ -12,9 +15,8 @@ const TEST_TASKS_FILE = path.join(TEST_DATA_DIR, 'tasks.json');
 
 // 環境変数の設定
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = 'test';
 
-// モジュールのインポートは環境変数設定後に行う
+// モジュールのインポート
 import { TaskService } from '../../../src/services/taskService.js';
 import { FileService } from '../../../src/services/fileService.js';
 
