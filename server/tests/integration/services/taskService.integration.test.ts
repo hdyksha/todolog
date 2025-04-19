@@ -15,8 +15,8 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 process.env.NODE_ENV = 'test';
 
 // モジュールのインポートは環境変数設定後に行う
-import { TaskService } from '../../../src/services/task.service.js';
-import { FileService } from '../../../src/services/file.service.js';
+import { TaskService } from '../../../src/services/taskService.js';
+import { FileService } from '../../../src/services/fileService.js';
 
 describe('TaskService統合テスト', () => {
   let fileService: FileService;
