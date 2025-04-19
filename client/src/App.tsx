@@ -1,35 +1,26 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TaskProvider } from './contexts/TaskContext';
+import MainLayout from './components/layouts/MainLayout';
+import HomePage from './pages/HomePage';
+import TaskDetailPage from './pages/TaskDetailPage';
 import './styles/variables.css';
 import './App.css';
 
-// ページコンポーネントのインポート（これから作成）
-import HomePage from './pages/HomePage';
-import TaskDetailPage from './pages/TaskDetailPage';
-import SettingsPage from './pages/SettingsPage';
-import BackupPage from './pages/BackupPage';
-import NotFoundPage from './pages/NotFoundPage';
-
-// レイアウトコンポーネント（これから作成）
-import MainLayout from './components/layouts/MainLayout';
-
-function App() {
+const App: React.FC = () => {
   return (
-    <TaskProvider>
-      <Router>
+    <BrowserRouter>
+      <TaskProvider>
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<HomePage />} />
-            <Route path="tasks/:taskId" element={<TaskDetailPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="backups" element={<BackupPage />} />
-            <Route path="*" element={<NotFoundPage />} />
+            <Route path="tasks/:id" element={<TaskDetailPage />} />
+            <Route path="*" element={<div>ページが見つかりません</div>} />
           </Route>
         </Routes>
-      </Router>
-    </TaskProvider>
+      </TaskProvider>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;

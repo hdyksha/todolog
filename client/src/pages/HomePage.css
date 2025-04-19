@@ -18,6 +18,17 @@
   align-items: flex-end;
 }
 
+.task-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.task-list-header h2 {
+  margin: 0;
+}
+
 .task-list {
   background-color: var(--color-background-secondary);
   border-radius: 8px;
@@ -143,4 +154,12 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .task-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }

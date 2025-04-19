@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTaskContext } from '../contexts/TaskContext';
 import { useTaskActions } from '../hooks/useTaskActions';
+import { useTaskFilters } from '../hooks/useTaskFilters';
 import { Priority, Task } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import TaskForm from '../components/tasks/TaskForm';
+import FilterPanel from '../components/filters/FilterPanel';
+import TaskSortControl from '../components/tasks/TaskSortControl';
+import CategoryBadge from '../components/categories/CategoryBadge';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -17,12 +21,35 @@ const HomePage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
   const navigate = useNavigate();
+
+  // タスクのフィルタリングとソート
+  const {
+    filters,
+    setFilters,
+    resetFilters,
+    sort,
+    setSort,
+    sortedTasks,
+  } = useTaskFilters(tasks);
 
   // 初回ロード時にタスク一覧を取得
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  // カテゴリ一覧の抽出
+  useEffect(() => {
+    const uniqueCategories = Array.from(
+      new Set(
+        tasks
+          .filter((task) => task.category)
+          .map((task) => task.category as string)
+      )
+    );
+    setCategories(uniqueCategories);
+  }, [tasks]);
 
   // クイック追加ハンドラー
   const handleQuickAdd = (e: React.FormEvent) => {
@@ -83,6 +110,11 @@ const HomePage: React.FC = () => {
     navigate(`/tasks/${id}`);
   };
 
+  // カテゴリでフィルタリング
+  const handleCategoryClick = (category: string) => {
+    setFilters({ ...filters, category });
+  };
+
   // ローディング中の表示
   if (loading) {
     return (
@@ -131,16 +163,39 @@ const HomePage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="task-list">
+      {/* フィルターパネル */}
+      <FilterPanel
+        filters={filters}
+        onFilterChange={setFilters}
+        categories={categories}
+        onClearFilters={resetFilters}
+      />
+
+      <div className="task-list-header">
         <h2>タスク一覧</h2>
-        {tasks.length === 0 ? (
+        <TaskSortControl currentSort={sort} onSortChange={setSort} />
+      </div>
+
+      <div className="task-list">
+        {sortedTasks.length === 0 ? (
           <div className="empty-state">
-            <p>タスクはありません</p>
-            <p>新しいタスクを追加してください</p>
+            {tasks.length === 0 ? (
+              <>
+                <p>タスクはありません</p>
+                <p>新しいタスクを追加してください</p>
+              </>
+            ) : (
+              <>
+                <p>条件に一致するタスクはありません</p>
+                <Button variant="text" onClick={resetFilters}>
+                  フィルターをクリア
+                </Button>
+              </>
+            )}
           </div>
         ) : (
           <ul className="task-items">
-            {tasks.map((task) => (
+            {sortedTasks.map((task) => (
               <li
                 key={task.id}
                 className={`task-item ${task.completed ? 'completed' : ''}`}
@@ -170,6 +225,17 @@ const HomePage: React.FC = () => {
                           ? '中'
                           : '低'}
                       </span>
+                    )}
+                    
+                    {task.category && (
+                      <CategoryBadge
+                        category={task.category}
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCategoryClick(task.category!);
+                        }}
+                      />
                     )}
                     
                     {task.dueDate && (
