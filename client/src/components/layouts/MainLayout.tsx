@@ -6,15 +6,15 @@ export function MainLayout() {
   const { notification, hideNotification } = useNotification();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
+      <header className="bg-slate-100 dark:bg-slate-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 TodoLog
               </h1>
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+              <span className="ml-2 text-sm text-slate-500 dark:text-slate-400">
                 タスク管理アプリケーション
               </span>
             </div>
@@ -31,9 +31,9 @@ export function MainLayout() {
         </div>
       </main>
 
-      <footer className="bg-white dark:bg-gray-800 shadow-inner">
+      <footer className="bg-slate-100 dark:bg-slate-800 shadow-inner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             TodoLog &copy; 2025
           </p>
         </div>

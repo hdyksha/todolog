@@ -71,26 +71,26 @@ export function HomePage() {
         {/* タスク追加フォームは後で実装 */}
         
         {tasks && tasks.length === 0 ? (
-          <div className="bg-gray-50 dark:bg-gray-800 p-8 text-center rounded-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="bg-slate-100 dark:bg-slate-800 p-8 text-center rounded-lg border border-slate-200 dark:border-slate-700">
+            <p className="text-slate-500 dark:text-slate-400">
               タスクはありません。新しいタスクを追加してください。
             </p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="bg-slate-100 dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+            <ul className="divide-y divide-slate-200 dark:divide-slate-700">
               {tasks?.map((task) => (
-                <li key={task.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <li key={task.id} className="p-4 hover:bg-slate-200 dark:hover:bg-slate-700">
                   <div className="flex items-center">
                     <input
                       type="checkbox"
                       checked={task.completed}
                       onChange={() => handleToggleCompletion(task.id)}
-                      className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
                     />
                     <span
                       className={`ml-3 flex-grow ${
-                        task.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''
+                        task.completed ? 'line-through text-slate-500 dark:text-slate-400' : ''
                       }`}
                     >
                       {task.title}
@@ -103,7 +103,7 @@ export function HomePage() {
                         aria-label="タスクを削除"
                       >
                         <svg
-                          className="h-5 w-5 text-gray-500 hover:text-red-500"
+                          className="h-5 w-5 text-slate-500 hover:text-red-500"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
