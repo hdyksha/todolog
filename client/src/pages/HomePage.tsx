@@ -20,7 +20,6 @@ export function HomePage() {
   const handleToggleCompletion = async (id: string) => {
     try {
       await toggleTaskMutation.mutateAsync(id);
-      // 成功メッセージは表示しない（UI上で即座に反映されるため）
     } catch (err) {
       showNotification(
         err instanceof Error ? err.message : 'タスクの状態変更に失敗しました',
