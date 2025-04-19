@@ -9,6 +9,8 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  closeOnEsc?: boolean;
+  closeOnOutsideClick?: boolean;
 }
 
 export function Modal({
@@ -18,40 +20,32 @@ export function Modal({
   children,
   footer,
   size = 'md',
+  closeOnEsc = true,
+  closeOnOutsideClick = true,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-
+  
   // ESCキーでモーダルを閉じる
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+    if (!isOpen || !closeOnEsc) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
-
+    
     document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, closeOnEsc]);
+  
   // モーダル外のクリックでモーダルを閉じる
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleOutsideClick);
+  const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (closeOnOutsideClick && modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
     }
-
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, [isOpen, onClose]);
-
+  };
+  
   // モーダルが開いている間はスクロールを無効にする
   useEffect(() => {
     if (isOpen) {
@@ -59,59 +53,63 @@ export function Modal({
     } else {
       document.body.style.overflow = '';
     }
-
+    
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
-
+  
+  // サイズに応じたクラスを設定
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
   };
-
+  
   if (!isOpen) return null;
-
-  const modalContent = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div
+  
+  // モーダルをbody直下にレンダリング
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+      onClick={handleOutsideClick}
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="modal-title"
+    >
+      <div 
         ref={modalRef}
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${sizeClasses[size]} overflow-hidden`}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
+        className={`bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full ${sizeClasses[size]} overflow-hidden`}
       >
-        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-          <h3 id="modal-title" className="text-lg font-medium">
+        <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 id="modal-title" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             {title}
-          </h3>
-          <button
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
             aria-label="閉じる"
+            className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
-        <div className="p-4 overflow-y-auto max-h-[70vh]">{children}</div>
-        {footer ? (
-          <div className="p-4 border-t dark:border-gray-700 flex justify-end space-x-2">
+        
+        <div className="p-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+          {children}
+        </div>
+        
+        {footer && (
+          <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
             {footer}
-          </div>
-        ) : (
-          <div className="p-4 border-t dark:border-gray-700 flex justify-end">
-            <Button variant="secondary" onClick={onClose}>
-              閉じる
-            </Button>
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
-
-  return createPortal(modalContent, document.body);
 }

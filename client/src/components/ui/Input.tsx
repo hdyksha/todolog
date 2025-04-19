@@ -12,8 +12,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const classes = [
       baseClasses,
       error
-        ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
-        : 'border-slate-300 focus:border-primary-300 focus:ring-primary-200',
+        ? 'border-red-300 focus:border-red-300 focus:ring-red-200 dark:border-red-700 dark:focus:border-red-700 dark:focus:ring-red-900'
+        : 'border-slate-300 focus:border-primary-300 focus:ring-primary-200 dark:border-slate-700 dark:focus:border-primary-700 dark:focus:ring-primary-900',
+      'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100',
       className,
     ].join(' ');
 
@@ -25,11 +26,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         <input ref={ref} className={classes} {...props} />
-        {error ? (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
-        ) : helperText ? (
+        {helperText && !error && (
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{helperText}</p>
-        ) : null}
+        )}
+        {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
       </div>
     );
   }
