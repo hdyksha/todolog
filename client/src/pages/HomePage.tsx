@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTasks, useToggleTaskCompletion, useDeleteTask, useCreateTask } from '../services/api/taskApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { Checkbox } from '../components/ui/Checkbox';
 import { Spinner } from '../components/ui/Spinner';
 import { useNotification } from '../store/NotificationContext';
 import { Priority, Task } from '../types';
@@ -34,10 +35,13 @@ export function HomePage() {
     const task = tasks?.find(t => t.id === id);
     if (!task) return;
     
+    // 現在の状態を取得
+    const currentState = getTaskCompletedState(task);
+    
     // ローカル状態を即座に更新（UIの即時反映のため）
     setLocalCompletedState(prev => ({
       ...prev,
-      [id]: !getTaskCompletedState(task)
+      [id]: !currentState
     }));
     
     try {
@@ -174,11 +178,9 @@ export function HomePage() {
                 return (
                   <li key={task.id} className="p-4 hover:bg-slate-200 dark:hover:bg-slate-700">
                     <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={isCompleted}
                         onChange={() => handleToggleCompletion(task.id)}
-                        className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer"
                       />
                       <Link 
                         to={`/tasks/${task.id}`}
