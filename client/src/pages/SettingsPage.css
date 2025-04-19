@@ -1,0 +1,19 @@
+.settings-page {
+  padding: var(--spacing-md) 0;
+}
+
+.settings-page h1 {
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-bold);
+}
+
+.coming-soon {
+  text-align: center;
+  padding: var(--spacing-xl);
+  background-color: var(--color-background-alt);
+  border-radius: var(--border-radius-lg);
+  color: var(--color-text-light);
+  font-size: var(--font-size-lg);
+  margin: var(--spacing-xl) 0;
+}

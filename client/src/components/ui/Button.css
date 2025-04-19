@@ -1,0 +1,120 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+/* サイズ */
+.button-small {
+  padding: 4px 12px;
+  font-size: 12px;
+  height: 28px;
+}
+
+.button-medium {
+  padding: 8px 16px;
+  font-size: 14px;
+  height: 36px;
+}
+
+.button-large {
+  padding: 10px 20px;
+  font-size: 16px;
+  height: 44px;
+}
+
+/* バリアント */
+.button-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+
+.button-secondary {
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background-color: var(--color-background-hover);
+}
+
+.button-danger {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.button-danger:hover:not(:disabled) {
+  background-color: var(--color-error-dark);
+}
+
+.button-text {
+  background-color: transparent;
+  color: var(--color-primary);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.button-text:hover:not(:disabled) {
+  background-color: var(--color-background-hover);
+}
+
+/* 無効状態 */
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 全幅 */
+.button-full-width {
+  width: 100%;
+}
+
+/* アイコン */
+.button-icon {
+  margin-right: 8px;
+}
+
+/* ローディング状態 */
+.button-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.button-spinner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+.button-secondary .button-spinner {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--color-text);
+}
+
+.button-text .button-spinner {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--color-primary);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
