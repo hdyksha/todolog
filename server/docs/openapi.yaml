@@ -1,0 +1,608 @@
+openapi: 3.0.0
+info:
+  title: TodoLog API
+  description: タスク管理アプリケーションのREST API
+  version: 1.0.0
+  contact:
+    name: TodoLog開発チーム
+servers:
+  - url: http://localhost:3001
+    description: 開発サーバー
+tags:
+  - name: tasks
+    description: タスク管理
+  - name: categories
+    description: カテゴリ管理
+  - name: backups
+    description: バックアップ管理
+  - name: data
+    description: データインポート/エクスポート
+  - name: health
+    description: ヘルスチェック
+
+paths:
+  /api/tasks:
+    get:
+      summary: タスク一覧の取得
+      description: 登録されているすべてのタスクを取得します。クエリパラメータでフィルタリングが可能です。
+      tags:
+        - tasks
+      parameters:
+        - name: completed
+          in: query
+          description: 完了状態でフィルタリング
+          schema:
+            type: boolean
+        - name: priority
+          in: query
+          description: 優先度でフィルタリング
+          schema:
+            type: string
+            enum: [high, medium, low]
+        - name: category
+          in: query
+          description: カテゴリでフィルタリング
+          schema:
+            type: string
+        - name: dueDate
+          in: query
+          description: 期限日でフィルタリング（ISO形式の日付文字列）
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: 新しいタスクの作成
+      description: 新しいタスクを作成します。
+      tags:
+        - tasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: タスクが作成されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tasks/{id}:
+    get:
+      summary: 特定のタスクの取得
+      description: 指定されたIDのタスクを取得します。
+      tags:
+        - tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: タスクのID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: タスクが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: タスクの更新
+      description: 指定されたIDのタスクを更新します。
+      tags:
+        - tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: タスクのID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: タスクが更新されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: タスクが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: タスクの削除
+      description: 指定されたIDのタスクを削除します。
+      tags:
+        - tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: タスクのID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: タスクが削除されました
+        '404':
+          description: タスクが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tasks/{id}/toggle:
+    put:
+      summary: タスクの完了状態の切り替え
+      description: 指定されたIDのタスクの完了状態を切り替えます。
+      tags:
+        - tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: タスクのID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: タスクの完了状態が切り替えられました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: タスクが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tasks/{id}/memo:
+    put:
+      summary: タスクのメモ更新
+      description: 指定されたIDのタスクのメモを更新します。
+      tags:
+        - tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: タスクのID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoUpdateRequest'
+      responses:
+        '200':
+          description: タスクのメモが更新されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: タスクが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/categories:
+    get:
+      summary: カテゴリ一覧の取得
+      description: 登録されているすべてのカテゴリを取得します。
+      tags:
+        - categories
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/backups:
+    get:
+      summary: バックアップ一覧の取得
+      description: 利用可能なバックアップファイルの一覧を取得します。
+      tags:
+        - backups
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: バックアップの作成
+      description: 現在のタスクデータのバックアップを作成します。
+      tags:
+        - backups
+      responses:
+        '201':
+          description: バックアップが作成されました
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filename:
+                    type: string
+                    description: 作成されたバックアップファイルの名前
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/backups/{filename}/restore:
+    post:
+      summary: バックアップからの復元
+      description: 指定されたバックアップファイルからタスクデータを復元します。
+      tags:
+        - backups
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          description: バックアップファイルの名前
+          schema:
+            type: string
+      responses:
+        '200':
+          description: バックアップから復元しました
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: バックアップから復元しました
+        '404':
+          description: バックアップファイルが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/export:
+    get:
+      summary: タスクデータのエクスポート
+      description: すべてのタスクデータをエクスポートします。
+      tags:
+        - data
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/import:
+    post:
+      summary: タスクデータのインポート
+      description: タスクデータをインポートします。
+      tags:
+        - data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: タスクデータをインポートしました
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: タスクデータをインポートしました
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      summary: ヘルスチェック
+      description: APIサーバーの状態を確認します。
+      tags:
+        - health
+      responses:
+        '200':
+          description: サーバーは正常に動作しています
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2025-04-19T01:57:24Z'
+                  version:
+                    type: string
+                    example: '1.0.0'
+
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          description: タスクのユニークID
+          example: 5b41bf03-50f9-42d5-b11c-48e43ef18f47
+        title:
+          type: string
+          description: タスクのタイトル
+          example: 買い物に行く
+        completed:
+          type: boolean
+          description: タスクの完了状態
+          example: false
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: タスクの優先度
+          example: medium
+        category:
+          type: string
+          description: タスクのカテゴリ
+          example: 買い物
+        dueDate:
+          type: string
+          format: date-time
+          description: タスクの期限（ISO形式の日付文字列）
+          example: '2025-04-25T15:00:00Z'
+        createdAt:
+          type: string
+          format: date-time
+          description: タスクの作成日時（ISO形式の日付文字列）
+          example: '2025-04-19T01:57:24Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: タスクの更新日時（ISO形式の日付文字列）
+          example: '2025-04-19T01:57:24Z'
+        memo:
+          type: string
+          description: タスクに関するメモ
+          example: 牛乳、卵、パンを買う
+      required:
+        - id
+        - title
+        - completed
+        - priority
+        - createdAt
+        - updatedAt
+
+    CreateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: タスクのタイトル
+          example: 買い物に行く
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: タスクの優先度
+          example: medium
+        category:
+          type: string
+          description: タスクのカテゴリ
+          example: 買い物
+        dueDate:
+          type: string
+          format: date-time
+          description: タスクの期限（ISO形式の日付文字列）
+          example: '2025-04-25T15:00:00Z'
+        memo:
+          type: string
+          description: タスクに関するメモ
+          example: 牛乳、卵、パンを買う
+      required:
+        - title
+        - priority
+
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: タスクのタイトル
+          example: 買い物に行く
+        completed:
+          type: boolean
+          description: タスクの完了状態
+          example: false
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: タスクの優先度
+          example: medium
+        category:
+          type: string
+          description: タスクのカテゴリ
+          example: 買い物
+        dueDate:
+          type: string
+          format: date-time
+          description: タスクの期限（ISO形式の日付文字列）
+          example: '2025-04-25T15:00:00Z'
+        memo:
+          type: string
+          description: タスクに関するメモ
+          example: 牛乳、卵、パンを買う
+
+    MemoUpdateRequest:
+      type: object
+      properties:
+        memo:
+          type: string
+          description: タスクに関するメモ
+          example: 牛乳、卵、パンを買う
+      required:
+        - memo
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラーコード
+          example: NOT_FOUND
+        message:
+          type: string
+          description: エラーメッセージ
+          example: ID: 123 のタスクが見つかりません
+        timestamp:
+          type: string
+          format: date-time
+          description: エラーが発生した時刻
+          example: '2025-04-19T01:57:24Z'
+      required:
+        - error
+        - message
