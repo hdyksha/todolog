@@ -1,0 +1,166 @@
+/* ライトモード（デフォルト） */
+:root[data-theme="light"] {
+  --color-primary: #3b82f6;
+  --color-primary-light: #93c5fd;
+  --color-primary-dark: #2563eb;
+  
+  --color-success: #10b981;
+  --color-success-light: #a7f3d0;
+  --color-success-dark: #059669;
+  
+  --color-warning: #f59e0b;
+  --color-warning-light: #fcd34d;
+  --color-warning-dark: #d97706;
+  
+  --color-error: #ef4444;
+  --color-error-light: #fca5a5;
+  --color-error-dark: #dc2626;
+  
+  --color-info: #3b82f6;
+  --color-info-light: #93c5fd;
+  --color-info-dark: #2563eb;
+  
+  --color-text: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-text-light: #9ca3af;
+  
+  --color-background: #ffffff;
+  --color-background-secondary: #f9fafb;
+  --color-background-tertiary: #f3f4f6;
+  --color-background-hover: #f3f4f6;
+  --color-background-disabled: #e5e7eb;
+  
+  --color-border: #e5e7eb;
+  --color-border-focus: #93c5fd;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ダークモード */
+:root[data-theme="dark"] {
+  --color-primary: #3b82f6;
+  --color-primary-light: #1d4ed8;
+  --color-primary-dark: #60a5fa;
+  
+  --color-success: #10b981;
+  --color-success-light: #065f46;
+  --color-success-dark: #34d399;
+  
+  --color-warning: #f59e0b;
+  --color-warning-light: #92400e;
+  --color-warning-dark: #fbbf24;
+  
+  --color-error: #ef4444;
+  --color-error-light: #991b1b;
+  --color-error-dark: #f87171;
+  
+  --color-info: #3b82f6;
+  --color-info-light: #1e40af;
+  --color-info-dark: #60a5fa;
+  
+  --color-text: #f9fafb;
+  --color-text-muted: #d1d5db;
+  --color-text-light: #9ca3af;
+  
+  --color-background: #111827;
+  --color-background-secondary: #1f2937;
+  --color-background-tertiary: #374151;
+  --color-background-hover: #374151;
+  --color-background-disabled: #4b5563;
+  
+  --color-border: #374151;
+  --color-border-focus: #2563eb;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* アニメーションとトランジション */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity var(--transition-normal);
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.slide-up-enter {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.slide-up-enter-active {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+.slide-up-exit {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.slide-up-exit-active {
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+/* タスクリストのアニメーション */
+.task-item-enter {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.task-item-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.task-item-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.task-item-exit-active {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+/* ページトランジション */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}

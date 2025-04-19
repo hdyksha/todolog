@@ -51,6 +51,19 @@ const HomePage: React.FC = () => {
     setCategories(uniqueCategories);
   }, [tasks]);
 
+  // キーボードショートカットからのタスク作成モーダルを開くイベントリスナー
+  useEffect(() => {
+    const handleOpenCreateTaskModal = () => {
+      setIsCreateModalOpen(true);
+    };
+
+    window.addEventListener('openCreateTaskModal', handleOpenCreateTaskModal);
+
+    return () => {
+      window.removeEventListener('openCreateTaskModal', handleOpenCreateTaskModal);
+    };
+  }, []);
+
   // クイック追加ハンドラー
   const handleQuickAdd = (e: React.FormEvent) => {
     e.preventDefault();

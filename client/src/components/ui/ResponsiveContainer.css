@@ -1,0 +1,46 @@
+.responsive-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.responsive-container--padding {
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+}
+
+/* サイズバリエーション */
+.responsive-container--sm {
+  max-width: 640px;
+}
+
+.responsive-container--md {
+  max-width: 768px;
+}
+
+.responsive-container--lg {
+  max-width: 1024px;
+}
+
+.responsive-container--xl {
+  max-width: 1280px;
+}
+
+.responsive-container--full {
+  max-width: 100%;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .responsive-container--padding {
+    padding-left: var(--spacing-sm);
+    padding-right: var(--spacing-sm);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container--padding {
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+  }
+}

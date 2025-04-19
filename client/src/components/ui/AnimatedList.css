@@ -1,0 +1,72 @@
+.animated-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.animated-list__item {
+  margin-bottom: var(--spacing-sm);
+}
+
+/* アニメーションのデフォルトスタイル */
+.task-item-enter {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.task-item-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.task-item-exit {
+  opacity: 1;
+}
+
+.task-item-exit-active {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* フェードアニメーション */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+/* スライドアップアニメーション */
+.slide-up-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.slide-up-exit {
+  opacity: 1;
+}
+
+.slide-up-exit-active {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 300ms, transform 300ms;
+}
