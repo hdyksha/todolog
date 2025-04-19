@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { useTasks, useToggleTaskCompletion, useDeleteTask, useCreateTask } from '../services/api/taskApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Checkbox } from '../components/ui/Checkbox';
 import { Spinner } from '../components/ui/Spinner';
 import { useNotification } from '../store/NotificationContext';
-import { Priority, Task } from '../types';
+import { Priority } from '../types';
 
 export function HomePage() {
   const { data: tasks, isLoading, isError, error } = useTasks();
@@ -17,49 +16,12 @@ export function HomePage() {
   
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // ローカルでの完了状態を管理するための状態
-  const [localCompletedState, setLocalCompletedState] = useState<Record<string, boolean>>({});
-
-  // タスクの完了状態を取得する関数
-  const getTaskCompletedState = (task: Task): boolean => {
-    // ローカル状態が存在する場合はそれを優先
-    if (task.id in localCompletedState) {
-      return localCompletedState[task.id];
-    }
-    // そうでなければタスクの状態を使用
-    return task.completed;
-  };
 
   const handleToggleCompletion = async (id: string) => {
-    // 現在のタスクを取得
-    const task = tasks?.find(t => t.id === id);
-    if (!task) return;
-    
-    // 現在の状態を取得
-    const currentState = getTaskCompletedState(task);
-    
-    // ローカル状態を即座に更新（UIの即時反映のため）
-    setLocalCompletedState(prev => ({
-      ...prev,
-      [id]: !currentState
-    }));
-    
     try {
       await toggleTaskMutation.mutateAsync(id);
-      // 成功したらローカル状態をクリア（サーバーの状態を信頼）
-      setLocalCompletedState(prev => {
-        const newState = { ...prev };
-        delete newState[id];
-        return newState;
-      });
+      // 成功メッセージは表示しない（UI上で即座に反映されるため）
     } catch (err) {
-      // エラー時はローカル状態を元に戻す
-      setLocalCompletedState(prev => {
-        const newState = { ...prev };
-        delete newState[id]; // エラー時は元の状態に戻す
-        return newState;
-      });
-      
       showNotification(
         err instanceof Error ? err.message : 'タスクの状態変更に失敗しました',
         'error'
@@ -172,50 +134,50 @@ export function HomePage() {
         ) : (
           <div className="bg-slate-100 dark:bg-slate-800 shadow rounded-lg overflow-hidden">
             <ul className="divide-y divide-slate-200 dark:divide-slate-700">
-              {tasks?.map((task) => {
-                const isCompleted = getTaskCompletedState(task);
-                
-                return (
-                  <li key={task.id} className="p-4 hover:bg-slate-200 dark:hover:bg-slate-700">
+              {tasks?.map((task) => (
+                <li key={task.id} className="p-4 hover:bg-slate-200 dark:hover:bg-slate-700">
+                  <div className="flex items-center">
                     <div className="flex items-center">
-                      <Checkbox
-                        checked={isCompleted}
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
                         onChange={() => handleToggleCompletion(task.id)}
+                        className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                       />
-                      <Link 
-                        to={`/tasks/${task.id}`}
-                        className={`ml-3 flex-grow hover:underline ${
-                          isCompleted ? 'line-through text-slate-500 dark:text-slate-400' : ''
-                        }`}
-                      >
-                        {task.title}
-                      </Link>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteTask(task.id)}
-                          aria-label="タスクを削除"
-                        >
-                          <svg
-                            className="h-5 w-5 text-slate-500 hover:text-red-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </Button>
-                      </div>
                     </div>
-                  </li>
-                );
-              })}
+                    <Link 
+                      to={`/tasks/${task.id}`}
+                      className={`ml-3 flex-grow hover:underline ${
+                        task.completed ? 'line-through text-slate-500 dark:text-slate-400' : ''
+                      }`}
+                    >
+                      {task.title}
+                    </Link>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteTask(task.id)}
+                        aria-label="タスクを削除"
+                      >
+                        <svg
+                          className="h-5 w-5 text-slate-500 hover:text-red-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
         )}
