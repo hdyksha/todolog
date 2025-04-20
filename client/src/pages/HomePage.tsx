@@ -22,6 +22,7 @@ const HomePage: React.FC = () => {
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
+  const [isArchiveVisible, setIsArchiveVisible] = useState(true);
   const navigate = useNavigate();
 
   // タスクのフィルタリングとソート
@@ -189,111 +190,227 @@ const HomePage: React.FC = () => {
         <TaskSortControl currentSort={sort} onSortChange={setSort} />
       </div>
 
-      <div className="task-list">
-        {sortedTasks.length === 0 ? (
-          <div className="empty-state">
-            {tasks.length === 0 ? (
-              <>
-                <p>タスクはありません</p>
-                <p>新しいタスクを追加してください</p>
-              </>
-            ) : (
-              <>
-                <p>条件に一致するタスクはありません</p>
-                <Button variant="text" onClick={resetFilters}>
-                  フィルターをクリア
-                </Button>
-              </>
-            )}
-          </div>
-        ) : (
-          <ul className="task-items">
-            {sortedTasks.map((task) => (
-              <li
-                key={task.id}
-                className={`task-item ${task.completed ? 'completed' : ''}`}
-              >
-                <div 
-                  className="task-item-content"
-                  onClick={() => handleViewTaskDetails(task.id)}
+      {/* アクティブなタスクセクション */}
+      <div className="task-list-section">
+        <h2 className="section-title">アクティブなタスク ({sortedTasks.filter(task => !task.completed).length})</h2>
+        <div className="task-list">
+          {sortedTasks.filter(task => !task.completed).length === 0 ? (
+            <div className="empty-state">
+              {tasks.length === 0 ? (
+                <>
+                  <p>タスクはありません</p>
+                  <p>新しいタスクを追加してください</p>
+                </>
+              ) : (
+                <>
+                  <p>条件に一致するアクティブなタスクはありません</p>
+                  <Button variant="text" onClick={resetFilters}>
+                    フィルターをクリア
+                  </Button>
+                </>
+              )}
+            </div>
+          ) : (
+            <ul className="task-items">
+              {sortedTasks.filter(task => !task.completed).map((task) => (
+                <li
+                  key={task.id}
+                  className="task-item"
                 >
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={(e) => {
-                      e.stopPropagation(); // クリックイベントの伝播を停止
-                      toggleTaskCompletion(task.id);
-                    }}
-                    className="task-checkbox"
-                    aria-label={`${task.title}を${task.completed ? '未完了' : '完了'}としてマーク`}
-                  />
-                  <span className="task-title">{task.title}</span>
-                  
-                  <div className="task-meta">
-                    {task.priority && (
-                      <span className={`task-priority priority-${task.priority}`}>
-                        {task.priority === Priority.High
-                          ? '高'
-                          : task.priority === Priority.Medium
-                          ? '中'
-                          : '低'}
-                      </span>
-                    )}
+                  <div 
+                    className="task-item-content"
+                    onClick={() => handleViewTaskDetails(task.id)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={(e) => {
+                        e.stopPropagation(); // クリックイベントの伝播を停止
+                        toggleTaskCompletion(task.id);
+                      }}
+                      className="task-checkbox"
+                      aria-label={`${task.title}を${task.completed ? '未完了' : '完了'}としてマーク`}
+                    />
+                    <span className="task-title">{task.title}</span>
                     
-                    {task.category && (
-                      <CategoryBadge
-                        category={task.category}
+                    <div className="task-meta">
+                      {task.priority && (
+                        <span className={`task-priority priority-${task.priority}`}>
+                          {task.priority === Priority.High
+                            ? '高'
+                            : task.priority === Priority.Medium
+                            ? '中'
+                            : '低'}
+                        </span>
+                      )}
+                      
+                      {task.category && (
+                        <CategoryBadge
+                          category={task.category}
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCategoryClick(task.category!);
+                          }}
+                        />
+                      )}
+                      
+                      {task.dueDate && (
+                        <span className="task-due-date">
+                          {new Date(task.dueDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="task-actions">
+                    <Button
+                      variant="text"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation(); // クリックイベントの伝播を停止
+                        openEditModal(task);
+                      }}
+                    >
+                      編集
+                    </Button>
+                    <Button
+                      variant="text"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation(); // クリックイベントの伝播を停止
+                        handleViewTaskDetails(task.id);
+                      }}
+                    >
+                      詳細
+                    </Button>
+                    <Button
+                      variant="text"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation(); // クリックイベントの伝播を停止
+                        handleDeleteTask(task.id);
+                      }}
+                    >
+                      削除
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* アーカイブセクション */}
+      <div className="archive-section">
+        <div 
+          className="archive-header"
+          onClick={() => setIsArchiveVisible(!isArchiveVisible)}
+        >
+          <h2 className="section-title">アーカイブ済み ({sortedTasks.filter(task => task.completed).length})</h2>
+          <button className="toggle-button">
+            {isArchiveVisible ? '▼' : '▶'}
+          </button>
+        </div>
+        
+        {isArchiveVisible && (
+          <div className="task-list">
+            {sortedTasks.filter(task => task.completed).length === 0 ? (
+              <div className="empty-state">
+                <p>アーカイブされたタスクはありません</p>
+              </div>
+            ) : (
+              <ul className="task-items archived-tasks">
+                {sortedTasks.filter(task => task.completed).map((task) => (
+                  <li
+                    key={task.id}
+                    className="task-item task-archived"
+                  >
+                    <div 
+                      className="task-item-content"
+                      onClick={() => handleViewTaskDetails(task.id)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={(e) => {
+                          e.stopPropagation(); // クリックイベントの伝播を停止
+                          toggleTaskCompletion(task.id);
+                        }}
+                        className="task-checkbox"
+                        aria-label={`${task.title}を${task.completed ? '未完了' : '完了'}としてマーク`}
+                      />
+                      <span className="check-icon">✓</span>
+                      <span className="task-title">{task.title}</span>
+                      
+                      <div className="task-meta">
+                        {task.priority && (
+                          <span className={`task-priority priority-${task.priority}`}>
+                            {task.priority === Priority.High
+                              ? '高'
+                              : task.priority === Priority.Medium
+                              ? '中'
+                              : '低'}
+                          </span>
+                        )}
+                        
+                        {task.category && (
+                          <CategoryBadge
+                            category={task.category}
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCategoryClick(task.category!);
+                            }}
+                          />
+                        )}
+                        
+                        {task.dueDate && (
+                          <span className="task-due-date">
+                            {new Date(task.dueDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="task-actions">
+                      <Button
+                        variant="text"
                         size="small"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleCategoryClick(task.category!);
+                          e.stopPropagation(); // クリックイベントの伝播を停止
+                          openEditModal(task);
                         }}
-                      />
-                    )}
-                    
-                    {task.dueDate && (
-                      <span className="task-due-date">
-                        {new Date(task.dueDate).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="task-actions">
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation(); // クリックイベントの伝播を停止
-                      openEditModal(task);
-                    }}
-                  >
-                    編集
-                  </Button>
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation(); // クリックイベントの伝播を停止
-                      handleViewTaskDetails(task.id);
-                    }}
-                  >
-                    詳細
-                  </Button>
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation(); // クリックイベントの伝播を停止
-                      handleDeleteTask(task.id);
-                    }}
-                  >
-                    削除
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                      >
+                        編集
+                      </Button>
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation(); // クリックイベントの伝播を停止
+                          handleViewTaskDetails(task.id);
+                        }}
+                      >
+                        詳細
+                      </Button>
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation(); // クリックイベントの伝播を停止
+                          handleDeleteTask(task.id);
+                        }}
+                      >
+                        削除
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         )}
       </div>
 

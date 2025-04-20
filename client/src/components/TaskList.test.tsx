@@ -81,7 +81,7 @@ describe('TaskList コンポーネント', () => {
     expect(screen.getByText('タスク3')).toBeInTheDocument();
   });
 
-  it('タスクが空の場合は「タスクがありません」と表示される', () => {
+  it('タスクが空の場合は「アクティブなタスクはありません」と表示される', () => {
     render(
       <TaskList
         tasks={[]}
@@ -92,7 +92,8 @@ describe('TaskList コンポーネント', () => {
       />
     );
 
-    expect(screen.getByText('タスクがありません')).toBeInTheDocument();
+    expect(screen.getByText('アクティブなタスクはありません')).toBeInTheDocument();
+    expect(screen.getByText('アーカイブされたタスクはありません')).toBeInTheDocument();
   });
 
   it('ステータスフィルターが正しく動作する', () => {

@@ -163,3 +163,66 @@
     gap: 10px;
   }
 }
+
+/* アーカイブセクションのスタイル */
+.task-list-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--color-text);
+}
+
+.archive-section {
+  margin-top: 30px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 20px;
+}
+
+.archive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.archive-header h2 {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.archived-tasks {
+  margin-top: 10px;
+}
+
+/* アーカイブされたタスクのスタイル */
+.task-item.task-archived {
+  background-color: var(--color-background-secondary);
+  opacity: 0.8;
+}
+
+.task-item.task-archived .task-title {
+  text-decoration: none; /* 打消し線を削除 */
+  color: var(--color-text-muted);
+}
+
+.task-item.task-archived .task-meta {
+  font-size: 0.9em;
+}
+
+.check-icon {
+  color: var(--color-success);
+  margin-right: 5px;
+}

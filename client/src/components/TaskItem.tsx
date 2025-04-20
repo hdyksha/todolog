@@ -4,6 +4,7 @@ import './TaskItem.css';
 
 interface TaskItemProps {
   task: Task;
+  isArchived?: boolean;
   onToggleComplete: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
@@ -12,12 +13,16 @@ interface TaskItemProps {
 
 const TaskItem: React.FC<TaskItemProps> = ({
   task,
+  isArchived = false,
   onToggleComplete,
   onDelete,
   onEdit,
   onEditMemo,
 }) => {
   const [expanded, setExpanded] = useState(false);
+
+  // タスクのクラス名を動的に設定
+  const taskClassName = `task-item ${isArchived ? 'task-archived' : ''} ${task.completed ? 'completed' : ''}`;
 
   // 優先度に応じたクラス名を取得
   const getPriorityClass = (priority: Priority) => {
@@ -58,7 +63,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
   };
 
   return (
-    <div className={`task-item ${task.completed ? 'completed' : ''}`}>
+    <div className={taskClassName}>
       <div className="task-header">
         <div className="task-checkbox">
           <input
@@ -68,6 +73,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
             id={`task-${task.id}`}
           />
           <label htmlFor={`task-${task.id}`} className="checkbox-label"></label>
+          {isArchived && <span className="check-icon">✓</span>}
         </div>
 
         <div className="task-title" onClick={() => setExpanded(!expanded)}>

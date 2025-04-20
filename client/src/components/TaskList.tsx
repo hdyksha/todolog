@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task, TaskFilter, TaskSort, Priority } from '../types';
 import TaskItem from './TaskItem';
 import './TaskList.css';
@@ -28,6 +28,13 @@ const TaskList: React.FC<TaskListProps> = ({
   onFilterChange,
   onSortChange,
 }) => {
+  // アーカイブセクションの表示状態
+  const [isArchiveVisible, setIsArchiveVisible] = useState(true);
+  
+  // タスクをアクティブとアーカイブに分類
+  const activeTasks = tasks.filter(task => !task.completed);
+  const archivedTasks = tasks.filter(task => task.completed);
+  
   // フィルターの変更ハンドラー
   const handleStatusChange = (status: 'all' | 'completed' | 'active') => {
     onFilterChange({ ...filter, status });
@@ -161,20 +168,57 @@ const TaskList: React.FC<TaskListProps> = ({
         </div>
       </div>
 
-      <div className="tasks">
-        {tasks.length === 0 ? (
-          <p className="no-tasks">タスクがありません</p>
-        ) : (
-          tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleComplete={onToggleComplete}
-              onDelete={onDeleteTask}
-              onEdit={onEditTask}
-              onEditMemo={onEditMemo}
-            />
-          ))
+      {/* アクティブなタスクセクション */}
+      <div className="task-list-section">
+        <h2 className="section-title">アクティブなタスク ({activeTasks.length})</h2>
+        <div className="tasks">
+          {activeTasks.length === 0 ? (
+            <p className="no-tasks">アクティブなタスクはありません</p>
+          ) : (
+            activeTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleComplete={onToggleComplete}
+                onDelete={onDeleteTask}
+                onEdit={onEditTask}
+                onEditMemo={onEditMemo}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* アーカイブセクション */}
+      <div className="archive-section">
+        <div 
+          className="archive-header"
+          onClick={() => setIsArchiveVisible(!isArchiveVisible)}
+        >
+          <h2 className="section-title">アーカイブ済み ({archivedTasks.length})</h2>
+          <button className="toggle-button">
+            {isArchiveVisible ? '▼' : '▶'}
+          </button>
+        </div>
+        
+        {isArchiveVisible && (
+          <div className="tasks archived-tasks">
+            {archivedTasks.length === 0 ? (
+              <p className="no-tasks">アーカイブされたタスクはありません</p>
+            ) : (
+              archivedTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  isArchived={true}
+                  onToggleComplete={onToggleComplete}
+                  onDelete={onDeleteTask}
+                  onEdit={onEditTask}
+                  onEditMemo={onEditMemo}
+                />
+              ))
+            )}
+          </div>
         )}
       </div>
     </div>

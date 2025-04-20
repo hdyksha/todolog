@@ -86,3 +86,46 @@
   color: #888;
   font-style: italic;
 }
+
+/* アーカイブセクションのスタイル */
+.task-list-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.archive-section {
+  margin-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+}
+
+.archive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  cursor: pointer;
+}
+
+.archive-header h2 {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.archived-tasks {
+  margin-top: 1rem;
+}
