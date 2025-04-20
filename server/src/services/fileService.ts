@@ -21,6 +21,24 @@ export class FileService {
   }
 
   /**
+   * データディレクトリを設定する
+   * @param dirPath 新しいデータディレクトリのパス
+   */
+  async setDataDir(dirPath: string): Promise<void> {
+    this.dataDir = dirPath;
+    await this.ensureDataDir();
+    logger.info(`データディレクトリを変更しました: ${dirPath}`);
+  }
+
+  /**
+   * 現在のデータディレクトリを取得する
+   * @returns データディレクトリのパス
+   */
+  getDataDir(): string {
+    return this.dataDir;
+  }
+
+  /**
    * データディレクトリが存在することを確認し、なければ作成する
    */
   private async ensureDataDir(): Promise<void> {
@@ -145,6 +163,28 @@ export class FileService {
     } catch (error) {
       logger.error(`バックアップ一覧の取得に失敗しました`, { error: (error as Error).message });
       throw new Error(`バックアップ一覧の取得に失敗しました: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * ディレクトリ内のファイル一覧を取得する
+   * @param extension 拡張子でフィルタリング（オプション）
+   * @returns ファイル名の配列
+   */
+  async listFiles(extension?: string): Promise<string[]> {
+    await this.ensureDataDir();
+    
+    try {
+      const files = await fs.readdir(this.dataDir);
+      
+      if (extension) {
+        return files.filter(file => file.endsWith(extension));
+      }
+      
+      return files;
+    } catch (error) {
+      logger.error(`ファイル一覧の取得に失敗しました`, { error: (error as Error).message });
+      throw new Error(`ファイル一覧の取得に失敗しました: ${(error as Error).message}`);
     }
   }
 }

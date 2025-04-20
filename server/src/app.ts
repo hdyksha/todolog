@@ -3,6 +3,8 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { taskRoutes } from './routes/taskRoutes.js';
+import settingsRoutes from './routes/settingsRoutes.js';
+import storageRoutes from './routes/storageRoutes.js';
 import { requestLogger } from './utils/logger.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import { setupSecurity } from './middleware/security.js';
@@ -40,7 +42,9 @@ export function createApp() {
   });
 
   // APIルートの設定
-  app.use('/api', taskRoutes);
+  app.use('/api/tasks', taskRoutes);
+  app.use('/api/settings', settingsRoutes);
+  app.use('/api/storage', storageRoutes);
 
   // エラーハンドリングミドルウェア
   app.use(notFoundHandler);

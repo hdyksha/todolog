@@ -2,13 +2,32 @@ import { v4 as uuidv4 } from 'uuid';
 import { FileService } from './fileService.js';
 import { Task, CreateTaskInput, UpdateTaskInput } from '../models/task.model.js';
 import { logger } from '../utils/logger.js';
+import { SettingsService } from './settingsService.js';
 
 export class TaskService {
   private fileService: FileService;
-  private readonly TASKS_FILE = 'tasks.json';
+  private settingsService: SettingsService | null = null;
+  private readonly DEFAULT_TASKS_FILE = 'tasks.json';
 
-  constructor(fileService: FileService) {
+  constructor(fileService: FileService, settingsService?: SettingsService) {
     this.fileService = fileService;
+    this.settingsService = settingsService || null;
+  }
+
+  /**
+   * 現在のタスクファイル名を取得する
+   * @returns タスクファイル名
+   */
+  private async getTasksFilename(): Promise<string> {
+    if (this.settingsService) {
+      try {
+        return await this.settingsService.getCurrentTaskFile();
+      } catch (error) {
+        logger.warn('設定からタスクファイル名の取得に失敗しました。デフォルトを使用します。', { error: (error as Error).message });
+        return this.DEFAULT_TASKS_FILE;
+      }
+    }
+    return this.DEFAULT_TASKS_FILE;
   }
 
   // 全タスクの取得（フィルタリングとソート機能付き）
@@ -19,7 +38,8 @@ export class TaskService {
     sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority';
     sortOrder?: 'asc' | 'desc';
   }): Promise<Task[]> {
-    let tasks = await this.fileService.readFile<Task[]>(this.TASKS_FILE, []);
+    const tasksFile = await this.getTasksFilename();
+    let tasks = await this.fileService.readFile<Task[]>(tasksFile, []);
     
     // フィルタリング
     if (options) {
@@ -67,6 +87,7 @@ export class TaskService {
 
   // タスクの作成
   async createTask(taskData: CreateTaskInput): Promise<Task> {
+    const tasksFile = await this.getTasksFilename();
     const tasks = await this.getAllTasks();
     
     const newTask: Task = {
@@ -79,7 +100,7 @@ export class TaskService {
     };
     
     tasks.push(newTask);
-    await this.fileService.writeFile(this.TASKS_FILE, tasks);
+    await this.fileService.writeFile(tasksFile, tasks);
     
     logger.info(`タスクが作成されました: ${newTask.id}`);
     return newTask;
@@ -87,6 +108,7 @@ export class TaskService {
 
   // タスクの更新
   async updateTask(id: string, taskData: UpdateTaskInput): Promise<Task | null> {
+    const tasksFile = await this.getTasksFilename();
     const tasks = await this.getAllTasks();
     const taskIndex = tasks.findIndex(task => task.id === id);
     
@@ -101,7 +123,7 @@ export class TaskService {
     };
     
     tasks[taskIndex] = updatedTask;
-    await this.fileService.writeFile(this.TASKS_FILE, tasks);
+    await this.fileService.writeFile(tasksFile, tasks);
     
     logger.info(`タスクが更新されました: ${id}`);
     return updatedTask;
@@ -109,6 +131,7 @@ export class TaskService {
 
   // タスクの削除
   async deleteTask(id: string): Promise<boolean> {
+    const tasksFile = await this.getTasksFilename();
     const tasks = await this.getAllTasks();
     const initialLength = tasks.length;
     
@@ -118,7 +141,7 @@ export class TaskService {
       return false;
     }
     
-    await this.fileService.writeFile(this.TASKS_FILE, filteredTasks);
+    await this.fileService.writeFile(tasksFile, filteredTasks);
     
     logger.info(`タスクが削除されました: ${id}`);
     return true;
@@ -162,17 +185,20 @@ export class TaskService {
   
   // データのバックアップを作成
   async createBackup(): Promise<string> {
-    return this.fileService.createBackup(this.TASKS_FILE);
+    const tasksFile = await this.getTasksFilename();
+    return this.fileService.createBackup(tasksFile);
   }
   
   // バックアップからデータを復元
   async restoreFromBackup(backupFilename: string): Promise<void> {
-    await this.fileService.restoreFromBackup(backupFilename, this.TASKS_FILE);
+    const tasksFile = await this.getTasksFilename();
+    await this.fileService.restoreFromBackup(backupFilename, tasksFile);
   }
   
   // 利用可能なバックアップ一覧を取得
   async listBackups(): Promise<string[]> {
-    return this.fileService.listBackups(this.TASKS_FILE);
+    const tasksFile = await this.getTasksFilename();
+    return this.fileService.listBackups(tasksFile);
   }
   
   // タスクデータをエクスポート
@@ -182,9 +208,10 @@ export class TaskService {
   
   // タスクデータをインポート
   async importTasks(tasks: Task[]): Promise<void> {
+    const tasksFile = await this.getTasksFilename();
     // バックアップを作成してから上書き
     await this.createBackup();
-    await this.fileService.writeFile(this.TASKS_FILE, tasks);
+    await this.fileService.writeFile(tasksFile, tasks);
     logger.info(`${tasks.length}件のタスクをインポートしました`);
   }
 }
