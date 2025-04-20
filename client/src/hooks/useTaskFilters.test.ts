@@ -47,33 +47,6 @@ describe('useTaskFilters フック', () => {
     expect(result.current.sortedTasks[2].id).toBe('1');
   });
 
-  it('ステータスフィルターが正しく動作する', () => {
-    const { result } = renderHook(() => useTaskFilters(mockTasks));
-    
-    // 未完了のタスクのみ表示
-    act(() => {
-      result.current.setFilters({ ...result.current.filters, status: 'active' });
-    });
-    
-    expect(result.current.filteredTasks).toHaveLength(2);
-    expect(result.current.filteredTasks.every(task => !task.completed)).toBe(true);
-    
-    // 完了済みのタスクのみ表示
-    act(() => {
-      result.current.setFilters({ ...result.current.filters, status: 'completed' });
-    });
-    
-    expect(result.current.filteredTasks).toHaveLength(1);
-    expect(result.current.filteredTasks.every(task => task.completed)).toBe(true);
-    
-    // 全てのタスクを表示
-    act(() => {
-      result.current.setFilters({ ...result.current.filters, status: 'all' });
-    });
-    
-    expect(result.current.filteredTasks).toHaveLength(3);
-  });
-
   it('優先度フィルターが正しく動作する', () => {
     const { result } = renderHook(() => useTaskFilters(mockTasks));
     
@@ -153,24 +126,24 @@ describe('useTaskFilters フック', () => {
   it('複数のフィルターを組み合わせることができる', () => {
     const { result } = renderHook(() => useTaskFilters(mockTasks));
     
-    // 未完了かつ高優先度のタスク
+    // 高優先度かつカテゴリAのタスク
     act(() => {
       result.current.setFilters({
         ...result.current.filters,
-        status: 'active',
-        priority: Priority.High
+        priority: Priority.High,
+        category: 'カテゴリA'
       });
     });
     
     expect(result.current.filteredTasks).toHaveLength(1);
     expect(result.current.filteredTasks[0].id).toBe('1');
     
-    // 未完了かつ低優先度のタスク（該当なし）
+    // 低優先度かつカテゴリBのタスク（該当なし）
     act(() => {
       result.current.setFilters({
         ...result.current.filters,
-        status: 'completed',
-        priority: Priority.Low
+        priority: Priority.Low,
+        category: 'カテゴリB'
       });
     });
     
@@ -183,7 +156,6 @@ describe('useTaskFilters フック', () => {
     // フィルターを設定
     act(() => {
       result.current.setFilters({
-        status: 'active',
         priority: Priority.High,
         category: 'カテゴリA',
         searchTerm: '重要'
@@ -196,7 +168,6 @@ describe('useTaskFilters フック', () => {
     });
     
     expect(result.current.filters).toEqual({
-      status: 'all',
       priority: 'all',
       category: null,
       searchTerm: ''

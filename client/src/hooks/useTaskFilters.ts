@@ -5,7 +5,6 @@ import { SortOption } from '../components/tasks/TaskSortControl';
 
 // デフォルトのフィルター設定
 const defaultFilters: FilterOptions = {
-  status: 'all',
   priority: 'all',
   category: null,
   searchTerm: '',
@@ -29,14 +28,6 @@ export const useTaskFilters = (tasks: Task[]) => {
   // フィルター適用済みのタスク一覧を取得
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
-      // ステータスでフィルタリング
-      if (filters.status === 'active' && task.completed) {
-        return false;
-      }
-      if (filters.status === 'completed' && !task.completed) {
-        return false;
-      }
-
       // 優先度でフィルタリング
       if (filters.priority !== 'all' && task.priority !== filters.priority) {
         return false;

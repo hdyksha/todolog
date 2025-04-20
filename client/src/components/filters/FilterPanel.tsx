@@ -4,7 +4,6 @@ import Button from '../ui/Button';
 import './FilterPanel.css';
 
 export interface FilterOptions {
-  status: 'all' | 'active' | 'completed';
   priority: Priority | 'all';
   category: string | null;
   searchTerm: string;
@@ -25,10 +24,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleStatusChange = (status: 'all' | 'active' | 'completed') => {
-    onFilterChange({ ...filters, status });
-  };
-
   const handlePriorityChange = (priority: Priority | 'all') => {
     onFilterChange({ ...filters, priority });
   };
@@ -44,7 +39,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
   // クイックフィルターが適用されているかどうか
   const hasActiveFilters =
-    filters.status !== 'all' ||
     filters.priority !== 'all' ||
     filters.category !== null ||
     filters.searchTerm !== '';
@@ -60,28 +54,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               value={filters.searchTerm}
               onChange={handleSearchChange}
               className="filter-search-input"
+              aria-label="タスクを検索"
             />
-          </div>
-          
-          <div className="filter-status-buttons">
-            <button
-              className={`filter-button ${filters.status === 'all' ? 'active' : ''}`}
-              onClick={() => handleStatusChange('all')}
-            >
-              すべて
-            </button>
-            <button
-              className={`filter-button ${filters.status === 'active' ? 'active' : ''}`}
-              onClick={() => handleStatusChange('active')}
-            >
-              未完了
-            </button>
-            <button
-              className={`filter-button ${filters.status === 'completed' ? 'active' : ''}`}
-              onClick={() => handleStatusChange('completed')}
-            >
-              完了済
-            </button>
           </div>
           
           {hasActiveFilters && (
@@ -99,13 +73,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           variant="text"
           size="small"
           onClick={() => setIsExpanded(!isExpanded)}
+          aria-expanded={isExpanded}
+          aria-controls="filter-panel-expanded"
         >
           {isExpanded ? '詳細フィルターを隠す' : '詳細フィルターを表示'}
         </Button>
       </div>
       
       {isExpanded && (
-        <div className="filter-panel-expanded">
+        <div id="filter-panel-expanded" className="filter-panel-expanded">
           <div className="filter-section">
             <h3 className="filter-section-title">優先度</h3>
             <div className="filter-priority-buttons">
@@ -143,6 +119,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 className="filter-category-select"
                 value={filters.category || 'all'}
                 onChange={handleCategoryChange}
+                aria-label="カテゴリでフィルター"
               >
                 <option value="all">すべてのカテゴリ</option>
                 {categories.map((category) => (

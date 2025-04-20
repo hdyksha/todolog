@@ -23,45 +23,9 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('フィルタリングとソート機能', () => {
-  it('完了状態でフィルタリングできる', async () => {
-    // 初期フィルター設定
-    const initialFilters = {
-      status: 'all' as const,
-      priority: 'all' as const,
-      category: null,
-      searchTerm: ''
-    };
-    
-    // モック関数の準備
-    const onFilterChange = vi.fn();
-    const onClearFilters = vi.fn();
-    
-    // コンポーネントのレンダリング
-    render(
-      <TaskProvider>
-        <FilterPanel 
-          filters={initialFilters}
-          onFilterChange={onFilterChange}
-          categories={['仕事', '個人', '買い物']}
-          onClearFilters={onClearFilters}
-        />
-      </TaskProvider>
-    );
-    
-    // 完了状態フィルターを選択（完了のみ）
-    fireEvent.click(screen.getByRole('button', { name: /完了済/i }));
-    
-    // フィルター変更関数が呼ばれたことを確認
-    expect(onFilterChange).toHaveBeenCalledWith({
-      ...initialFilters,
-      status: 'completed'
-    });
-  });
-  
   it('優先度でフィルタリングできる', async () => {
     // 初期フィルター設定
     const initialFilters = {
-      status: 'all' as const,
       priority: 'all' as const,
       category: null,
       searchTerm: ''
@@ -99,7 +63,6 @@ describe('フィルタリングとソート機能', () => {
   it('検索機能が動作する', async () => {
     // 初期フィルター設定
     const initialFilters = {
-      status: 'all' as const,
       priority: 'all' as const,
       category: null,
       searchTerm: ''
@@ -136,7 +99,6 @@ describe('フィルタリングとソート機能', () => {
   it('フィルターをクリアできる', async () => {
     // アクティブなフィルター設定
     const activeFilters = {
-      status: 'completed' as const,
       priority: Priority.High,
       category: '仕事',
       searchTerm: '高優先度'
