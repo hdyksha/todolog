@@ -12,6 +12,7 @@ export class SettingsService {
   private settingsFile: string;
   private settings: AppSettings;
   private initialized: boolean = false;
+  private lastModifiedTime: number = 0; // 設定ファイルの最終更新時刻
 
   /**
    * SettingsServiceのコンストラクタ
@@ -39,6 +40,31 @@ export class SettingsService {
       // 初期化に失敗してもデフォルト設定を使用して続行
       this.settings = { ...defaultSettings };
       this.initialized = true;
+    }
+  }
+
+  /**
+   * 設定が最新であることを確認し、必要に応じて再読み込みする
+   */
+  private async ensureLatestSettings(): Promise<void> {
+    if (!this.initialized) {
+      await this.initialize();
+      return;
+    }
+
+    // ファイルの最終更新時刻を確認
+    const filePath = path.join(this.settingsDir, this.settingsFile);
+    try {
+      const stats = await fs.stat(filePath);
+      const fileModifiedTime = stats.mtimeMs;
+      
+      // ファイルが更新されていれば再読み込み
+      if (fileModifiedTime > this.lastModifiedTime) {
+        logger.debug('設定ファイルが更新されたため再読み込みします');
+        await this.loadSettings();
+      }
+    } catch (error) {
+      logger.warn('設定ファイルの状態確認に失敗しました', { error: (error as Error).message });
     }
   }
 
@@ -71,7 +97,16 @@ export class SettingsService {
         ...parsedData
       });
       
-      logger.info('設定を読み込みました');
+      try {
+        // ファイルの最終更新時刻を取得
+        const stats = await fs.stat(filePath);
+        this.lastModifiedTime = stats.mtimeMs;
+      } catch (error) {
+        // ファイルの状態取得に失敗した場合は警告を出すだけ
+        logger.warn('ファイルの状態取得に失敗しました', { error: (error as Error).message });
+      }
+      
+      logger.info('設定を読み込みました', { currentTaskFile: this.settings.storage.currentTaskFile });
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         logger.info('設定ファイルが存在しないため、デフォルト設定を使用します');
@@ -93,6 +128,16 @@ export class SettingsService {
     
     try {
       await fs.writeFile(filePath, JSON.stringify(this.settings, null, 2), 'utf8');
+      
+      try {
+        // 保存後に最終更新時刻を更新
+        const stats = await fs.stat(filePath);
+        this.lastModifiedTime = stats.mtimeMs;
+      } catch (error) {
+        // ファイルの状態取得に失敗した場合は警告を出すだけ
+        logger.warn('ファイルの状態取得に失敗しました', { error: (error as Error).message });
+      }
+      
       logger.debug('設定を保存しました');
     } catch (error) {
       logger.error('設定の保存に失敗しました', { error: (error as Error).message });
@@ -105,9 +150,7 @@ export class SettingsService {
    * @returns 現在の設定
    */
   async getSettings(): Promise<AppSettings> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.ensureLatestSettings();
     return { ...this.settings };
   }
 
@@ -163,9 +206,7 @@ export class SettingsService {
    * @param filename タスクファイル名
    */
   async addRecentTaskFile(filename: string): Promise<void> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.ensureLatestSettings();
     
     // 既に存在する場合は削除して先頭に追加
     const recentFiles = this.settings.storage.recentTaskFiles.filter(f => f !== filename);
@@ -182,10 +223,9 @@ export class SettingsService {
    * @param filename タスクファイル名
    */
   async setCurrentTaskFile(filename: string): Promise<void> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.ensureLatestSettings();
     
+    logger.info(`タスクファイルを変更します: ${this.settings.storage.currentTaskFile} -> ${filename}`);
     this.settings.storage.currentTaskFile = filename;
     await this.addRecentTaskFile(filename);
     await this.saveSettings();
@@ -196,9 +236,7 @@ export class SettingsService {
    * @returns データディレクトリのパス
    */
   async getDataDir(): Promise<string> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.ensureLatestSettings();
     return this.settings.storage.dataDir;
   }
 
@@ -207,9 +245,7 @@ export class SettingsService {
    * @param dirPath データディレクトリのパス
    */
   async setDataDir(dirPath: string): Promise<void> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.ensureLatestSettings();
     
     // パスの正規化
     const normalizedPath = path.normalize(dirPath);
@@ -232,13 +268,12 @@ export class SettingsService {
   }
 
   /**
-   * 現在のタスクファイル名を取得する
+   * 現在のタスクファイル名を取得する（常に最新の設定を返す）
    * @returns タスクファイル名
    */
   async getCurrentTaskFile(): Promise<string> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.ensureLatestSettings();
+    logger.debug(`現在のタスクファイル: ${this.settings.storage.currentTaskFile}`);
     return this.settings.storage.currentTaskFile;
   }
 
@@ -247,9 +282,7 @@ export class SettingsService {
    * @returns タスクファイル名のリスト
    */
   async getRecentTaskFiles(): Promise<string[]> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await this.ensureLatestSettings();
     return [...this.settings.storage.recentTaskFiles];
   }
 }

@@ -79,6 +79,7 @@ export class SettingsController {
       
       await this.settingsService.setDataDir(dataDir);
       const settings = await this.settingsService.getSettings();
+      logger.info('データディレクトリを設定しました', settings);
       res.json(settings);
     } catch (error) {
       logger.error('データディレクトリの設定に失敗しました', { error: (error as Error).message });
@@ -102,6 +103,7 @@ export class SettingsController {
       
       await this.settingsService.setCurrentTaskFile(filename);
       const settings = await this.settingsService.getSettings();
+      logger.info('タスクファイルを設定しました', settings);
       res.json(settings);
     } catch (error) {
       logger.error('タスクファイルの設定に失敗しました', { error: (error as Error).message });
@@ -117,10 +119,11 @@ export class SettingsController {
   async getRecentTaskFiles(req: Request, res: Response): Promise<void> {
     try {
       const recentFiles = await this.settingsService.getRecentTaskFiles();
+      logger.info('最近使用したタスクファイルのリストを取得しました', { recentFiles });
       res.json(recentFiles);
     } catch (error) {
-      logger.error('最近使用したファイルの取得に失敗しました', { error: (error as Error).message });
-      res.status(500).json({ error: '最近使用したファイルの取得に失敗しました' });
+      logger.error('最近使用したタスクファイルのリストの取得に失敗しました', { error: (error as Error).message });
+      res.status(500).json({ error: '最近使用したタスクファイルのリストの取得に失敗しました' });
     }
   }
 }

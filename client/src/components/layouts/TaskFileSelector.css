@@ -1,0 +1,113 @@
+.task-file-selector {
+  position: relative;
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+.task-file-selector__current {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.task-file-selector__current:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-border-hover);
+}
+
+.task-file-selector__current:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.task-file-selector__filename {
+  font-family: monospace;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-file-selector__arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+
+.task-file-selector__arrow--open {
+  transform: rotate(180deg);
+}
+
+.task-file-selector__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 220px;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  margin-top: 0.25rem;
+}
+
+.task-file-selector__header {
+  padding: 0.75rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.task-file-selector__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-file-selector__item {
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.task-file-selector__item:last-child {
+  border-bottom: none;
+}
+
+.task-file-selector__item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.task-file-selector__item--active {
+  background-color: var(--color-bg-highlight);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.task-file-selector__empty {
+  padding: 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.task-file-selector__error {
+  padding: 0.75rem;
+  color: var(--color-error);
+  font-size: 0.85rem;
+  background-color: var(--color-error-bg);
+  border-top: 1px solid var(--color-border);
+}

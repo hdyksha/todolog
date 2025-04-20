@@ -21,7 +21,9 @@ export class TaskService {
   private async getTasksFilename(): Promise<string> {
     if (this.settingsService) {
       try {
-        return await this.settingsService.getCurrentTaskFile();
+        // getCurrentTaskFile は内部で最新の設定を確認するようになった
+        const currentFile = await this.settingsService.getCurrentTaskFile();
+        return currentFile;
       } catch (error) {
         logger.warn('設定からタスクファイル名の取得に失敗しました。デフォルトを使用します。', { error: (error as Error).message });
         return this.DEFAULT_TASKS_FILE;
@@ -39,6 +41,8 @@ export class TaskService {
     sortOrder?: 'asc' | 'desc';
   }): Promise<Task[]> {
     const tasksFile = await this.getTasksFilename();
+    logger.info(`タスクを読み込み中: ${tasksFile}`);
+    
     let tasks = await this.fileService.readFile<Task[]>(tasksFile, []);
     
     // フィルタリング
