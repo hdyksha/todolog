@@ -26,7 +26,7 @@ export const useArchiveStats = (tasks: Task[]): ArchiveStats => {
     
     const completedThisWeek = archivedTasks.filter(task => {
       const completedDate = new Date(task.updatedAt);
-      // 今日完了したタスクも今週に含める
+      // 今週の日曜日から今日までのタスクをカウント
       return completedDate >= startOfWeek;
     }).length;
     

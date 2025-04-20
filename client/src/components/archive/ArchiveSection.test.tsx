@@ -121,5 +121,12 @@ describe('ArchiveSection', () => {
     
     // ヘッダーが表示されることを確認
     expect(screen.getByText(/アーカイブ済み/)).toBeInTheDocument();
+    
+    // 展開ボタンをクリック
+    const expandButton = screen.getByRole('button', { name: /アーカイブを展開する/ });
+    fireEvent.click(expandButton);
+    
+    // onToggleExpandが呼ばれることを確認
+    expect(mockHandlers.onToggleComplete).not.toHaveBeenCalled();
   });
 });

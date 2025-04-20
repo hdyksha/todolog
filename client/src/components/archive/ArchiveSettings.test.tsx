@@ -15,9 +15,9 @@ describe('ArchiveSettings', () => {
     expect(screen.getByText('アーカイブ設定')).toBeInTheDocument();
 
     // 各設定オプションが表示されるか確認
-    expect(screen.getByText('アーカイブセクションを表示する')).toBeInTheDocument();
-    expect(screen.getByText('アーカイブを自動的に展開する')).toBeInTheDocument();
-    expect(screen.getByText('アーカイブ統計を表示する')).toBeInTheDocument();
+    expect(screen.getByLabelText('アーカイブセクションを表示する')).toBeInTheDocument();
+    expect(screen.getByLabelText('アーカイブを自動的に展開する')).toBeInTheDocument();
+    expect(screen.getByLabelText('アーカイブ統計を表示する')).toBeInTheDocument();
   });
 
   it('チェックボックスの状態を変更できる', () => {

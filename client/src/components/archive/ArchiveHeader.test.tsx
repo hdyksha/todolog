@@ -32,10 +32,16 @@ describe('ArchiveHeader', () => {
   });
 
   it('正しいタイトルと統計情報が表示される', () => {
-    renderComponent();
+    renderComponent(true);
     
     // タイトルが表示されるか確認
     expect(screen.getByText(/アーカイブ済み \(10\)/)).toBeInTheDocument();
+    
+    // 統計情報が表示されるか確認（展開時かつ設定が有効な場合）
+    expect(screen.getByText('アーカイブ統計')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument(); // 今日完了
+    expect(screen.getByText('7')).toBeInTheDocument(); // 今週完了
+    expect(screen.getByText('10')).toBeInTheDocument(); // 合計完了
   });
 
   it('展開ボタンをクリックするとonToggleが呼ばれる', () => {

@@ -43,10 +43,12 @@ describe('useArchiveStats', () => {
     },
   ];
 
-  it('正しい統計情報を計算する', () => {
+  it('日付に基づいて正しく統計情報を計算する', () => {
     // 日付をモック
     const originalDate = global.Date;
-    const mockDate = new Date('2025-04-20T12:00:00Z');
+    const mockDate = new Date('2025-04-20T12:00:00Z'); // 日曜日
+    
+    // 日付のモック関数を作成
     global.Date = class extends Date {
       constructor(date?: any) {
         if (date) {
@@ -59,13 +61,9 @@ describe('useArchiveStats', () => {
       }
     } as any;
 
-    // 今日と今週の日付を設定
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
     // テスト用のタスクデータを作成
     const testTasks: Task[] = [
-      // 今日完了したタスク
+      // 今日（日曜日）完了したタスク
       {
         id: '1',
         title: '今日完了したタスク',
@@ -74,7 +72,7 @@ describe('useArchiveStats', () => {
         createdAt: new Date('2025-04-20T08:00:00Z').toISOString(),
         updatedAt: new Date('2025-04-20T10:00:00Z').toISOString(),
       },
-      // 今週完了したタスク（今日ではない）
+      // 今週（金曜日）完了したタスク
       {
         id: '2',
         title: '今週完了したタスク',
@@ -109,7 +107,7 @@ describe('useArchiveStats', () => {
     // 期待される結果
     expect(result.current.total).toBe(3); // 完了済みタスクの総数
     expect(result.current.today).toBe(1); // 今日完了したタスク数
-    expect(result.current.thisWeek).toBe(1); // 今週完了したタスク数
+    expect(result.current.thisWeek).toBe(1); // 今週完了したタスク数（今日の1件）
 
     // モックをリセット
     global.Date = originalDate;
