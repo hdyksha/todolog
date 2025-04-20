@@ -1,7 +1,11 @@
-import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, vi, expect } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
+import { toHaveNoViolations } from 'jest-axe';
 import { server } from './mocks/server';
+
+// jest-axeのカスタムマッチャーを追加
+expect.extend(toHaveNoViolations);
 
 // MSWサーバーのセットアップ
 beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));

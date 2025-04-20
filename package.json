@@ -18,7 +18,9 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
+    "@types/jest-axe": "^3.5.9",
     "concurrently": "^8.2.0",
+    "jest-axe": "^10.0.0",
     "msw": "^2.7.5"
   },
   "dependencies": {

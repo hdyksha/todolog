@@ -96,7 +96,9 @@ TodoLogフロントエンドの品質と保守性を確保するため、包括�
 - ✅ 検索機能のテスト
   - ✅ インクリメンタル検索の動作
 
-### ステップ5: E2Eテスト (2日)
+### ステップ5: E2Eテスト (将来的な課題)
+
+> **注**: アプリケーションの規模が大きくなり、より複雑なユーザーフローが追加された段階で実装を検討します。
 
 - ⬜ Playwright のセットアップ
   - ⬜ 設定ファイルの作成
@@ -111,7 +113,9 @@ TodoLogフロントエンドの品質と保守性を確保するため、包括�
   - ⬜ モバイル表示の確認
   - ⬜ デスクトップ表示の確認
 
-### ステップ6: パフォーマンステスト (1-2日)
+### ステップ6: パフォーマンステスト (将来的な課題)
+
+> **注**: ユーザー数やデータ量が増え、パフォーマンスの問題が顕在化した段階で実装を検討します。
 
 - ⬜ レンダリングパフォーマンスの測定
   - ⬜ 初期ロード時間
@@ -127,16 +131,24 @@ TodoLogフロントエンドの品質と保守性を確保するため、包括�
 
 ### ステップ7: アクセシビリティテスト (1-2日)
 
-- ⬜ キーボードナビゲーションのテスト
-  - ⬜ フォーカス順序
-  - ⬜ ショートカットキー
+- ✅ アクセシビリティテスト環境のセットアップ
+  - ✅ jest-axe または同等のライブラリを Vitest で使用するよう設定
+  - ✅ カスタムマッチャーの追加
 
-- ⬜ スクリーンリーダー互換性のテスト
-  - ⬜ ARIA属性の検証
-  - ⬜ 意味のある見出し構造
+- ✅ コンポーネントのアクセシビリティテスト
+  - ✅ 基本UIコンポーネント（Button, Input, Select など）
+  - ✅ 複合コンポーネント（TaskForm, Modal など）
 
-- ⬜ コントラスト比のチェック
-  - ⬜ WCAG AAレベルの達成確認
+- ✅ キーボードナビゲーションのテスト
+  - ✅ フォーカス順序
+  - ✅ ショートカットキー
+
+- ✅ スクリーンリーダー互換性のテスト
+  - ✅ ARIA属性の検証
+  - ✅ 意味のある見出し構造
+
+- ✅ コントラスト比のチェック
+  - ✅ WCAG AAレベルの達成確認
 
 ### ステップ8: ドキュメント作成 (2-3日)
 
@@ -165,6 +177,7 @@ TodoLogフロントエンドの品質と保守性を確保するため、包括�
    - TaskList、TaskForm などの複合コンポーネント
    - カスタムフック（useTasksState、useForm など）
    - フィルタリングとソート機能
+   - アクセシビリティテスト
 
 3. **中優先度**
    - Modal、Toast などの補助的なコンポーネント
@@ -173,8 +186,8 @@ TodoLogフロントエンドの品質と保守性を確保するため、包括�
 
 4. **低優先度**
    - アニメーションとトランジション
-   - E2Eテスト
-   - パフォーマンステスト
+   - E2Eテスト（将来的な課題）
+   - パフォーマンステスト（将来的な課題）
 
 ## テスト実装の段階的アプローチ
 
@@ -260,29 +273,30 @@ describe('タスク作成フロー', () => {
 });
 ```
 
-### E2Eテスト（Playwright）
+### アクセシビリティテスト（jest-axe + Vitest）
 
 ```typescript
-// タスク管理の基本フローのテスト例
-import { test, expect } from '@playwright/test';
+// Button コンポーネントのアクセシビリティテスト例
+import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import Button from '../components/Button';
 
-test('タスクの作成から完了までの流れ', async ({ page }) => {
-  await page.goto('http://localhost:3000');
+// カスタムマッチャーを追加
+expect.extend(toHaveNoViolations);
+
+describe('Button コンポーネントのアクセシビリティ', () => {
+  it('アクセシビリティ違反がないこと', async () => {
+    const { container } = render(<Button>クリック</Button>);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
   
-  // タスク作成
-  await page.click('button:has-text("新規タスク")');
-  await page.fill('input[name="title"]', 'E2Eテスト用タスク');
-  await page.selectOption('select[name="priority"]', 'high');
-  await page.click('button:has-text("保存")');
-  
-  // タスクが一覧に表示されることを確認
-  await expect(page.locator('text=E2Eテスト用タスク')).toBeVisible();
-  
-  // タスクを完了にする
-  await page.click('text=E2Eテスト用タスク >> xpath=..//..//input[@type="checkbox"]');
-  
-  // 完了状態になったことを確認
-  await expect(page.locator('text=E2Eテスト用タスク')).toHaveClass(/completed/);
+  it('無効状態でもアクセシビリティ違反がないこと', async () => {
+    const { container } = render(<Button disabled>クリック</Button>);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
 });
 ```
 
@@ -290,7 +304,8 @@ test('タスクの作成から完了までの流れ', async ({ page }) => {
 
 - ユニットテスト: 80%以上
 - 統合テスト: 主要フローをカバー
-- E2Eテスト: 重要なユーザーシナリオをカバー
+- アクセシビリティテスト: 共通コンポーネントを中心に実施
+- E2Eテスト・パフォーマンステスト: 将来的な課題として検討
 
 ## ドキュメント作成計画
 
