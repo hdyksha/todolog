@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTaskContext } from '../contexts/TaskContext';
 import { useTaskActions } from '../hooks/useTaskActions';
 import { useTaskFilters } from '../hooks/useTaskFilters';
+import { useSettings } from '../contexts/SettingsContext';
+import { useArchiveStats } from '../hooks/useArchiveStats';
 import { Priority, Task } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -11,6 +13,7 @@ import TaskForm from '../components/tasks/TaskForm';
 import FilterPanel from '../components/filters/FilterPanel';
 import TaskSortControl from '../components/tasks/TaskSortControl';
 import CategoryBadge from '../components/categories/CategoryBadge';
+import ArchiveSection from '../components/archive/ArchiveSection';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -22,7 +25,6 @@ const HomePage: React.FC = () => {
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
-  const [isArchiveVisible, setIsArchiveVisible] = useState(true);
   const navigate = useNavigate();
 
   // タスクのフィルタリングとソート
@@ -303,116 +305,13 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* アーカイブセクション */}
-      <div className="archive-section">
-        <div 
-          className="archive-header"
-          onClick={() => setIsArchiveVisible(!isArchiveVisible)}
-        >
-          <h2 className="section-title">アーカイブ済み ({sortedTasks.filter(task => task.completed).length})</h2>
-          <button className="toggle-button">
-            {isArchiveVisible ? '▼' : '▶'}
-          </button>
-        </div>
-        
-        {isArchiveVisible && (
-          <div className="task-list">
-            {sortedTasks.filter(task => task.completed).length === 0 ? (
-              <div className="empty-state">
-                <p>アーカイブされたタスクはありません</p>
-              </div>
-            ) : (
-              <ul className="task-items archived-tasks">
-                {sortedTasks.filter(task => task.completed).map((task) => (
-                  <li
-                    key={task.id}
-                    className="task-item task-archived"
-                  >
-                    <div 
-                      className="task-item-content"
-                      onClick={() => handleViewTaskDetails(task.id)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onClick={(e) => e.stopPropagation()} // クリックイベントの伝播を停止
-                        onChange={(e) => {
-                          toggleTaskCompletion(task.id);
-                        }}
-                        className="task-checkbox"
-                        aria-label={`${task.title}を${task.completed ? '未完了' : '完了'}としてマーク`}
-                      />
-                      <span className="check-icon">✓</span>
-                      <span className="task-title">{task.title}</span>
-                      
-                      <div className="task-meta">
-                        {task.priority && (
-                          <span className={`task-priority priority-${task.priority}`}>
-                            {task.priority === Priority.High
-                              ? '高'
-                              : task.priority === Priority.Medium
-                              ? '中'
-                              : '低'}
-                          </span>
-                        )}
-                        
-                        {task.category && (
-                          <CategoryBadge
-                            category={task.category}
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCategoryClick(task.category!);
-                            }}
-                          />
-                        )}
-                        
-                        {task.dueDate && (
-                          <span className="task-due-date">
-                            {new Date(task.dueDate).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="task-actions">
-                      <Button
-                        variant="text"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation(); // クリックイベントの伝播を停止
-                          openEditModal(task);
-                        }}
-                      >
-                        編集
-                      </Button>
-                      <Button
-                        variant="text"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation(); // クリックイベントの伝播を停止
-                          handleViewTaskDetails(task.id);
-                        }}
-                      >
-                        詳細
-                      </Button>
-                      <Button
-                        variant="text"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation(); // クリックイベントの伝播を停止
-                          handleDeleteTask(task.id);
-                        }}
-                      >
-                        削除
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
+      <ArchiveSection
+        tasks={sortedTasks}
+        onToggleComplete={toggleTaskCompletion}
+        onDelete={handleDeleteTask}
+        onEdit={openEditModal}
+        onEditMemo={handleViewTaskDetails}
+      />
 
       {/* タスク作成モーダル */}
       <Modal

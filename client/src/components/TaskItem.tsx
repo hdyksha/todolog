@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Task, Priority } from '../types';
+import Button from './ui/Button';
+import CategoryBadge from './categories/CategoryBadge';
 import './TaskItem.css';
 
 interface TaskItemProps {
@@ -7,7 +9,7 @@ interface TaskItemProps {
   isArchived?: boolean;
   onToggleComplete: (id: string) => void;
   onDelete: (id: string) => void;
-  onEdit: (id: string) => void;
+  onEdit: (task: Task) => void;
   onEditMemo?: (id: string) => void;
 }
 
@@ -19,137 +21,99 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onEdit,
   onEditMemo,
 }) => {
-  const [expanded, setExpanded] = useState(false);
-
   // タスクのクラス名を動的に設定
-  const taskClassName = `task-item ${isArchived ? 'task-archived' : ''} ${task.completed ? 'completed' : ''}`;
-
-  // 優先度に応じたクラス名を取得
-  const getPriorityClass = (priority: Priority) => {
-    switch (priority) {
-      case Priority.High:
-        return 'priority-high';
-      case Priority.Medium:
-        return 'priority-medium';
-      case Priority.Low:
-        return 'priority-low';
-      default:
-        return '';
+  const taskClassName = `task-item ${isArchived ? 'task-archived' : ''}`;
+  
+  const handleTaskClick = () => {
+    if (onEditMemo) {
+      onEditMemo(task.id);
     }
-  };
-
-  // 優先度の表示テキストを取得
-  const getPriorityText = (priority: Priority) => {
-    switch (priority) {
-      case Priority.High:
-        return '高';
-      case Priority.Medium:
-        return '中';
-      case Priority.Low:
-        return '低';
-      default:
-        return '';
-    }
-  };
-
-  // 日付のフォーマット
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   return (
-    <div className={taskClassName}>
-      <div className="task-header">
-        <div className="task-checkbox">
-          <input
-            type="checkbox"
-            checked={task.completed}
-            onChange={() => onToggleComplete(task.id)}
-            id={`task-${task.id}`}
-          />
-          <label htmlFor={`task-${task.id}`} className="checkbox-label"></label>
-          {isArchived && <span className="check-icon">✓</span>}
-        </div>
-
-        <div className="task-title" onClick={() => setExpanded(!expanded)}>
-          <h3>{task.title}</h3>
-        </div>
-
+    <li className={taskClassName}>
+      <div 
+        className="task-item-content"
+        onClick={handleTaskClick}
+      >
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onClick={(e) => e.stopPropagation()} // クリックイベントの伝播を停止
+          onChange={() => onToggleComplete(task.id)}
+          className="task-checkbox"
+          aria-label={`${task.title}を${task.completed ? '未完了' : '完了'}としてマーク`}
+        />
+        {isArchived && <span className="check-icon">✓</span>}
+        <span className="task-title">{task.title}</span>
+        
         <div className="task-meta">
-          <span className={`task-priority ${getPriorityClass(task.priority)}`}>
-            {getPriorityText(task.priority)}
-          </span>
-          {task.category && <span className="task-category">{task.category}</span>}
+          {task.priority && (
+            <span className={`task-priority priority-${task.priority}`}>
+              {task.priority === Priority.High
+                ? '高'
+                : task.priority === Priority.Medium
+                ? '中'
+                : '低'}
+            </span>
+          )}
+          
+          {task.category && (
+            <CategoryBadge
+              category={task.category}
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                // カテゴリクリック時の処理（オプション）
+              }}
+            />
+          )}
+          
           {task.dueDate && (
             <span className="task-due-date">
-              期限: {formatDate(task.dueDate)}
+              {new Date(task.dueDate).toLocaleDateString()}
             </span>
           )}
         </div>
-
-        <div className="task-actions">
-          <button
-            className="task-action-button"
-            onClick={() => onEdit(task.id)}
-            aria-label="タスクを編集"
-          >
-            ✏️
-          </button>
-          <button
-            className="task-action-button"
-            onClick={() => onDelete(task.id)}
-            aria-label="タスクを削除"
-          >
-            🗑️
-          </button>
-          <button
-            className="task-action-button"
-            onClick={() => setExpanded(!expanded)}
-            aria-label={expanded ? "詳細を閉じる" : "詳細を表示"}
-          >
-            {expanded ? '▲' : '▼'}
-          </button>
-        </div>
       </div>
-
-      {expanded && (
-        <div className="task-details">
-          {task.memo ? (
-            <div className="task-memo">
-              <h4>メモ</h4>
-              <p>{task.memo}</p>
-              {onEditMemo && (
-                <button
-                  className="edit-memo-button"
-                  onClick={() => onEditMemo(task.id)}
-                >
-                  メモを編集
-                </button>
-              )}
-            </div>
-          ) : onEditMemo ? (
-            <div className="task-memo empty">
-              <p>メモはありません</p>
-              <button
-                className="add-memo-button"
-                onClick={() => onEditMemo(task.id)}
-              >
-                メモを追加
-              </button>
-            </div>
-          ) : null}
-          <div className="task-dates">
-            <p>作成日: {formatDate(task.createdAt)}</p>
-            <p>更新日: {formatDate(task.updatedAt)}</p>
-          </div>
-        </div>
-      )}
-    </div>
+      
+      <div className="task-actions">
+        <Button
+          variant="text"
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation(); // クリックイベントの伝播を停止
+            onEdit(task);
+          }}
+          aria-label={`${task.title}を編集`}
+        >
+          編集
+        </Button>
+        <Button
+          variant="text"
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation(); // クリックイベントの伝播を停止
+            if (onEditMemo) {
+              onEditMemo(task.id);
+            }
+          }}
+        >
+          詳細
+        </Button>
+        <Button
+          variant="text"
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation(); // クリックイベントの伝播を停止
+            onDelete(task.id);
+          }}
+          aria-label={`${task.title}を削除`}
+        >
+          削除
+        </Button>
+      </div>
+    </li>
   );
 };
 

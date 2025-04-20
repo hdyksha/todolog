@@ -1,233 +1,144 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '../test/utils';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import TaskItem from './TaskItem';
-import { Priority } from '../types';
+import { Task, Priority } from '../types';
+import { vi } from 'vitest';
 
-describe('TaskItem コンポーネント', () => {
-  const mockTask = {
-    id: '1',
-    title: 'テストタスク',
-    completed: false,
-    priority: Priority.Medium,
-    category: 'テスト',
-    dueDate: '2025-05-01T00:00:00.000Z',
-    createdAt: '2025-04-15T10:00:00.000Z',
-    updatedAt: '2025-04-15T10:00:00.000Z',
-    memo: 'これはテストメモです'
-  };
+// モックタスクデータ
+const mockTask: Task = {
+  id: '1',
+  title: 'テストタスク',
+  completed: false,
+  priority: Priority.Medium,
+  category: 'テスト',
+  dueDate: '2025-05-01',
+  createdAt: '2025-04-20T10:00:00Z',
+  updatedAt: '2025-04-20T10:00:00Z',
+};
 
-  const mockOnToggleComplete = vi.fn();
-  const mockOnDelete = vi.fn();
-  const mockOnEdit = vi.fn();
-  const mockOnEditMemo = vi.fn();
+// モックハンドラー
+const mockHandlers = {
+  onToggleComplete: vi.fn(),
+  onDelete: vi.fn(),
+  onEdit: vi.fn(),
+  onEditMemo: vi.fn(),
+};
 
+describe('TaskItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('タスク情報が正しく表示される', () => {
+  it('タスクの情報が正しく表示される', () => {
     render(
       <TaskItem
         task={mockTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-        onEditMemo={mockOnEditMemo}
+        onToggleComplete={mockHandlers.onToggleComplete}
+        onDelete={mockHandlers.onDelete}
+        onEdit={mockHandlers.onEdit}
+        onEditMemo={mockHandlers.onEditMemo}
       />
     );
 
-    // タイトルが表示されていることを確認
+    // タイトルが表示されるか確認
     expect(screen.getByText('テストタスク')).toBeInTheDocument();
     
-    // 優先度が表示されていることを確認
+    // 優先度が表示されるか確認
     expect(screen.getByText('中')).toBeInTheDocument();
     
-    // カテゴリが表示されていることを確認
+    // カテゴリが表示されるか確認
     expect(screen.getByText('テスト')).toBeInTheDocument();
     
-    // 期限が表示されていることを確認
-    expect(screen.getByText(/期限:/)).toBeInTheDocument();
+    // 期限日が表示されるか確認（フォーマットは環境によって異なる可能性あり）
+    const dueDate = new Date('2025-05-01').toLocaleDateString();
+    expect(screen.getByText(dueDate)).toBeInTheDocument();
   });
 
-  it('完了状態のタスクは完了スタイルが適用される', () => {
-    const completedTask = { ...mockTask, completed: true };
-    
-    render(
-      <TaskItem
-        task={completedTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
-    
-    const taskItem = screen.getByText('テストタスク').closest('.task-item');
-    expect(taskItem).toHaveClass('completed');
-  });
-
-  it('チェックボックスをクリックすると onToggleComplete が呼ばれる', () => {
+  it('チェックボックスをクリックするとonToggleCompleteが呼ばれる', () => {
     render(
       <TaskItem
         task={mockTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        onToggleComplete={mockHandlers.onToggleComplete}
+        onDelete={mockHandlers.onDelete}
+        onEdit={mockHandlers.onEdit}
+        onEditMemo={mockHandlers.onEditMemo}
       />
     );
-    
+
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
     
-    expect(mockOnToggleComplete).toHaveBeenCalledWith(mockTask.id);
+    expect(mockHandlers.onToggleComplete).toHaveBeenCalledWith('1');
   });
 
-  it('編集ボタンをクリックすると onEdit が呼ばれる', () => {
+  it('編集ボタンをクリックするとonEditが呼ばれる', () => {
     render(
       <TaskItem
         task={mockTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        onToggleComplete={mockHandlers.onToggleComplete}
+        onDelete={mockHandlers.onDelete}
+        onEdit={mockHandlers.onEdit}
+        onEditMemo={mockHandlers.onEditMemo}
       />
     );
-    
-    const editButton = screen.getByLabelText('タスクを編集');
+
+    const editButton = screen.getByText('編集');
     fireEvent.click(editButton);
     
-    expect(mockOnEdit).toHaveBeenCalledWith(mockTask.id);
+    expect(mockHandlers.onEdit).toHaveBeenCalledWith(mockTask);
   });
 
-  it('削除ボタンをクリックすると onDelete が呼ばれる', () => {
+  it('削除ボタンをクリックするとonDeleteが呼ばれる', () => {
     render(
       <TaskItem
         task={mockTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        onToggleComplete={mockHandlers.onToggleComplete}
+        onDelete={mockHandlers.onDelete}
+        onEdit={mockHandlers.onEdit}
+        onEditMemo={mockHandlers.onEditMemo}
       />
     );
-    
-    const deleteButton = screen.getByLabelText('タスクを削除');
+
+    const deleteButton = screen.getByText('削除');
     fireEvent.click(deleteButton);
     
-    expect(mockOnDelete).toHaveBeenCalledWith(mockTask.id);
+    expect(mockHandlers.onDelete).toHaveBeenCalledWith('1');
   });
 
-  it('詳細ボタンをクリックするとタスク詳細が表示される', () => {
+  it('詳細ボタンをクリックするとonEditMemoが呼ばれる', () => {
     render(
       <TaskItem
         task={mockTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-        onEditMemo={mockOnEditMemo}
+        onToggleComplete={mockHandlers.onToggleComplete}
+        onDelete={mockHandlers.onDelete}
+        onEdit={mockHandlers.onEdit}
+        onEditMemo={mockHandlers.onEditMemo}
       />
     );
+
+    const detailButton = screen.getByText('詳細');
+    fireEvent.click(detailButton);
     
-    // 初期状態ではメモは表示されていない
-    expect(screen.queryByText('これはテストメモです')).not.toBeInTheDocument();
-    
-    // 詳細ボタンをクリック
-    const detailsButton = screen.getByLabelText('詳細を表示');
-    fireEvent.click(detailsButton);
-    
-    // メモが表示されていることを確認
-    expect(screen.getByText('これはテストメモです')).toBeInTheDocument();
-    // 作成日と更新日が表示されていることを確認
-    expect(screen.getByText(/作成日:/)).toBeInTheDocument();
-    expect(screen.getByText(/更新日:/)).toBeInTheDocument();
+    expect(mockHandlers.onEditMemo).toHaveBeenCalledWith('1');
   });
 
-  it('メモ編集ボタンをクリックすると onEditMemo が呼ばれる', () => {
+  it('アーカイブされたタスクは特別なスタイルで表示される', () => {
     render(
       <TaskItem
-        task={mockTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-        onEditMemo={mockOnEditMemo}
+        task={{ ...mockTask, completed: true }}
+        isArchived={true}
+        onToggleComplete={mockHandlers.onToggleComplete}
+        onDelete={mockHandlers.onDelete}
+        onEdit={mockHandlers.onEdit}
+        onEditMemo={mockHandlers.onEditMemo}
       />
     );
-    
-    // 詳細ボタンをクリック
-    const detailsButton = screen.getByLabelText('詳細を表示');
-    fireEvent.click(detailsButton);
-    
-    // メモ編集ボタンをクリック
-    const editMemoButton = screen.getByText('メモを編集');
-    fireEvent.click(editMemoButton);
-    
-    expect(mockOnEditMemo).toHaveBeenCalledWith(mockTask.id);
-  });
 
-  it('メモがない場合は「メモを追加」ボタンが表示される', () => {
-    const taskWithoutMemo = { ...mockTask, memo: undefined };
+    // チェックアイコンが表示されるか確認
+    expect(screen.getByText('✓')).toBeInTheDocument();
     
-    render(
-      <TaskItem
-        task={taskWithoutMemo}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-        onEditMemo={mockOnEditMemo}
-      />
-    );
-    
-    // 詳細ボタンをクリック
-    const detailsButton = screen.getByLabelText('詳細を表示');
-    fireEvent.click(detailsButton);
-    
-    // 「メモはありません」と表示されていることを確認
-    expect(screen.getByText('メモはありません')).toBeInTheDocument();
-    
-    // 「メモを追加」ボタンをクリック
-    const addMemoButton = screen.getByText('メモを追加');
-    fireEvent.click(addMemoButton);
-    
-    expect(mockOnEditMemo).toHaveBeenCalledWith(taskWithoutMemo.id);
-  });
-
-  it('onEditMemo が提供されていない場合、メモ編集ボタンは表示されない', () => {
-    render(
-      <TaskItem
-        task={mockTask}
-        onToggleComplete={mockOnToggleComplete}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
-    
-    // 詳細ボタンをクリック
-    const detailsButton = screen.getByLabelText('詳細を表示');
-    fireEvent.click(detailsButton);
-    
-    // メモは表示されるが、編集ボタンは表示されない
-    expect(screen.getByText('これはテストメモです')).toBeInTheDocument();
-    expect(screen.queryByText('メモを編集')).not.toBeInTheDocument();
-  });
-
-  it('異なる優先度のタスクは適切なクラスが適用される', () => {
-    const priorities = [
-      { priority: Priority.High, text: '高', className: 'priority-high' },
-      { priority: Priority.Medium, text: '中', className: 'priority-medium' },
-      { priority: Priority.Low, text: '低', className: 'priority-low' }
-    ];
-    
-    priorities.forEach(({ priority, text, className }) => {
-      const taskWithPriority = { ...mockTask, priority };
-      const { unmount } = render(
-        <TaskItem
-          task={taskWithPriority}
-          onToggleComplete={mockOnToggleComplete}
-          onDelete={mockOnDelete}
-          onEdit={mockOnEdit}
-        />
-      );
-      
-      const priorityElement = screen.getByText(text);
-      expect(priorityElement).toHaveClass(className);
-      
-      unmount();
-    });
+    // task-archivedクラスが適用されているか確認
+    const taskItem = screen.getByRole('listitem');
+    expect(taskItem).toHaveClass('task-archived');
   });
 });

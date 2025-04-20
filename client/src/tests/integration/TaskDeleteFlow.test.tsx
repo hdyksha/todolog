@@ -12,8 +12,8 @@ const mockTask: Task = {
   title: '削除するタスク',
   completed: false,
   priority: Priority.Medium,
-  createdAt: new Date('2025-04-15T10:00:00.000Z'),
-  updatedAt: new Date('2025-04-15T10:00:00.000Z')
+  createdAt: new Date('2025-04-15T10:00:00.000Z').toISOString(),
+  updatedAt: new Date('2025-04-15T10:00:00.000Z').toISOString()
 };
 
 // MSWサーバーのセットアップ
@@ -52,7 +52,7 @@ describe('タスク削除フロー', () => {
     );
     
     // 削除ボタンをクリック
-    fireEvent.click(screen.getByLabelText(/タスクを削除/i));
+    fireEvent.click(screen.getByText('削除'));
     
     // 削除関数が呼ばれたことを確認
     expect(onDelete).toHaveBeenCalledTimes(1);
@@ -78,11 +78,11 @@ describe('タスク削除フロー', () => {
     );
     
     // 編集ボタンをクリック
-    fireEvent.click(screen.getByLabelText(/タスクを編集/i));
+    fireEvent.click(screen.getByText('編集'));
     
     // 編集関数が呼ばれたことを確認
     expect(onEdit).toHaveBeenCalledTimes(1);
-    expect(onEdit).toHaveBeenCalledWith(mockTask.id);
+    expect(onEdit).toHaveBeenCalledWith(mockTask);
   });
   
   it('チェックボックスをクリックするとonToggleCompleteが呼ばれる', async () => {

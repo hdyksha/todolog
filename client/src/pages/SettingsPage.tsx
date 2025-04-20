@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSettings } from '../contexts/SettingsContext';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import ArchiveSettings from '../components/archive/ArchiveSettings';
 import './SettingsPage.css';
 
 interface UserSettings {
@@ -21,6 +23,7 @@ const SETTINGS_STORAGE_KEY = 'todolog-user-settings';
 
 const SettingsPage: React.FC = () => {
   const { theme, setTheme } = useTheme();
+  const { resetSettings: resetAppSettings } = useSettings();
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -47,6 +50,7 @@ const SettingsPage: React.FC = () => {
   const resetSettings = () => {
     setSettings(defaultSettings);
     localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    resetAppSettings(); // アプリ全体の設定もリセット
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -134,6 +138,10 @@ const SettingsPage: React.FC = () => {
             <option value="completed">完了済み</option>
           </select>
         </div>
+      </section>
+      
+      <section className="settings-section">
+        <ArchiveSettings />
       </section>
       
       <div className="settings-actions">
