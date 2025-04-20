@@ -224,8 +224,8 @@ const HomePage: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={task.completed}
+                      onClick={(e) => e.stopPropagation()} // クリックイベントの伝播を停止
                       onChange={(e) => {
-                        e.stopPropagation(); // クリックイベントの伝播を停止
                         toggleTaskCompletion(task.id);
                       }}
                       className="task-checkbox"
@@ -334,8 +334,8 @@ const HomePage: React.FC = () => {
                       <input
                         type="checkbox"
                         checked={task.completed}
+                        onClick={(e) => e.stopPropagation()} // クリックイベントの伝播を停止
                         onChange={(e) => {
-                          e.stopPropagation(); // クリックイベントの伝播を停止
                           toggleTaskCompletion(task.id);
                         }}
                         className="task-checkbox"
