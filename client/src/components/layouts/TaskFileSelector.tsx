@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useServerSettings } from '../../contexts/ServerSettingsContext';
-import { useTaskFiles } from '../../hooks/useTaskFiles';
+import { useTaskFilesContext } from '../../contexts/TaskFilesContext';
 import { apiClient } from '../../services/apiClient';
 import './TaskFileSelector.css';
 
 const TaskFileSelector: React.FC = () => {
   const { serverSettings } = useServerSettings();
-  const { recentFiles, switchTaskFile, isLoading } = useTaskFiles();
+  const { taskFiles, recentFiles, switchTaskFile, isLoading, refreshFiles } = useTaskFilesContext();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAllFiles, setShowAllFiles] = useState(false);
 
   const currentFile = serverSettings.storage.currentTaskFile;
 
@@ -35,9 +36,21 @@ const TaskFileSelector: React.FC = () => {
   };
 
   // ドロップダウンの表示/非表示を切り替える
-  const toggleDropdown = () => {
+  const toggleDropdown = useCallback(() => {
+    if (!isOpen) {
+      // ドロップダウンを開くときにファイル一覧を更新
+      refreshFiles();
+    }
     setIsOpen(!isOpen);
+  }, [isOpen, refreshFiles]);
+
+  // 表示モードを切り替える
+  const toggleViewMode = () => {
+    setShowAllFiles(!showAllFiles);
   };
+
+  // 表示するファイルリスト
+  const filesToShow = showAllFiles ? taskFiles : recentFiles;
 
   return (
     <div className="task-file-selector">
@@ -56,11 +69,17 @@ const TaskFileSelector: React.FC = () => {
         <div className="task-file-selector__dropdown">
           <div className="task-file-selector__header">
             タスクファイルを選択
+            <button 
+              className="task-file-selector__view-toggle"
+              onClick={toggleViewMode}
+            >
+              {showAllFiles ? '最近使用したファイル' : 'すべてのファイル'}
+            </button>
           </div>
           
-          {recentFiles.length > 0 ? (
+          {filesToShow.length > 0 ? (
             <ul className="task-file-selector__list">
-              {recentFiles.map((file) => (
+              {filesToShow.map((file) => (
                 <li
                   key={file}
                   className={`task-file-selector__item ${file === currentFile ? 'task-file-selector__item--active' : ''}`}
@@ -72,7 +91,7 @@ const TaskFileSelector: React.FC = () => {
             </ul>
           ) : (
             <div className="task-file-selector__empty">
-              最近使用したファイルがありません
+              {showAllFiles ? 'タスクファイルがありません' : '最近使用したファイルがありません'}
             </div>
           )}
           

@@ -1,55 +1,12 @@
 .notification {
-  min-width: 300px;
-  max-width: 400px;
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-lg);
-  animation: slide-in 0.3s ease-out;
-}
-
-.notification-content {
+  padding: 12px 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.notification-message {
-  flex: 1;
-  margin-right: var(--spacing-md);
-}
-
-.notification-close {
-  background: none;
-  border: none;
-  font-size: var(--font-size-lg);
-  cursor: pointer;
-  color: inherit;
-  opacity: 0.7;
-  transition: opacity var(--transition-fast);
-}
-
-.notification-close:hover {
-  opacity: 1;
-}
-
-.notification-success {
-  background-color: var(--color-success);
-  color: white;
-}
-
-.notification-error {
-  background-color: var(--color-danger);
-  color: white;
-}
-
-.notification-info {
-  background-color: var(--color-info);
-  color: white;
-}
-
-.notification-warning {
-  background-color: var(--color-warning);
-  color: white;
+  animation: slide-in 0.3s ease-out forwards;
+  max-width: 100%;
 }
 
 @keyframes slide-in {
@@ -61,4 +18,75 @@
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+.notification__content {
+  flex: 1;
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+.notification__close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.notification__close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 通知タイプ別のスタイル */
+.notification--success {
+  background-color: #e6f7e6;
+  border-left: 4px solid #4caf50;
+  color: #2e7d32;
+}
+
+.notification--error {
+  background-color: #fdecea;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+}
+
+.notification--info {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  color: #0d47a1;
+}
+
+.notification--warning {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+  color: #ff8f00;
+}
+
+/* ダークモード対応 */
+:root[data-theme="dark"] .notification--success {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #81c784;
+}
+
+:root[data-theme="dark"] .notification--error {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #e57373;
+}
+
+:root[data-theme="dark"] .notification--info {
+  background-color: rgba(33, 150, 243, 0.2);
+  color: #64b5f6;
+}
+
+:root[data-theme="dark"] .notification--warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ffd54f;
 }

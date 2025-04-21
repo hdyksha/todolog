@@ -66,6 +66,24 @@
   border-bottom: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-file-selector__view-toggle {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.task-file-selector__view-toggle:hover {
+  text-decoration: underline;
+  background-color: var(--color-bg-hover);
 }
 
 .task-file-selector__list {

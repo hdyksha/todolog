@@ -1,138 +1,110 @@
 .storage-settings {
-  margin-bottom: 2rem;
-}
-
-.storage-settings__title {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: var(--color-text-primary);
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 0.5rem;
-}
-
-.storage-section {
-  margin-bottom: 1.5rem;
   padding: 1rem;
+}
+
+.storage-settings h2 {
+  margin-bottom: 1.5rem;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+}
+
+.storage-settings__section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
   background-color: var(--color-bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.storage-section__title {
-  font-size: 1.2rem;
+.storage-settings__section h3 {
+  margin-top: 0;
   margin-bottom: 1rem;
   color: var(--color-text-primary);
+  font-size: 1.2rem;
 }
 
-.storage-form {
+.storage-settings__description {
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.storage-settings__form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.form-group {
+.storage-settings__form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-label {
+.storage-settings__form-group label {
   font-weight: 500;
-  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
 }
 
-.form-input {
+.storage-settings__input {
   padding: 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  background-color: var(--color-bg-input);
+  background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 1rem;
-  width: 100%;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
 }
 
-.form-input:focus {
+.storage-settings__input:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
 }
 
-.storage-info {
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
+.storage-settings__input:disabled {
+  background-color: var(--color-bg-disabled);
+  cursor: not-allowed;
 }
 
-.current-file {
-  padding: 0.75rem;
-  background-color: var(--color-bg-highlight);
+.storage-settings__button {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
   border-radius: 4px;
-  border-left: 4px solid var(--color-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-start;
 }
 
-.current-file__name {
-  margin: 0;
-  font-size: 1.1rem;
+.storage-settings__button:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
 }
 
-.file-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.storage-settings__button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.file-list__item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.storage-settings__current-file {
   padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.file-list__item:last-child {
-  border-bottom: none;
-}
-
-.file-name {
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
   font-family: monospace;
-  font-size: 1rem;
-}
-
-.file-name--current {
-  font-weight: bold;
-  color: var(--color-primary);
-}
-
-.button--small {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
-}
-
-.error-message {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background-color: var(--color-error-bg);
-  color: var(--color-error);
-  border-radius: 4px;
-  border-left: 4px solid var(--color-error);
-}
-
-.success-message {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background-color: var(--color-success-bg);
-  color: var(--color-success);
-  border-radius: 4px;
-  border-left: 4px solid var(--color-success);
+  margin-bottom: 1rem;
 }
 
 @media (min-width: 768px) {
-  .storage-form {
+  .storage-settings__form {
     flex-direction: row;
     align-items: flex-end;
   }
   
-  .form-group {
+  .storage-settings__form-group {
     flex: 1;
   }
 }

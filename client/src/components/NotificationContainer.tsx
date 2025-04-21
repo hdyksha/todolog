@@ -1,27 +1,22 @@
 import React from 'react';
-import { useTaskContext } from '../contexts/TaskContext';
+import { useNotification } from '../contexts/NotificationContext';
 import Notification from './Notification';
 import './NotificationContainer.css';
 
 const NotificationContainer: React.FC = () => {
-  const { notification, dispatch } = useTaskContext();
-
-  const handleClose = () => {
-    dispatch({ type: 'SET_NOTIFICATION', payload: null });
-  };
-
-  if (!notification) {
-    return null;
-  }
+  const { notifications, hideNotification } = useNotification();
 
   return (
     <div className="notification-container">
-      <Notification
-        message={notification.message}
-        type={notification.type}
-        onClose={handleClose}
-        duration={notification.duration}
-      />
+      {notifications.map((notification) => (
+        <Notification
+          key={notification.id}
+          id={notification.id}
+          message={notification.message}
+          type={notification.type}
+          onClose={() => hideNotification(notification.id)}
+        />
+      ))}
     </div>
   );
 };

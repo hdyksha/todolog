@@ -1,224 +1,142 @@
 import React, { useState } from 'react';
 import { useServerSettings } from '../../contexts/ServerSettingsContext';
-import { useTaskFiles } from '../../hooks/useTaskFiles';
-import { apiClient } from '../../services/apiClient';
+import { useTaskFilesContext } from '../../contexts/TaskFilesContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import './StorageSettings.css';
 
 const StorageSettings: React.FC = () => {
-  const { serverSettings, setDataDirectory, isLoading: isSettingsLoading } = useServerSettings();
-  const { 
-    taskFiles, 
-    recentFiles, 
-    createNewTaskFile, 
-    switchTaskFile, 
-    isLoading: isFilesLoading 
-  } = useTaskFiles();
+  const { serverSettings, setDataDirectory } = useServerSettings();
+  const { createNewTaskFile, refreshFiles } = useTaskFilesContext();
+  const { showNotification } = useNotification();
   
-  const [newDataDir, setNewDataDir] = useState(serverSettings.storage.dataDir);
+  const [dataDir, setDataDir] = useState(serverSettings.storage.dataDir);
   const [newFileName, setNewFileName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   // データディレクトリを変更する
   const handleDataDirChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
     
-    try {
-      await setDataDirectory(newDataDir);
-      setSuccess('データディレクトリを変更しました');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'データディレクトリの変更に失敗しました');
-    }
-  };
-
-  // 新しいタスクファイルを作成する
-  const handleCreateFile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    
-    if (!newFileName.trim()) {
-      setError('ファイル名を入力してください');
+    if (dataDir === serverSettings.storage.dataDir) {
       return;
     }
     
+    setIsSubmitting(true);
+    try {
+      await setDataDirectory(dataDir);
+      showNotification('データディレクトリを変更しました', 'success');
+      
+      // ファイル一覧を更新
+      await refreshFiles();
+    } catch (error) {
+      showNotification(
+        error instanceof Error ? error.message : 'データディレクトリの変更に失敗しました',
+        'error'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // 新しいタスクファイルを作成する
+  const handleCreateFile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newFileName) {
+      showNotification('ファイル名を入力してください', 'error');
+      return;
+    }
+    
+    setIsSubmitting(true);
     try {
       await createNewTaskFile(newFileName);
-      setSuccess(`タスクファイル ${newFileName} を作成しました`);
+      showNotification(`タスクファイル ${newFileName} を作成しました`, 'success');
       setNewFileName('');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'タスクファイルの作成に失敗しました');
+      
+      // ファイル一覧を更新
+      await refreshFiles();
+    } catch (error) {
+      showNotification(
+        error instanceof Error ? error.message : 'タスクファイルの作成に失敗しました',
+        'error'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  // タスクファイルを切り替える
-  const handleSwitchFile = async (filename: string) => {
-    setError(null);
-    setSuccess(null);
-    
-    try {
-      await switchTaskFile(filename);
-      
-      // キャッシュをクリアしてタスクを再読み込み
-      apiClient.clearCache();
-      
-      setSuccess(`タスクファイルを ${filename} に切り替えました`);
-      setTimeout(() => setSuccess(null), 3000);
-      
-      // 1秒後にページをリロード
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'タスクファイルの切り替えに失敗しました');
-    }
-  };
-
-  const isLoading = isSettingsLoading || isFilesLoading;
-
+  
   return (
     <div className="storage-settings">
-      <h2 className="storage-settings__title">ストレージ設定</h2>
+      <h2>ストレージ設定</h2>
       
-      {/* データディレクトリ設定 */}
-      <section className="storage-section">
-        <h3 className="storage-section__title">データ保存先</h3>
-        <form onSubmit={handleDataDirChange} className="storage-form">
-          <div className="form-group">
-            <label htmlFor="dataDir" className="form-label">データディレクトリ</label>
+      <div className="storage-settings__section">
+        <h3>データディレクトリ</h3>
+        <p className="storage-settings__description">
+          タスクデータを保存するディレクトリを指定します。
+        </p>
+        
+        <form onSubmit={handleDataDirChange} className="storage-settings__form">
+          <div className="storage-settings__form-group">
+            <label htmlFor="dataDir">データディレクトリのパス:</label>
             <input
-              id="dataDir"
               type="text"
-              className="form-input"
-              value={newDataDir}
-              onChange={(e) => setNewDataDir(e.target.value)}
-              placeholder="例: ./data"
-              disabled={isLoading}
+              id="dataDir"
+              value={dataDir}
+              onChange={(e) => setDataDir(e.target.value)}
+              className="storage-settings__input"
+              disabled={isSubmitting}
             />
           </div>
-          <button 
-            type="submit" 
-            className="button button--primary"
-            disabled={isLoading || newDataDir === serverSettings.storage.dataDir}
+          
+          <button
+            type="submit"
+            className="storage-settings__button"
+            disabled={isSubmitting || dataDir === serverSettings.storage.dataDir}
           >
-            {isLoading ? '処理中...' : '保存先を変更'}
+            {isSubmitting ? '保存中...' : '保存'}
           </button>
         </form>
-        <p className="storage-info">
-          現在の保存先: <code>{serverSettings.storage.dataDir}</code>
+      </div>
+      
+      <div className="storage-settings__section">
+        <h3>新しいタスクファイル</h3>
+        <p className="storage-settings__description">
+          新しいタスクファイルを作成します。拡張子は自動的に .json が付与されます。
         </p>
-      </section>
-      
-      {/* 現在のタスクファイル */}
-      <section className="storage-section">
-        <h3 className="storage-section__title">現在のタスクファイル</h3>
-        <div className="current-file">
-          <p className="current-file__name">
-            <strong>{serverSettings.storage.currentTaskFile}</strong>
-          </p>
-        </div>
-      </section>
-      
-      {/* タスクファイル作成 */}
-      <section className="storage-section">
-        <h3 className="storage-section__title">新しいタスクファイルの作成</h3>
-        <form onSubmit={handleCreateFile} className="storage-form">
-          <div className="form-group">
-            <label htmlFor="newFileName" className="form-label">ファイル名</label>
+        
+        <form onSubmit={handleCreateFile} className="storage-settings__form">
+          <div className="storage-settings__form-group">
+            <label htmlFor="newFileName">ファイル名:</label>
             <input
-              id="newFileName"
               type="text"
-              className="form-input"
+              id="newFileName"
               value={newFileName}
               onChange={(e) => setNewFileName(e.target.value)}
+              className="storage-settings__input"
               placeholder="例: work-tasks"
-              disabled={isLoading}
+              disabled={isSubmitting}
             />
           </div>
-          <button 
-            type="submit" 
-            className="button button--primary"
-            disabled={isLoading || !newFileName.trim()}
+          
+          <button
+            type="submit"
+            className="storage-settings__button"
+            disabled={isSubmitting || !newFileName}
           >
-            {isLoading ? '処理中...' : 'ファイルを作成'}
+            {isSubmitting ? '作成中...' : '作成'}
           </button>
         </form>
-        <p className="storage-info">
-          拡張子 .json は自動的に追加されます
+      </div>
+      
+      <div className="storage-settings__section">
+        <h3>現在のタスクファイル</h3>
+        <p className="storage-settings__current-file">
+          {serverSettings.storage.currentTaskFile}
         </p>
-      </section>
-      
-      {/* タスクファイル一覧 */}
-      <section className="storage-section">
-        <h3 className="storage-section__title">利用可能なタスクファイル</h3>
-        {isLoading ? (
-          <p>読み込み中...</p>
-        ) : taskFiles.length > 0 ? (
-          <ul className="file-list">
-            {taskFiles.map((file) => (
-              <li key={file} className="file-list__item">
-                <span className={`file-name ${file === serverSettings.storage.currentTaskFile ? 'file-name--current' : ''}`}>
-                  {file}
-                </span>
-                {file !== serverSettings.storage.currentTaskFile && (
-                  <button
-                    className="button button--small"
-                    onClick={() => handleSwitchFile(file)}
-                    disabled={isLoading}
-                  >
-                    切り替え
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>タスクファイルがありません</p>
-        )}
-      </section>
-      
-      {/* 最近使用したファイル */}
-      {recentFiles.length > 0 && (
-        <section className="storage-section">
-          <h3 className="storage-section__title">最近使用したファイル</h3>
-          <ul className="file-list">
-            {recentFiles.map((file) => (
-              <li key={file} className="file-list__item">
-                <span className={`file-name ${file === serverSettings.storage.currentTaskFile ? 'file-name--current' : ''}`}>
-                  {file}
-                </span>
-                {file !== serverSettings.storage.currentTaskFile && (
-                  <button
-                    className="button button--small"
-                    onClick={() => handleSwitchFile(file)}
-                    disabled={isLoading}
-                  >
-                    切り替え
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      
-      {/* エラーメッセージ */}
-      {error && (
-        <div className="error-message">
-          {error}
-        </div>
-      )}
-      
-      {/* 成功メッセージ */}
-      {success && (
-        <div className="success-message">
-          {success}
-        </div>
-      )}
+        <p className="storage-settings__description">
+          タスクファイルを切り替えるには、画面上部のドロップダウンメニューを使用してください。
+        </p>
+      </div>
     </div>
   );
 };
