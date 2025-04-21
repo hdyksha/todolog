@@ -128,6 +128,26 @@ export async function fetchTaskFiles(extension?: string): Promise<string[]> {
 }
 
 /**
+ * 利用可能なディレクトリ一覧を取得する
+ * @returns ディレクトリ情報の配列
+ */
+export async function fetchAvailableDirectories(): Promise<Array<{
+  path: string;
+  label: string;
+  exists: boolean;
+  writable: boolean;
+  error?: string;
+}>> {
+  const response = await fetch(`${API_BASE_URL}/storage/directories`);
+  
+  if (!response.ok) {
+    throw new Error('ディレクトリ一覧の取得に失敗しました');
+  }
+  
+  return response.json();
+}
+
+/**
  * 新しいタスクファイルを作成する
  * @param filename ファイル名
  * @returns 作成結果

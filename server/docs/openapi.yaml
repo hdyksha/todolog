@@ -440,6 +440,49 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/storage/directories:
+    get:
+      summary: 利用可能なディレクトリ一覧の取得
+      description: アプリケーションで使用可能なディレクトリ一覧を取得します。
+      tags:
+        - storage
+      responses:
+        '200':
+          description: ディレクトリ一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: string
+                      description: ディレクトリのパス
+                      example: './data'
+                    label:
+                      type: string
+                      description: ディレクトリの表示名
+                      example: 'デフォルト (./data)'
+                    exists:
+                      type: boolean
+                      description: ディレクトリが存在するかどうか
+                      example: true
+                    writable:
+                      type: boolean
+                      description: ディレクトリに書き込み権限があるかどうか
+                      example: true
+                    error:
+                      type: string
+                      description: エラーメッセージ（エラーがある場合のみ）
+                      example: 'アクセス権限がありません'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /health:
     get:
       summary: ヘルスチェック

@@ -19,6 +19,7 @@ describe('Notification コンポーネント', () => {
   it('メッセージと種類が正しく表示される', () => {
     render(
       <Notification 
+        id={1}
         message={testMessage} 
         type="success" 
         onClose={mockOnClose} 
@@ -27,7 +28,7 @@ describe('Notification コンポーネント', () => {
     
     expect(screen.getByText(testMessage)).toBeInTheDocument();
     const notification = screen.getByText(testMessage).closest('.notification');
-    expect(notification).toHaveClass('notification-success');
+    expect(notification).toHaveClass('notification--success');
   });
 
   it('異なる種類の通知が正しく表示される', () => {
@@ -36,6 +37,7 @@ describe('Notification コンポーネント', () => {
     types.forEach(type => {
       const { unmount } = render(
         <Notification 
+          id={1}
           message={`${type}通知`} 
           type={type} 
           onClose={mockOnClose} 
@@ -43,7 +45,7 @@ describe('Notification コンポーネント', () => {
       );
       
       const notification = screen.getByText(`${type}通知`).closest('.notification');
-      expect(notification).toHaveClass(`notification-${type}`);
+      expect(notification).toHaveClass(`notification--${type}`);
       
       unmount();
     });
@@ -52,6 +54,7 @@ describe('Notification コンポーネント', () => {
   it('閉じるボタンをクリックすると onClose が呼ばれる', () => {
     render(
       <Notification 
+        id={1}
         message={testMessage} 
         type="info" 
         onClose={mockOnClose} 
@@ -69,6 +72,7 @@ describe('Notification コンポーネント', () => {
     
     render(
       <Notification 
+        id={1}
         message={testMessage} 
         type="warning" 
         onClose={mockOnClose}
@@ -86,9 +90,10 @@ describe('Notification コンポーネント', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it('デフォルトの時間（3000ms）後に自動的に onClose が呼ばれる', () => {
+  it('デフォルトの時間（5000ms）後に自動的に onClose が呼ばれる', () => {
     render(
       <Notification 
+        id={1}
         message={testMessage} 
         type="error" 
         onClose={mockOnClose}
@@ -98,11 +103,11 @@ describe('Notification コンポーネント', () => {
     // タイマーが設定されていることを確認
     expect(mockOnClose).not.toHaveBeenCalled();
     
-    // 2999ms経過しても呼ばれない
-    vi.advanceTimersByTime(2999);
+    // 4999ms経過しても呼ばれない
+    vi.advanceTimersByTime(4999);
     expect(mockOnClose).not.toHaveBeenCalled();
     
-    // 3000ms経過で呼ばれる
+    // 5000ms経過で呼ばれる
     vi.advanceTimersByTime(1);
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
@@ -110,6 +115,7 @@ describe('Notification コンポーネント', () => {
   it('コンポーネントがアンマウントされるとタイマーがクリアされる', () => {
     const { unmount } = render(
       <Notification 
+        id={1}
         message={testMessage} 
         type="info" 
         onClose={mockOnClose} 
@@ -120,7 +126,7 @@ describe('Notification コンポーネント', () => {
     unmount();
     
     // 時間経過してもonCloseは呼ばれない
-    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(5000);
     expect(mockOnClose).not.toHaveBeenCalled();
   });
 });

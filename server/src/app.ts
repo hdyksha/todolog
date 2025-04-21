@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { taskRoutes } from './routes/taskRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import storageRoutes from './routes/storageRoutes.js';
+import directoryRoutes from './routes/directoryRoutes.js';
 import { requestLogger } from './utils/logger.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import { setupSecurity } from './middleware/security.js';
@@ -45,6 +46,7 @@ export function createApp() {
   app.use('/api/tasks', taskRoutes);
   app.use('/api/settings', settingsRoutes);
   app.use('/api/storage', storageRoutes);
+  app.use('/api/storage', directoryRoutes);
 
   // エラーハンドリングミドルウェア
   app.use(notFoundHandler);

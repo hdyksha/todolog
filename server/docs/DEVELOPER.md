@@ -276,3 +276,129 @@ npm run preview
 ## API リファレンス
 
 詳細なAPI仕様については、[API ドキュメント](./README.md)および[OpenAPI仕様書](./openapi.yaml)を参照してください。
+## カスタムストレージロケーション機能
+
+TodoLogアプリケーションでは、タスクデータの保存先をカスタマイズできる機能を提供しています。この機能により、ユーザーは任意のディレクトリにタスクデータを保存し、複数のタスクファイルを管理できます。
+
+### 設計概要
+
+カスタムストレージロケーション機能は、以下のコンポーネントで構成されています：
+
+1. **設定サービス（SettingsService）**
+   - ユーザー設定を管理するサービス
+   - データディレクトリやタスクファイル名などの設定を保存・読み込み
+
+2. **ファイルサービス（FileService）**
+   - 指定されたディレクトリにファイルを作成・読み込み・保存
+   - ディレクトリが存在しない場合の自動作成
+
+3. **ディレクトリコントローラー（DirectoryController）**
+   - 利用可能なディレクトリ一覧を提供
+   - ディレクトリの存在確認と書き込み権限チェック
+
+4. **ストレージコントローラー（StorageController）**
+   - タスクファイルの作成・管理
+   - ファイル名のバリデーション
+
+### 主要なAPIエンドポイント
+
+| エンドポイント | メソッド | 説明 |
+|--------------|--------|------|
+| `/api/settings/storage/data-dir` | PUT | データディレクトリを設定 |
+| `/api/settings/storage/current-file` | PUT | 現在のタスクファイルを設定 |
+| `/api/settings/storage/recent-files` | GET | 最近使用したファイル一覧を取得 |
+| `/api/storage/files` | GET | タスクファイル一覧を取得 |
+| `/api/storage/files` | POST | 新しいタスクファイルを作成 |
+| `/api/storage/directories` | GET | 利用可能なディレクトリ一覧を取得 |
+
+### 実装の詳細
+
+#### 設定の保存場所
+
+設定は `~/.todolog/settings.json` に保存されます。これにより、アプリケーションの再起動後も設定が保持されます。
+
+```typescript
+// 設定ファイルの場所を決定
+const userHomeDir = os.homedir();
+const settingsDir = process.env.SETTINGS_DIR || path.join(userHomeDir, '.todolog');
+const settingsFile = path.join(settingsDir, 'settings.json');
+```
+
+#### データディレクトリの動的変更
+
+`FileService` クラスは、データディレクトリを動的に変更できるようになっています：
+
+```typescript
+class FileService {
+  private dataDir: string;
+  
+  constructor(dataDir?: string, private settingsService?: SettingsService) {
+    this.dataDir = dataDir || env.DATA_DIR;
+  }
+  
+  // データディレクトリを取得
+  getDataDir(): string {
+    return this.dataDir;
+  }
+  
+  // データディレクトリを設定
+  setDataDir(newDir: string): void {
+    this.dataDir = newDir;
+  }
+  
+  // ファイルパスを解決
+  resolvePath(filename: string): string {
+    return path.join(this.dataDir, filename);
+  }
+}
+```
+
+#### ファイル名のバリデーション
+
+セキュリティ上の理由から、ファイル名は厳格にバリデーションされます：
+
+```typescript
+private isValidFilename(filename: string): boolean {
+  // ファイル名に使用できない文字や、ディレクトリトラバーサルを防止
+  const invalidChars = /[<>:"/\\|?*\x00-\x1F]/;
+  const hasInvalidChars = invalidChars.test(filename);
+  
+  // パス区切り文字を含まないこと
+  const containsPathSeparator = filename.includes(path.sep);
+  
+  // 相対パスを含まないこと
+  const containsRelativePath = filename.includes('..') || filename === '.' || filename === '..';
+  
+  return !hasInvalidChars && !containsPathSeparator && !containsRelativePath;
+}
+```
+
+### セキュリティ上の考慮事項
+
+1. **ディレクトリトラバーサル攻撃の防止**
+   - ファイル名やディレクトリパスのバリデーション
+   - `path.join()` を使用した安全なパス解決
+
+2. **権限エラーの適切な処理**
+   - ディレクトリの書き込み権限チェック
+   - エラーメッセージの適切な表示
+
+3. **ユーザー入力の検証**
+   - すべてのユーザー入力（ファイル名、ディレクトリパス）の厳格なバリデーション
+
+### テスト戦略
+
+1. **単体テスト**
+   - `FileService` のメソッドのテスト
+   - `SettingsService` のメソッドのテスト
+   - バリデーション関数のテスト
+
+2. **統合テスト**
+   - APIエンドポイントのテスト
+   - 設定の保存と読み込みのテスト
+   - ファイル操作のテスト
+
+3. **エッジケースのテスト**
+   - 権限エラーのテスト
+   - 無効なファイル名のテスト
+   - 存在しないディレクトリのテスト
