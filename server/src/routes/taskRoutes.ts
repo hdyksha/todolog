@@ -6,8 +6,8 @@ import { SettingsService } from '../services/settingsService.js';
 import { cacheControl, noCacheAfterMutation } from '../middleware/cache.js';
 
 // サービスのインスタンス化
-const fileService = new FileService();
 const settingsService = new SettingsService();
+const fileService = new FileService(undefined, settingsService);
 const taskService = new TaskService(fileService, settingsService);
 const taskController = new TaskController(taskService);
 

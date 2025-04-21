@@ -2,19 +2,24 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { logger } from '../utils/logger.js';
+import { SettingsService } from './settingsService.js';
 
 /**
  * ファイル操作を担当するサービスクラス
  */
 export class FileService {
   private dataDir: string;
+  private settingsService: SettingsService | null = null;
+  private lastUsedDataDir: string | null = null;
 
   /**
    * FileServiceのコンストラクタ
    * @param dataDir データディレクトリのパス（デフォルトは環境変数またはdata/）
+   * @param settingsService 設定サービス（オプション）
    */
-  constructor(dataDir?: string) {
+  constructor(dataDir?: string, settingsService?: SettingsService) {
     this.dataDir = dataDir || process.env.DATA_DIR || './data';
+    this.settingsService = settingsService || null;
     this.ensureDataDir().catch(err => {
       logger.error('データディレクトリの作成に失敗しました', { error: err.message });
     });
@@ -26,6 +31,7 @@ export class FileService {
    */
   async setDataDir(dirPath: string): Promise<void> {
     this.dataDir = dirPath;
+    this.lastUsedDataDir = dirPath;
     await this.ensureDataDir();
     logger.info(`データディレクトリを変更しました: ${dirPath}`);
   }
@@ -34,7 +40,18 @@ export class FileService {
    * 現在のデータディレクトリを取得する
    * @returns データディレクトリのパス
    */
-  getDataDir(): string {
+  async getDataDir(): Promise<string> {
+    // 設定サービスが提供されている場合は、そこからデータディレクトリを取得
+    if (this.settingsService) {
+      try {
+        const dataDir = await this.settingsService.getDataDir();
+        this.lastUsedDataDir = dataDir;
+        logger.debug(`設定からデータディレクトリを取得しました: ${dataDir}`);
+        return dataDir;
+      } catch (error) {
+        logger.warn('設定からデータディレクトリの取得に失敗しました。デフォルトを使用します。', { error: (error as Error).message });
+      }
+    }
     return this.dataDir;
   }
 
@@ -42,11 +59,13 @@ export class FileService {
    * データディレクトリが存在することを確認し、なければ作成する
    */
   private async ensureDataDir(): Promise<void> {
+    const dataDir = await this.getDataDir();
     try {
-      await fs.access(this.dataDir);
+      await fs.access(dataDir);
+      logger.debug(`データディレクトリが存在します: ${dataDir}`);
     } catch (error) {
-      logger.info(`データディレクトリを作成します: ${this.dataDir}`);
-      await fs.mkdir(this.dataDir, { recursive: true });
+      logger.info(`データディレクトリを作成します: ${dataDir}`);
+      await fs.mkdir(dataDir, { recursive: true });
     }
   }
 
@@ -58,7 +77,10 @@ export class FileService {
    */
   async readFile<T>(filename: string, defaultValue: T): Promise<T> {
     await this.ensureDataDir();
-    const filePath = path.join(this.dataDir, filename);
+    const dataDir = await this.getDataDir();
+    const filePath = path.join(dataDir, filename);
+    
+    logger.info(`ファイルを読み込み中: ${filePath}`);
     
     try {
       const data = await fs.readFile(filePath, 'utf8');
@@ -80,7 +102,10 @@ export class FileService {
    */
   async writeFile<T>(filename: string, data: T): Promise<void> {
     await this.ensureDataDir();
-    const filePath = path.join(this.dataDir, filename);
+    const dataDir = await this.getDataDir();
+    const filePath = path.join(dataDir, filename);
+    
+    logger.info(`ファイルに書き込み中: ${filePath}`);
     
     try {
       await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
@@ -97,10 +122,11 @@ export class FileService {
    */
   async createBackup(filename: string): Promise<string> {
     await this.ensureDataDir();
-    const sourceFilePath = path.join(this.dataDir, filename);
+    const dataDir = await this.getDataDir();
+    const sourceFilePath = path.join(dataDir, filename);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFilename = `${filename}.${timestamp}.bak`;
-    const backupFilePath = path.join(this.dataDir, backupFilename);
+    const backupFilePath = path.join(dataDir, backupFilename);
     
     try {
       // ソースファイルが存在するか確認
@@ -128,8 +154,9 @@ export class FileService {
    */
   async restoreFromBackup(backupFilename: string, targetFilename: string): Promise<void> {
     await this.ensureDataDir();
-    const backupFilePath = path.join(this.dataDir, backupFilename);
-    const targetFilePath = path.join(this.dataDir, targetFilename);
+    const dataDir = await this.getDataDir();
+    const backupFilePath = path.join(dataDir, backupFilename);
+    const targetFilePath = path.join(dataDir, targetFilename);
     
     try {
       // バックアップファイルが存在するか確認
@@ -154,9 +181,10 @@ export class FileService {
    */
   async listBackups(baseFilename: string): Promise<string[]> {
     await this.ensureDataDir();
+    const dataDir = await this.getDataDir();
     
     try {
-      const files = await fs.readdir(this.dataDir);
+      const files = await fs.readdir(dataDir);
       const backupPattern = new RegExp(`^${baseFilename}\\..*\\.bak$`);
       
       return files.filter(file => backupPattern.test(file));
@@ -173,9 +201,10 @@ export class FileService {
    */
   async listFiles(extension?: string): Promise<string[]> {
     await this.ensureDataDir();
+    const dataDir = await this.getDataDir();
     
     try {
-      const files = await fs.readdir(this.dataDir);
+      const files = await fs.readdir(dataDir);
       
       if (extension) {
         return files.filter(file => file.endsWith(extension));

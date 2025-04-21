@@ -5,8 +5,8 @@ import { SettingsService } from '../services/settingsService.js';
 import { cacheControl, noCacheAfterMutation } from '../middleware/cache.js';
 
 const router = express.Router();
-const fileService = new FileService();
 const settingsService = new SettingsService();
+const fileService = new FileService(undefined, settingsService);
 const storageController = new StorageController(fileService, settingsService);
 
 // ファイル一覧の取得
