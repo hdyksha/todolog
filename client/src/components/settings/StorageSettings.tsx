@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useServerSettings } from '../../contexts/ServerSettingsContext';
-import { useTaskFilesContext } from '../../contexts/TaskFilesContext';
+import { useTaskFiles } from '../../contexts/TaskFilesContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import './StorageSettings.css';
 
 const StorageSettings: React.FC = () => {
   const { serverSettings, setDataDirectory } = useServerSettings();
-  const { createNewTaskFile, refreshFiles } = useTaskFilesContext();
+  const { createNewTaskFile, refreshFiles } = useTaskFiles();
   const { showNotification } = useNotification();
   
   const [dataDir, setDataDir] = useState(serverSettings.storage.dataDir);

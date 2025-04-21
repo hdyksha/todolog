@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { useServerSettings } from '../../contexts/ServerSettingsContext';
-import { useTaskFilesContext } from '../../contexts/TaskFilesContext';
+import { useTaskFiles } from '../../contexts/TaskFilesContext';
 import { apiClient } from '../../services/apiClient';
 import './TaskFileSelector.css';
 
 const TaskFileSelector: React.FC = () => {
   const { serverSettings } = useServerSettings();
-  const { taskFiles, recentFiles, switchTaskFile, isLoading, refreshFiles } = useTaskFilesContext();
+  const { taskFiles, recentFiles, switchTaskFile, isLoading, refreshFiles } = useTaskFiles();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAllFiles, setShowAllFiles] = useState(false);

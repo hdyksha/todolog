@@ -140,15 +140,6 @@ export const TaskFilesProvider: React.FC<{ children: ReactNode }> = ({ children 
 };
 
 // カスタムフック
-export const useTaskFilesContext = () => {
-  const context = useContext(TaskFilesContext);
-  if (context === undefined) {
-    throw new Error('useTaskFilesContext must be used within a TaskFilesProvider');
-  }
-  return context;
-};
-
-// カスタムフック
 export const useTaskFiles = () => {
   const context = useContext(TaskFilesContext);
   if (context === undefined) {
