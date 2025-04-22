@@ -31,7 +31,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
   };
 
   return (
-    <li className={taskClassName}>
+    <div className={taskClassName} data-testid="task-item">
       <div 
         className="task-item-content"
         onClick={handleTaskClick}
@@ -113,7 +113,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
           削除
         </Button>
       </div>
-    </li>
+    </div>
   );
 };
 

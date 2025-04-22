@@ -38,11 +38,23 @@ const ArchivedTaskList: React.FC<ArchivedTaskListProps> = ({
   }, [tasksByDate]);
   
   if (archivedTasks.length === 0) {
-    return <p className="no-archived-tasks">アーカイブされたタスクはありません</p>;
+    return (
+      <div 
+        className="no-archived-tasks"
+        role="status"
+        aria-live="polite"
+      >
+        アーカイブされたタスクはありません
+      </div>
+    );
   }
   
   return (
-    <div className="archived-task-list">
+    <div 
+      className="archived-task-list"
+      role="region"
+      aria-label="アーカイブされたタスク一覧"
+    >
       {dateKeys.map(dateKey => (
         <DateGroup
           key={dateKey}

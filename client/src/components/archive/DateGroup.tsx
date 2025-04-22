@@ -37,32 +37,60 @@ const DateGroup: React.FC<DateGroupProps> = ({
   
   const formattedDate = formatDate(date);
   
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleExpand();
+    }
+  };
+  
+  const dateString = date.toISOString().split('T')[0];
+  const tasksId = `date-tasks-${dateString}`;
+  
   return (
     <div className="date-group">
       <div 
         className="date-header"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={toggleExpand}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-expanded={isExpanded}
+        aria-controls={tasksId}
       >
         <span className="date-text">{formattedDate}</span>
         <span className="task-count">{tasks.length}件</span>
-        <button className="toggle-button" aria-label={isExpanded ? '折りたたむ' : '展開する'}>
+        <span 
+          className="toggle-button" 
+          aria-hidden="true"
+        >
           {isExpanded ? '▼' : '▶'}
-        </button>
+        </span>
       </div>
       
       {isExpanded && (
-        <div className="date-tasks">
-          {tasks.map(task => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              isArchived={true}
-              onToggleComplete={onToggleComplete}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              onEditMemo={onEditMemo}
-            />
-          ))}
+        <div 
+          className="date-tasks" 
+          id={tasksId}
+        >
+          <ul className="task-list">
+            {tasks.map(task => (
+              <li key={task.id} className="task-list-item">
+                <TaskItem
+                  task={task}
+                  isArchived={true}
+                  onToggleComplete={onToggleComplete}
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                  onEditMemo={onEditMemo}
+                />
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
