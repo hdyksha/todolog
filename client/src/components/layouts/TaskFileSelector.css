@@ -52,10 +52,12 @@
   width: 220px;
   max-height: 300px;
   overflow-y: auto;
-  background-color: var(--color-bg-primary);
+  /* 背景色の不透明度を上げる */
+  background-color: rgba(var(--color-background-rgb), 0.95);
+  backdrop-filter: blur(5px);
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 100;
   margin-top: 0.25rem;
 }

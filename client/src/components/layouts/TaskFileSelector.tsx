@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import { useServerSettings } from '../../contexts/ServerSettingsContext';
 import { useTaskFiles } from '../../contexts/TaskFilesContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { apiClient } from '../../services/apiClient';
 import './TaskFileSelector.css';
 
 const TaskFileSelector: React.FC = () => {
   const { serverSettings } = useServerSettings();
   const { taskFiles, recentFiles, switchTaskFile, isLoading, refreshFiles } = useTaskFiles();
+  const { currentTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAllFiles, setShowAllFiles] = useState(false);
@@ -66,7 +68,12 @@ const TaskFileSelector: React.FC = () => {
       </button>
       
       {isOpen && (
-        <div className="task-file-selector__dropdown">
+        <div 
+          className="task-file-selector__dropdown"
+          style={{
+            backgroundColor: `rgba(var(--color-background-rgb), 0.95)`
+          }}
+        >
           <div className="task-file-selector__header">
             タスクファイルを選択
             <button 

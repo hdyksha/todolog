@@ -30,6 +30,11 @@
   --color-background-hover: #f3f4f6;
   --color-background-disabled: #e5e7eb;
   
+  /* RGB値を追加 */
+  --color-background-rgb: 255, 255, 255;
+  --color-background-secondary-rgb: 249, 250, 251;
+  --color-background-tertiary-rgb: 243, 244, 246;
+  
   --color-border: #e5e7eb;
   --color-border-focus: #93c5fd;
   
@@ -110,6 +115,11 @@
     --color-background-tertiary: #374151;
     --color-background-hover: #374151;
     --color-background-disabled: #4b5563;
+    
+    /* RGB値を追加 */
+    --color-background-rgb: 17, 24, 39;
+    --color-background-secondary-rgb: 31, 41, 55;
+    --color-background-tertiary-rgb: 55, 65, 81;
     
     --color-border: #374151;
     --color-border-focus: #2563eb;
