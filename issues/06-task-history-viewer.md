@@ -1,15 +1,15 @@
-# Issue06: タスク履歴ビューアーの実装
+# Issue06: アーカイブタスクの日付別グルーピング表示
 
 ## 概要
 
-現在のTodoLogでは、完了したタスクはアーカイブセクションに移動され、単純なリスト形式で表示されています。この実装を拡張し、完了したタスクを日付ごとにグルーピングして時系列で閲覧できる「タスク履歴ビューアー」機能を追加します。これにより、ユーザーは過去にどのようなタスクをいつ完了したかを振り返ることができるようになります。
+現在のTodoLogでは、完了したタスクはアーカイブセクションに移動され、単純なリスト形式で表示されています。この実装を拡張し、アーカイブされたタスクを完了日ごとにグルーピングして時系列で閲覧できるようにします。これにより、ユーザーは過去にどのようなタスクをいつ完了したかを視覚的に把握しやすくなります。
 
 ## 目的
 
-- 完了したタスクを日付ごとにグルーピングして表示する
+- アーカイブされたタスクを完了日ごとにグルーピングして表示する
 - 時系列順（新しい順）で閲覧できるようにする
-- 過去の生産性や活動履歴を視覚的に把握しやすくする
-- タスク完了の傾向や習慣を分析できるようにする
+- 過去の活動履歴を視覚的に把握しやすくする
+- 既存のアーカイブ機能を拡張し、使いやすさを向上させる
 
 ## 機能要件
 
@@ -22,39 +22,15 @@
 ### 2. 時系列表示
 
 - 日付グループを新しい順（降順）に表示
-- オプションで古い順（昇順）に切り替え可能
 - 日付フォーマットは「YYYY年MM月DD日（曜日）」形式
-
-### 3. フィルタリングとナビゲーション
-
-- 特定の期間（今日、今週、今月、カスタム期間）でフィルタリング
-- カレンダーUIを使用した日付範囲選択
-- 月ごとのクイックナビゲーション
-
-### 4. 統計情報
-
-- 表示期間内の完了タスク総数
-- 日ごとの完了タスク数のグラフ表示
-- カテゴリ別の完了タスク分布
-
-### 5. エクスポート機能
-
-- 表示中の履歴をCSV形式でエクスポート
-- 期間を指定してエクスポート
 
 ## UI/UXデザイン
 
-### タスク履歴ビューアー画面
+### アーカイブタスク表示画面
 
 ```
 +----------------------------------+
-| タスク履歴ビューアー             |
-+----------------------------------+
-| 期間: [今日▼] [カレンダー]       |
-| 表示順: [新しい順▼]              |
-+----------------------------------+
-| 統計: 完了タスク 24件            |
-| [グラフ表示]                     |
+| アーカイブ済みタスク             |
 +----------------------------------+
 | 2025年4月20日（日）- 5件         |
 | ▼                               |
@@ -76,8 +52,6 @@
 | ▶                               |
 +----------------------------------+
 | ...                              |
-+----------------------------------+
-| [CSVエクスポート]                |
 +----------------------------------+
 ```
 
@@ -123,52 +97,26 @@ const groupTasksByDate = (tasks: Task[]): TasksByDate => {
 
 ### 2. コンポーネントの作成
 
-#### TaskHistoryViewer コンポーネント
+#### ArchivedTaskList コンポーネント
 
 ```tsx
-interface TaskHistoryViewerProps {
+interface ArchivedTaskListProps {
   tasks: Task[];
 }
 
-const TaskHistoryViewer: React.FC<TaskHistoryViewerProps> = ({ tasks }) => {
-  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'custom'>('month');
-  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  
-  // 期間に基づいてタスクをフィルタリング
-  const filteredTasks = useMemo(() => {
-    return filterTasksByPeriod(tasks, period, startDate, endDate);
-  }, [tasks, period, startDate, endDate]);
-  
+const ArchivedTaskList: React.FC<ArchivedTaskListProps> = ({ tasks }) => {
   // 日付ごとにグルーピング
   const tasksByDate = useMemo(() => {
-    return groupTasksByDate(filteredTasks);
-  }, [filteredTasks]);
+    return groupTasksByDate(tasks);
+  }, [tasks]);
   
-  // 日付の配列を取得（ソート順に応じて）
+  // 日付の配列を取得（新しい順）
   const dateKeys = useMemo(() => {
-    const keys = Object.keys(tasksByDate);
-    return sortOrder === 'desc' ? keys.sort().reverse() : keys.sort();
-  }, [tasksByDate, sortOrder]);
+    return Object.keys(tasksByDate).sort().reverse();
+  }, [tasksByDate]);
   
   return (
-    <div className="task-history-viewer">
-      <div className="history-controls">
-        <PeriodSelector value={period} onChange={setPeriod} />
-        <SortOrderSelector value={sortOrder} onChange={setSortOrder} />
-        {period === 'custom' && (
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-          />
-        )}
-      </div>
-      
-      <TaskStatistics tasks={filteredTasks} />
-      
+    <div className="archived-task-list">
       <div className="date-groups">
         {dateKeys.map(dateKey => (
           <DateGroup
@@ -177,12 +125,6 @@ const TaskHistoryViewer: React.FC<TaskHistoryViewerProps> = ({ tasks }) => {
             tasks={tasksByDate[dateKey]}
           />
         ))}
-      </div>
-      
-      <div className="export-controls">
-        <button onClick={() => exportToCSV(filteredTasks)}>
-          CSVエクスポート
-        </button>
       </div>
     </div>
   );
@@ -217,7 +159,7 @@ const DateGroup: React.FC<DateGroupProps> = ({ date, tasks }) => {
       {isExpanded && (
         <div className="date-tasks">
           {tasks.map(task => (
-            <TaskHistoryItem key={task.id} task={task} />
+            <ArchivedTaskItem key={task.id} task={task} />
           ))}
         </div>
       )}
@@ -226,139 +168,18 @@ const DateGroup: React.FC<DateGroupProps> = ({ date, tasks }) => {
 };
 ```
 
-### 3. フィルタリングロジック
+### 3. 日付フォーマット
 
 ```typescript
-const filterTasksByPeriod = (
-  tasks: Task[],
-  period: 'today' | 'week' | 'month' | 'custom',
-  startDate: Date | null,
-  endDate: Date | null
-): Task[] => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const formatDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
   
-  // 今週の開始日（日曜日）
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
+  const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
   
-  // 今月の開始日
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  
-  return tasks.filter(task => {
-    if (!task.completed) return false;
-    
-    const taskDate = new Date(task.updatedAt);
-    
-    switch (period) {
-      case 'today':
-        return taskDate >= today;
-      case 'week':
-        return taskDate >= startOfWeek;
-      case 'month':
-        return taskDate >= startOfMonth;
-      case 'custom':
-        return (
-          (!startDate || taskDate >= startDate) &&
-          (!endDate || taskDate <= endDate)
-        );
-      default:
-        return true;
-    }
-  });
+  return `${year}年${month}月${day}日（${dayOfWeek}）`;
 };
-```
-
-### 4. 統計情報の表示
-
-```tsx
-interface TaskStatisticsProps {
-  tasks: Task[];
-}
-
-const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks }) => {
-  // カテゴリ別のタスク数を集計
-  const categoryCounts = useMemo(() => {
-    return tasks.reduce((counts, task) => {
-      const category = task.category || 'カテゴリなし';
-      counts[category] = (counts[category] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
-  }, [tasks]);
-  
-  return (
-    <div className="task-statistics">
-      <h3>統計情報</h3>
-      <p>完了タスク: {tasks.length}件</p>
-      
-      <div className="category-distribution">
-        <h4>カテゴリ別</h4>
-        <ul>
-          {Object.entries(categoryCounts).map(([category, count]) => (
-            <li key={category}>
-              {category}: {count}件
-            </li>
-          ))}
-        </ul>
-      </div>
-      
-      <button onClick={() => showTaskCompletionGraph(tasks)}>
-        グラフ表示
-      </button>
-    </div>
-  );
-};
-```
-
-### 5. CSVエクスポート機能
-
-```typescript
-const exportToCSV = (tasks: Task[]) => {
-  // ヘッダー行
-  const headers = ['タイトル', 'カテゴリ', '優先度', '完了日時'];
-  
-  // データ行
-  const rows = tasks.map(task => [
-    task.title,
-    task.category || 'カテゴリなし',
-    task.priority,
-    new Date(task.updatedAt).toLocaleString()
-  ]);
-  
-  // CSVフォーマットに変換
-  const csvContent = [
-    headers.join(','),
-    ...rows.map(row => row.join(','))
-  ].join('\n');
-  
-  // ダウンロード処理
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `task-history-${new Date().toISOString().split('T')[0]}.csv`);
-  link.click();
-};
-```
-
-## ルーティングの更新
-
-タスク履歴ビューアーへのアクセスを提供するために、ナビゲーションとルーティングを更新します。
-
-```tsx
-// App.tsx
-<Routes>
-  <Route path="/" element={<TaskListPage />} />
-  <Route path="/history" element={<TaskHistoryPage />} />
-  {/* 他のルート */}
-</Routes>
-
-// Navigation.tsx
-<nav>
-  <NavLink to="/">タスク一覧</NavLink>
-  <NavLink to="/history">履歴</NavLink>
-  {/* 他のナビゲーション項目 */}
-</nav>
 ```
 
 ## テスト計画
@@ -369,25 +190,15 @@ const exportToCSV = (tasks: Task[]) => {
    - 日付ごとに正しくグルーピングされるか
    - 空のタスクリストを処理できるか
 
-2. フィルタリングロジックのテスト
-   - 各期間（今日、今週、今月、カスタム）で正しくフィルタリングされるか
-   - 日付範囲が正しく適用されるか
-
-3. コンポーネントのテスト
-   - TaskHistoryViewer コンポーネントが正しくレンダリングされるか
+2. コンポーネントのテスト
+   - ArchivedTaskList コンポーネントが正しくレンダリングされるか
    - DateGroup コンポーネントの折りたたみ/展開が機能するか
-   - 統計情報が正しく計算されるか
 
 ### 統合テスト
 
-1. 期間選択とタスク表示の連携テスト
-   - 期間を変更すると表示されるタスクが更新されるか
-
-2. ソート順変更のテスト
-   - ソート順を変更すると日付グループの順序が更新されるか
-
-3. CSVエクスポート機能のテスト
-   - 正しいフォーマットでCSVファイルが生成されるか
+1. アーカイブ済みタスクの表示テスト
+   - 日付ごとに正しくグループ化されて表示されるか
+   - 日付が新しい順に表示されるか
 
 ### アクセシビリティテスト
 
@@ -398,71 +209,45 @@ const exportToCSV = (tasks: Task[]) => {
 ## 期待される成果
 
 - ユーザーが過去の活動履歴を時系列で振り返ることができる
-- 日々の生産性や活動パターンを視覚的に把握できる
 - 完了したタスクの記録を整理された形式で閲覧できる
-- 必要に応じてタスク履歴をエクスポートして外部で分析できる
+- アーカイブ機能の使いやすさが向上する
 
 ## 注意点
 
 - 大量のタスク履歴がある場合のパフォーマンス最適化
 - モバイル表示での使いやすさの確保
 - 日付フォーマットの国際化対応
-- プライバシーとデータ保持ポリシーの考慮
 
 ## 実装ステップ
 
-### フェーズ1: 基本実装 (2-3日)
+### フェーズ1: 基本実装 (1-2日)
 
-1. データ処理ロジックの実装
-   - タスクの日付ごとのグルーピング
-   - 期間によるフィルタリング
-   - ソート機能
+1. [ ] データ処理ロジックの実装
+   - [ ] タスクの日付ごとのグルーピング
+   - [ ] 日付の降順ソート
 
-2. 基本UIコンポーネントの実装
-   - TaskHistoryViewer コンポーネント
-   - DateGroup コンポーネント
-   - TaskHistoryItem コンポーネント
+2. [ ] 基本UIコンポーネントの実装
+   - [ ] ArchivedTaskList コンポーネント
+   - [ ] DateGroup コンポーネント
+   - [ ] ArchivedTaskItem コンポーネント
 
-3. ルーティングとナビゲーションの更新
-   - 履歴ビューアーページの追加
-   - ナビゲーションリンクの追加
+### フェーズ2: UI/UX改善 (1日)
 
-### フェーズ2: 拡張機能 (2-3日)
+1. [ ] レスポンシブデザインの最適化
+   - [ ] モバイル表示の調整
+   - [ ] タッチ操作の対応
 
-1. 統計情報の実装
-   - 完了タスク数の集計
-   - カテゴリ別分布の表示
-   - 簡易グラフ表示
+2. [ ] アニメーションとトランジション
+   - [ ] 日付グループの展開/折りたたみアニメーション
 
-2. フィルタリングUIの拡張
-   - 期間選択コンポーネント
-   - カレンダーによる日付範囲選択
-   - ソート順切り替え
+3. [ ] アクセシビリティ対応
+   - [ ] キーボードナビゲーション
+   - [ ] スクリーンリーダー対応
+   - [ ] 適切なARIA属性の追加
 
-3. CSVエクスポート機能の実装
-   - データフォーマット変換
-   - ファイルダウンロード機能
+### フェーズ3: テストとドキュメント (1日)
 
-### フェーズ3: UI/UX改善 (1-2日)
-
-1. レスポンシブデザインの最適化
-   - モバイル表示の調整
-   - タッチ操作の対応
-
-2. アニメーションとトランジション
-   - 日付グループの展開/折りたたみアニメーション
-   - フィルター変更時のトランジション
-
-3. アクセシビリティ対応
-   - キーボードナビゲーション
-   - スクリーンリーダー対応
-   - 適切なARIA属性の追加
-
-### フェーズ4: テストとドキュメント (1-2日)
-
-1. 単体テストの実装
-2. 統合テストの実装
-3. アクセシビリティテスト
-4. ドキュメントの更新
-   - 開発者向けドキュメント
-   - ユーザーマニュアル
+1. [ ] 単体テストの実装
+2. [ ] 統合テストの実装
+3. [ ] アクセシビリティテスト
+4. [ ] ドキュメントの更新
