@@ -3,7 +3,7 @@ import { Task } from '../../types';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useArchiveStats } from '../../hooks/useArchiveStats';
 import ArchiveHeader from './ArchiveHeader';
-import TaskItem from '../TaskItem';
+import ArchivedTaskList from './ArchivedTaskList';
 import './ArchiveSection.css';
 
 interface ArchiveSectionProps {
@@ -49,23 +49,13 @@ const ArchiveSection: React.FC<ArchiveSectionProps> = ({
       
       {isExpanded && (
         <div className="archived-tasks">
-          {archivedTasks.length === 0 ? (
-            <p className="no-tasks">アーカイブされたタスクはありません</p>
-          ) : (
-            <div className="task-list">
-              {archivedTasks.map(task => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  isArchived={true}
-                  onToggleComplete={onToggleComplete}
-                  onDelete={onDelete}
-                  onEdit={onEdit}
-                  onEditMemo={onEditMemo}
-                />
-              ))}
-            </div>
-          )}
+          <ArchivedTaskList
+            tasks={tasks}
+            onToggleComplete={onToggleComplete}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onEditMemo={onEditMemo}
+          />
         </div>
       )}
     </div>

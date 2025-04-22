@@ -1,0 +1,21 @@
+.archived-task-list {
+  margin-top: 1rem;
+}
+
+.no-archived-tasks {
+  text-align: center;
+  padding: 2rem;
+  color: #757575;
+  font-style: italic;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .no-archived-tasks {
+    color: #bbdefb; /* 明るい青色のテキスト */
+    background-color: #263238; /* 暗めの背景色 */
+  }
+}
