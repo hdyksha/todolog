@@ -171,16 +171,6 @@ export class TaskController {
     }
   };
 
-  // カテゴリ一覧の取得
-  getCategories = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const categories = await this.taskService.getCategories();
-      res.status(200).json(categories);
-    } catch (error) {
-      next(error);
-    }
-  };
-
   // バックアップの作成
   createBackup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

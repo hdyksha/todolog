@@ -22,7 +22,6 @@ taskRoutes.put('/:id', noCacheAfterMutation, taskController.updateTask);
 taskRoutes.delete('/:id', noCacheAfterMutation, taskController.deleteTask);
 taskRoutes.put('/:id/toggle', noCacheAfterMutation, taskController.toggleTaskCompletion);
 taskRoutes.put('/:id/memo', noCacheAfterMutation, taskController.updateTaskMemo);
-taskRoutes.get('/categories', cacheControl(60), taskController.getCategories);
 
 // バックアップと復元のエンドポイント
 taskRoutes.post('/backups', taskController.createBackup);

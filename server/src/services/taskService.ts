@@ -34,7 +34,7 @@ export class TaskService {
 
   // 全タスクの取得（フィルタリングとソート機能付き）
   async getAllTasks(options?: {
-    category?: string;
+    tags?: string[];
     completed?: boolean;
     priority?: string;
     sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority';
@@ -45,10 +45,37 @@ export class TaskService {
     
     let tasks = await this.fileService.readFile<Task[]>(tasksFile, []);
     
+    // カテゴリからタグへの移行処理
+    tasks = tasks.map(task => {
+      // 古いデータ形式（category）から新しいデータ形式（tags）への変換
+      if (!task.tags && task.category) {
+        const newTask = {
+          ...task,
+          tags: [task.category]
+        };
+        // @ts-ignore - 古いフィールドを削除
+        delete newTask.category;
+        return newTask as Task;
+      }
+      
+      // tagsフィールドがない場合は空の配列を設定
+      if (!task.tags) {
+        return {
+          ...task,
+          tags: []
+        };
+      }
+      
+      return task;
+    });
+    
     // フィルタリング
     if (options) {
-      if (options.category !== undefined) {
-        tasks = tasks.filter(task => task.category === options.category);
+      if (options.tags && options.tags.length > 0) {
+        tasks = tasks.filter(task => {
+          // タスクのタグが指定されたタグのいずれかを含む場合にマッチ
+          return options.tags!.some(tag => task.tags.includes(tag));
+        });
       }
       
       if (options.completed !== undefined) {
@@ -98,6 +125,7 @@ export class TaskService {
       ...taskData,
       completed: taskData.completed ?? false,
       priority: taskData.priority ?? 'medium',
+      tags: taskData.tags ?? [],
       id: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -171,20 +199,6 @@ export class TaskService {
     }
     
     return this.updateTask(id, { memo });
-  }
-
-  // カテゴリ一覧の取得
-  async getCategories(): Promise<string[]> {
-    const tasks = await this.getAllTasks();
-    const categories = new Set<string>();
-    
-    tasks.forEach(task => {
-      if (task.category) {
-        categories.add(task.category);
-      }
-    });
-    
-    return Array.from(categories);
   }
   
   // データのバックアップを作成

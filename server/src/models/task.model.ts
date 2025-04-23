@@ -19,11 +19,9 @@ export const CreateTaskSchema = z.object({
     .trim(),
   completed: z.boolean().default(false),
   priority: PriorityEnum.default('medium'),
-  category: z
-    .string()
-    .max(50, 'カテゴリは50文字以内にしてください')
-    .trim()
-    .optional(),
+  tags: z
+    .array(z.string().max(50, 'タグは50文字以内にしてください').trim())
+    .default([]),
   dueDate: z
     .string()
     .refine(val => !val || isValidDate(val), {
@@ -62,7 +60,7 @@ export const TaskSchema = CreateTaskSchema.extend({
 
 // フィルタリング用のスキーマ
 export const TaskFilterSchema = z.object({
-  category: z.string().trim().optional(),
+  tags: z.array(z.string().trim()).optional(),
   completed: z.boolean().optional(),
   priority: PriorityEnum.optional(),
   sortBy: z
