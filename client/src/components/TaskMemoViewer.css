@@ -1,0 +1,146 @@
+.task-memo-viewer {
+  font-family: var(--font-family);
+  line-height: 1.6;
+  color: var(--text-color);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.task-memo-viewer-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+/* 見出し */
+.task-memo-heading {
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.task-memo-h1 {
+  font-size: 1.75em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3em;
+}
+
+.task-memo-h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3em;
+}
+
+.task-memo-h3 {
+  font-size: 1.25em;
+}
+
+.task-memo-h4 {
+  font-size: 1em;
+}
+
+.task-memo-h5 {
+  font-size: 0.875em;
+}
+
+.task-memo-h6 {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+/* リンク */
+.task-memo-link {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.task-memo-link:hover {
+  text-decoration: underline;
+}
+
+/* コード */
+.task-memo-inline-code {
+  background-color: var(--code-bg-color);
+  border-radius: 3px;
+  font-family: monospace;
+  padding: 0.2em 0.4em;
+  font-size: 0.9em;
+}
+
+.task-memo-code-block {
+  display: block;
+  background-color: var(--code-bg-color);
+  border-radius: 6px;
+  padding: 1em;
+  margin: 1em 0;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.9em;
+  line-height: 1.45;
+}
+
+/* リスト */
+.task-memo-list {
+  padding-left: 2em;
+  margin: 1em 0;
+}
+
+.task-memo-ul {
+  list-style-type: disc;
+}
+
+.task-memo-ol {
+  list-style-type: decimal;
+}
+
+/* 引用 */
+.task-memo-blockquote {
+  border-left: 4px solid var(--border-color);
+  color: var(--text-muted);
+  margin: 1em 0;
+  padding: 0 1em;
+}
+
+/* 水平線 */
+.task-memo-hr {
+  height: 0.25em;
+  border: 0;
+  background-color: var(--border-color);
+  margin: 1.5em 0;
+}
+
+/* テーブル */
+table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+th, td {
+  border: 1px solid var(--border-color);
+  padding: 0.5em 1em;
+}
+
+th {
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: var(--bg-hover);
+}
+
+/* チェックボックス */
+input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
+/* 画像 */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}

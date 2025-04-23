@@ -68,7 +68,15 @@ const MemoEditor: React.FC<MemoEditorProps> = ({
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="メモを入力してください..."
+            placeholder="メモを入力してください...
+# マークダウン記法が使えます
+- リスト項目
+- **太字** や *斜体* も使えます
+- [リンク](https://example.com)
+
+```
+コードブロックも使えます
+```"
             rows={10}
           />
           <div className="memo-editor-footer">
@@ -97,5 +105,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({
     </div>
   );
 };
+
+export default MemoEditor;
 
 export default MemoEditor;

@@ -4,6 +4,7 @@ import { useTaskContext } from '../contexts/TaskContext';
 import { useTaskActions } from '../hooks/useTaskActions';
 import Button from '../components/ui/Button';
 import CategoryBadge from '../components/categories/CategoryBadge';
+import TaskMemoViewer from '../components/TaskMemoViewer';
 import { Priority } from '../types';
 import './TaskDetailPage.css';
 
@@ -234,11 +235,7 @@ const TaskDetailPage: React.FC = () => {
           />
         ) : (
           <div className="task-detail-memo-content">
-            {task.memo ? (
-              task.memo
-            ) : (
-              <span className="task-detail-memo-empty">メモはありません</span>
-            )}
+            <TaskMemoViewer memo={task.memo || ''} />
           </div>
         )}
       </div>
