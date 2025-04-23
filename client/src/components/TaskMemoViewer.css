@@ -61,7 +61,7 @@
 
 /* コード */
 .task-memo-inline-code {
-  background-color: var(--code-bg-color);
+  background-color: var(--code-bg-color, rgba(0, 0, 0, 0.05));
   border-radius: 3px;
   font-family: monospace;
   padding: 0.2em 0.4em;
@@ -70,7 +70,7 @@
 
 .task-memo-code-block {
   display: block;
-  background-color: var(--code-bg-color);
+  background-color: var(--code-bg-color, rgba(0, 0, 0, 0.05));
   border-radius: 6px;
   padding: 1em;
   margin: 1em 0;
@@ -78,6 +78,14 @@
   font-family: monospace;
   font-size: 0.9em;
   line-height: 1.45;
+}
+
+/* シンタックスハイライト */
+.task-memo-viewer pre {
+  margin: 1em 0;
+  padding: 0;
+  overflow: auto;
+  border-radius: 6px;
 }
 
 /* リスト */
@@ -92,6 +100,22 @@
 
 .task-memo-ol {
   list-style-type: decimal;
+}
+
+.task-memo-list-item {
+  margin: 0.25em 0;
+}
+
+/* チェックボックス */
+.task-memo-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.task-memo-checkbox {
+  margin-right: 0.5em;
+  margin-top: 0.3em;
 }
 
 /* 引用 */
@@ -111,36 +135,48 @@
 }
 
 /* テーブル */
-table {
-  border-collapse: collapse;
-  margin: 1em 0;
-  width: 100%;
+.task-memo-table-container {
   overflow-x: auto;
-  display: block;
+  margin: 1em 0;
 }
 
-th, td {
+.task-memo-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0;
+}
+
+.task-memo-th,
+.task-memo-td {
   border: 1px solid var(--border-color);
   padding: 0.5em 1em;
+  text-align: left;
 }
 
-th {
-  background-color: var(--bg-secondary);
+.task-memo-th {
+  background-color: var(--bg-secondary, rgba(0, 0, 0, 0.03));
   font-weight: 600;
 }
 
-tr:nth-child(even) {
-  background-color: var(--bg-hover);
-}
-
-/* チェックボックス */
-input[type="checkbox"] {
-  margin-right: 0.5em;
+.task-memo-tr:nth-child(even) {
+  background-color: var(--bg-hover, rgba(0, 0, 0, 0.01));
 }
 
 /* 画像 */
-img {
+.task-memo-viewer img {
   max-width: 100%;
   height: auto;
   border-radius: 6px;
+  margin: 1em 0;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .task-memo-inline-code {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .task-memo-code-block:not(pre) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
 }

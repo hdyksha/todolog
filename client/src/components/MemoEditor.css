@@ -9,6 +9,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .memo-editor {
@@ -16,7 +17,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -35,12 +36,101 @@
   margin: 0;
 }
 
+.memo-editor-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .close-button {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
   color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.markdown-help-button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.markdown-help-button:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.preview-toggle-button {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.preview-toggle-button:hover {
+  background-color: #e5e5e5;
+}
+
+.preview-toggle-button.active {
+  background-color: #646cff;
+  color: white;
+  border-color: #646cff;
+}
+
+.markdown-help-panel {
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.markdown-help-panel h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.markdown-help-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.markdown-help-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.markdown-help-table td:first-child {
+  font-family: monospace;
+  white-space: pre-wrap;
+  width: 40%;
 }
 
 .memo-editor-content {
@@ -48,6 +138,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .memo-editor-content textarea {
@@ -58,7 +149,28 @@
   border-radius: 4px;
   font-size: 1rem;
   resize: none;
-  font-family: inherit;
+  font-family: monospace;
+  min-height: 200px;
+}
+
+.memo-editor-content textarea:focus {
+  outline: none;
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.memo-preview {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.75rem;
+  background-color: #fff;
+  min-height: 200px;
+}
+
+.memo-preview-content {
+  padding: 0.5rem;
 }
 
 .memo-editor-footer {
@@ -96,6 +208,10 @@
   cursor: pointer;
 }
 
+.cancel-button:hover:not(:disabled) {
+  background-color: #e5e5e5;
+}
+
 .save-button {
   background-color: #646cff;
   color: white;
@@ -105,8 +221,40 @@
   cursor: pointer;
 }
 
+.save-button:hover:not(:disabled) {
+  background-color: #5258cc;
+}
+
 .save-button:disabled,
 .cancel-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .memo-editor {
+    max-height: 100vh;
+    height: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .memo-editor-container {
+    padding: 0;
+  }
+  
+  .memo-editor-footer {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .memo-editor-actions {
+    width: 100%;
+  }
+  
+  .cancel-button,
+  .save-button {
+    flex: 1;
+  }
 }

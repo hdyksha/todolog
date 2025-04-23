@@ -123,11 +123,11 @@
 
 .task-detail-memo-editor {
   width: 100%;
-  min-height: 150px;
+  min-height: 200px;
   padding: 10px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  font-family: inherit;
+  font-family: var(--font-family-mono, monospace);
   font-size: 14px;
   resize: vertical;
   background-color: var(--color-background);
@@ -138,6 +138,28 @@
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.task-memo-viewer-container {
+  cursor: text;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 200px;
+}
+
+.task-memo-viewer-container:hover {
+  border-color: var(--color-border);
+  background-color: rgba(var(--color-background-rgb, 255, 255, 255), 0.5);
+}
+
+.task-memo-preview {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 200px;
+  background-color: var(--color-background);
+  overflow-y: auto;
 }
 
 @media (max-width: 600px) {

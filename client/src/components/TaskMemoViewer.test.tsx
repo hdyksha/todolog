@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import TaskMemoViewer from './TaskMemoViewer';
 
 describe('TaskMemoViewer', () => {
@@ -38,6 +38,19 @@ describe('TaskMemoViewer', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
+  it('内部リンクは新しいタブで開かない', () => {
+    render(
+      <TaskMemoViewer
+        memo={`[内部リンク](#section)`}
+      />
+    );
+    const link = screen.getByText('内部リンク');
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '#section');
+    expect(link).not.toHaveAttribute('target', '_blank');
+    expect(link).not.toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   it('リストを正しく表示する', () => {
     render(
       <TaskMemoViewer
@@ -55,7 +68,22 @@ describe('TaskMemoViewer', () => {
         memo={`\`\`\`\nconsole.log('Hello');\n\`\`\``}
       />
     );
-    expect(screen.getByText(`console.log('Hello');`)).toBeInTheDocument();
+    // シンタックスハイライトによってテキストが分割されるため、正規表現で部分一致を確認
+    expect(screen.getByText(/console/)).toBeInTheDocument();
+    expect(screen.getByText(/log/)).toBeInTheDocument();
+    expect(screen.getByText(/'Hello'/)).toBeInTheDocument();
+  });
+
+  it('シンタックスハイライトを適用したコードブロックを表示する', () => {
+    render(
+      <TaskMemoViewer
+        memo={`\`\`\`javascript\nconsole.log('Hello');\n\`\`\``}
+      />
+    );
+    // シンタックスハイライトによってテキストが分割されるため、正規表現で部分一致を確認
+    expect(screen.getByText(/console/)).toBeInTheDocument();
+    expect(screen.getByText(/log/)).toBeInTheDocument();
+    expect(screen.getByText(/'Hello'/)).toBeInTheDocument();
   });
 
   it('インラインコードを正しく表示する', () => {
@@ -66,5 +94,30 @@ describe('TaskMemoViewer', () => {
   it('引用を正しく表示する', () => {
     render(<TaskMemoViewer memo={`> これは引用です。`} />);
     expect(screen.getByText('これは引用です。')).toBeInTheDocument();
+  });
+
+  it('テーブルを正しく表示する', () => {
+    render(
+      <TaskMemoViewer
+        memo={`| 列1 | 列2 |\n|-----|-----|\n| セル1 | セル2 |`}
+      />
+    );
+    expect(screen.getByText('列1')).toBeInTheDocument();
+    expect(screen.getByText('列2')).toBeInTheDocument();
+    expect(screen.getByText('セル1')).toBeInTheDocument();
+    expect(screen.getByText('セル2')).toBeInTheDocument();
+  });
+
+  it('チェックボックスを正しく表示する', () => {
+    render(
+      <TaskMemoViewer
+        memo={`- [ ] タスク1\n- [x] タスク2`}
+      />
+    );
+    
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(2);
+    expect(checkboxes[0]).not.toBeChecked();
+    expect(checkboxes[1]).toBeChecked();
   });
 });

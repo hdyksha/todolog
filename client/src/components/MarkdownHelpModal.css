@@ -1,0 +1,196 @@
+.markdown-help-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.markdown-help-modal {
+  background-color: var(--color-background);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.markdown-help-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.markdown-help-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.markdown-help-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.markdown-help-modal-close:hover {
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
+}
+
+.markdown-help-modal-content {
+  padding: 1rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.markdown-help-modal-content h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.25rem;
+}
+
+.markdown-help-modal-content h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-help-example {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.markdown-help-code {
+  background-color: var(--color-background-secondary);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family-mono, monospace);
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+}
+
+.markdown-help-code code {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-help-preview {
+  padding: 0.75rem;
+  border-left: 1px solid var(--color-border);
+}
+
+.markdown-help-preview h1 {
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-help-preview h2 {
+  font-size: 1.25rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-help-preview h3 {
+  font-size: 1.125rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.markdown-help-preview p {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-help-preview ul,
+.markdown-help-preview ol {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.markdown-help-preview blockquote {
+  margin: 0.5rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.markdown-help-preview pre {
+  background-color: var(--color-background-secondary);
+  padding: 0.75rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.markdown-help-preview code {
+  font-family: var(--font-family-mono, monospace);
+  font-size: 0.875rem;
+}
+
+.markdown-help-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.markdown-help-preview th,
+.markdown-help-preview td {
+  border: 1px solid var(--color-border);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+}
+
+.markdown-help-preview th {
+  background-color: var(--color-background-secondary);
+}
+
+@media (max-width: 600px) {
+  .markdown-help-example {
+    grid-template-columns: 1fr;
+  }
+  
+  .markdown-help-preview {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+  }
+  
+  .markdown-help-modal {
+    max-height: 100vh;
+    height: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .markdown-help-modal-overlay {
+    padding: 0;
+  }
+}

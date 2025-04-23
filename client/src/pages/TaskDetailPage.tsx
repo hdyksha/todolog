@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTaskContext } from '../contexts/TaskContext';
 import { useTaskActions } from '../hooks/useTaskActions';
 import Button from '../components/ui/Button';
 import CategoryBadge from '../components/categories/CategoryBadge';
 import TaskMemoViewer from '../components/TaskMemoViewer';
+import MarkdownHelpModal from '../components/MarkdownHelpModal';
 import { Priority } from '../types';
 import './TaskDetailPage.css';
 
@@ -17,6 +18,9 @@ const TaskDetailPage: React.FC = () => {
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memo, setMemo] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showMarkdownHelp, setShowMarkdownHelp] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // タスクの取得
   const task = tasks.find((t) => t.id === id);
@@ -35,6 +39,13 @@ const TaskDetailPage: React.FC = () => {
     }
   }, [task]);
 
+  // 編集モードになったらテキストエリアにフォーカス
+  useEffect(() => {
+    if (isEditingMemo && !isPreviewMode && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isEditingMemo, isPreviewMode]);
+
   // メモの保存
   const handleSaveMemo = async () => {
     if (!id) return;
@@ -43,10 +54,36 @@ const TaskDetailPage: React.FC = () => {
     try {
       await updateMemo(id, memo);
       setIsEditingMemo(false);
+      setIsPreviewMode(false);
     } catch (error) {
       console.error('メモ更新エラー:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // チェックボックスの状態変更時の処理
+  const handleCheckboxChange = (newMemo: string) => {
+    if (!id) return;
+    setMemo(newMemo);
+    updateMemo(id, newMemo).catch(error => {
+      console.error('チェックボックス更新エラー:', error);
+    });
+  };
+  
+  // キーボードショートカット
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Ctrl+Enter または Cmd+Enter で保存
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveMemo();
+    }
+    // Escキーでキャンセル
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsEditingMemo(false);
+      setIsPreviewMode(false);
+      setMemo(task?.memo || '');
     }
   };
 
@@ -193,6 +230,21 @@ const TaskDetailPage: React.FC = () => {
             {isEditingMemo ? (
               <>
                 <Button
+                  variant={isPreviewMode ? "secondary" : "text"}
+                  size="small"
+                  onClick={() => setIsPreviewMode(!isPreviewMode)}
+                >
+                  {isPreviewMode ? "編集" : "プレビュー"}
+                </Button>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => setShowMarkdownHelp(true)}
+                  title="マークダウンヘルプ"
+                >
+                  <span role="img" aria-label="ヘルプ">❓</span>
+                </Button>
+                <Button
                   variant="primary"
                   size="small"
                   onClick={handleSaveMemo}
@@ -205,7 +257,8 @@ const TaskDetailPage: React.FC = () => {
                   size="small"
                   onClick={() => {
                     setIsEditingMemo(false);
-                    setMemo(task.memo || '');
+                    setIsPreviewMode(false);
+                    setMemo(task?.memo || '');
                   }}
                   disabled={isSaving}
                 >
@@ -213,32 +266,64 @@ const TaskDetailPage: React.FC = () => {
                 </Button>
               </>
             ) : (
-              <Button
-                variant="secondary"
-                size="small"
-                onClick={() => setIsEditingMemo(true)}
-              >
-                編集
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => setIsEditingMemo(true)}
+                >
+                  編集
+                </Button>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => setShowMarkdownHelp(true)}
+                  title="マークダウンヘルプ"
+                >
+                  <span role="img" aria-label="ヘルプ">❓</span>
+                </Button>
+              </>
             )}
           </div>
         </div>
 
-        {isEditingMemo ? (
-          <textarea
-            className="task-detail-memo-editor"
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            placeholder="メモを入力..."
-            disabled={isSaving}
-            autoFocus
-          />
-        ) : (
-          <div className="task-detail-memo-content">
-            <TaskMemoViewer memo={task.memo || ''} />
-          </div>
-        )}
+        <div className="task-detail-memo-content">
+          {isEditingMemo ? (
+            isPreviewMode ? (
+              <div className="task-memo-preview">
+                <TaskMemoViewer 
+                  memo={memo} 
+                  onCheckboxChange={handleCheckboxChange}
+                />
+              </div>
+            ) : (
+              <textarea
+                ref={textareaRef}
+                className="task-detail-memo-editor"
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                placeholder="メモを入力..."
+                disabled={isSaving}
+                onKeyDown={handleKeyDown}
+              />
+            )
+          ) : (
+            <div 
+              className="task-memo-viewer-container"
+              onClick={() => setIsEditingMemo(true)}
+            >
+              <TaskMemoViewer 
+                memo={task?.memo || ''} 
+                onCheckboxChange={handleCheckboxChange}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      {showMarkdownHelp && (
+        <MarkdownHelpModal onClose={() => setShowMarkdownHelp(false)} />
+      )}
     </div>
   );
 };
