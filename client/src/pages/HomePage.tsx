@@ -5,6 +5,7 @@ import { useTaskActions } from '../hooks/useTaskActions';
 import { useTaskFilters } from '../hooks/useTaskFilters';
 import { useSettings } from '../contexts/SettingsContext';
 import { useArchiveStats } from '../hooks/useArchiveStats';
+import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
 import { Priority, Task } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -41,6 +42,33 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  // キーボードショートカットの設定
+  const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
+  
+  useEffect(() => {
+    // タスク作成ショートカット
+    registerShortcut({
+      key: 'n',
+      action: () => setIsCreateModalOpen(true),
+      description: '新しいタスクを作成',
+      scope: 'タスク一覧'
+    });
+    
+    // フィルターリセットショートカット
+    registerShortcut({
+      key: 'r',
+      action: resetFilters,
+      description: 'フィルターをリセット',
+      scope: 'タスク一覧'
+    });
+    
+    // クリーンアップ関数
+    return () => {
+      unregisterShortcut('n');
+      unregisterShortcut('r');
+    };
+  }, [registerShortcut, unregisterShortcut, resetFilters]);
 
   // カテゴリ一覧の抽出
   useEffect(() => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTaskContext } from '../contexts/TaskContext';
 import { useTaskActions } from '../hooks/useTaskActions';
+import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
 import Button from '../components/ui/Button';
 import CategoryBadge from '../components/categories/CategoryBadge';
 import TaskMemoViewer from '../components/TaskMemoViewer';
@@ -22,6 +23,9 @@ const TaskDetailPage: React.FC = () => {
   const [showMarkdownHelp, setShowMarkdownHelp] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // キーボードショートカットの設定
+  const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
+  
   // タスクの取得
   const task = tasks.find((t) => t.id === id);
 
@@ -31,6 +35,40 @@ const TaskDetailPage: React.FC = () => {
       fetchTasks();
     }
   }, [tasks.length, loading, error, fetchTasks]);
+
+  // キーボードショートカットの登録
+  useEffect(() => {
+    // 編集モードでない場合のショートカット
+    if (!isEditingMemo) {
+      registerShortcut({
+        key: 'e',
+        action: () => setIsEditingMemo(true),
+        description: 'メモを編集',
+        scope: 'タスク詳細'
+      });
+      
+      registerShortcut({
+        key: 'Backspace',
+        action: () => navigate('/'),
+        description: '一覧に戻る',
+        scope: 'タスク詳細'
+      });
+      
+      registerShortcut({
+        key: 'h',
+        action: () => setShowMarkdownHelp(true),
+        description: 'マークダウンヘルプを表示',
+        scope: 'タスク詳細'
+      });
+    }
+    
+    // クリーンアップ関数
+    return () => {
+      unregisterShortcut('e');
+      unregisterShortcut('Backspace');
+      unregisterShortcut('h');
+    };
+  }, [registerShortcut, unregisterShortcut, isEditingMemo, navigate]);
 
   // タスクが見つかったらメモを初期化
   useEffect(() => {
