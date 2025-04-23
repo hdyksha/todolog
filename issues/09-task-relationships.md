@@ -1,589 +1,581 @@
-# Issue09: タスク関連付け機能の実装
+# Issue09: タグベースのタスク関連付け機能の実装
 
 ## 概要
 
-TodoLogアプリケーションに、タスク間の関連付け機能を追加します。この機能により、ユーザーはタスクを分割したり、関連するタスクをグループ化したりすることができるようになります。特に、大きなタスクを小さなサブタスクに分割し、それらの関係性を維持しながら管理できるようにします。
+TodoLogアプリケーションに、タグベースのタスク関連付け機能を追加します。現在の単一カテゴリ機能を廃止し、複数のタグを付けられるようにすることで、より柔軟なタスクの分類と関連付けを可能にします。これにより、ユーザーは様々な視点からタスクをグループ化し、効率的に管理できるようになります。
 
 ## ユースケース
 
-1. **タスク分割**
-   - 大きなタスクを複数の小さなタスクに分割する
-   - 分割したタスク間の親子関係を維持する
-   - ワンクリックでタスクを分割して新しいサブタスクを作成する
+1. **複数タグによる分類**
+   - 1つのタスクに複数のタグを付与できる
+   - タグによるフィルタリングでタスクをグループ化
+   - タグの組み合わせによる高度な検索
 
-2. **関連タスクの参照**
-   - 親タスクから子タスク（サブタスク）の一覧を確認する
-   - 子タスクから親タスクへ簡単に移動する
-   - 関連するタスクをまとめて表示する
+2. **タグの管理**
+   - タグの作成、編集、削除
+   - タグの色分けによる視覚的な区別
+   - 使用頻度の高いタグの優先表示
 
-3. **タスク関連付け管理**
-   - 既存のタスク間に後から関連性を追加する
-   - タスク間の関連性を編集・削除する
-   - 複数の関連タイプ（親子、関連、依存など）をサポートする
+3. **関連タスクの発見**
+   - 同じタグを持つタスクの一覧表示
+   - タグクラウドによる関連タスクの発見
+   - タグベースのナビゲーション
 
 ## 機能要件
 
-### 1. データモデルの拡張
+### 1. データモデルの変更
 
-現在のタスクモデルを拡張し、関連付け情報を保存できるようにします：
+現在のタスクモデルを変更し、単一カテゴリから複数のタグを保存できるようにします：
 
 ```typescript
-// 関連タイプの定義
-export enum RelationshipType {
-  Parent = 'parent',   // 親タスク
-  Child = 'child',     // 子タスク（サブタスク）
-  Related = 'related', // 関連タスク
-  Blocks = 'blocks',   // ブロックする（このタスクが完了しないと他のタスクが進められない）
-  BlockedBy = 'blockedBy', // ブロックされる（他のタスクが完了しないとこのタスクが進められない）
-}
-
-// タスク関連付けの型定義
-export interface TaskRelationship {
-  taskId: string;           // 関連先タスクのID
-  type: RelationshipType;   // 関連タイプ
-  createdAt: string;        // 関連付けが作成された日時
-}
-
-// 拡張されたタスクの型定義
+// 現在のモデル
 export interface Task {
   id: string;
   title: string;
   completed: boolean;
   priority: Priority;
-  category?: string;
+  category?: string;  // 単一カテゴリ（廃止予定）
   dueDate?: string;
   createdAt: string;
   updatedAt: string;
   memo?: string;
-  relationships?: TaskRelationship[]; // 追加: タスク関連付け情報
+}
+
+// 変更後のモデル
+export interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+  priority: Priority;
+  tags: string[];  // 複数タグ（新規追加）
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  memo?: string;
+}
+
+// タグの型定義
+export interface Tag {
+  name: string;
+  color?: string;
+  description?: string;
 }
 ```
 
 ### 2. UI機能
 
-#### 2.1 タスク分割機能
+#### 2.1 タグ入力コンポーネント
 
-- タスク詳細画面に「分割」ボタンを追加
-- 分割ダイアログで新しいサブタスクのタイトルと詳細を入力
-- 分割時に自動的に親子関係を設定
+- 複数タグの入力と表示
+- タグの追加/削除インターフェース
+- オートコンプリート機能
+- タグの色表示
 
-#### 2.2 関連タスク表示
+#### 2.2 タグ管理機能
 
-- タスク詳細画面に関連タスクセクションを追加
-- 関連タイプ別にグループ化して表示
-- 関連タスクへのクイックナビゲーション
+- タグ一覧の表示と管理
+- タグの色設定
+- タグの説明追加
+- 未使用タグのクリーンアップ
 
-#### 2.3 タスク関連付け管理
+#### 2.3 タグベースのフィルタリング
 
-- 「関連タスクを追加」機能
-- 既存タスクの検索と関連付け
-- 関連タイプの選択
-- 関連付けの削除
+- 単一または複数タグによるフィルタリング
+- タグの包含/除外条件
+- タグクラウド表示
 
 ### 3. API拡張
 
 #### 3.1 新しいエンドポイント
 
-- `GET /api/tasks/:id/relationships` - タスクの関連付け情報を取得
-- `POST /api/tasks/:id/relationships` - 新しい関連付けを追加
-- `DELETE /api/tasks/:id/relationships/:relationshipId` - 関連付けを削除
-- `POST /api/tasks/:id/split` - タスクを分割して新しいサブタスクを作成
+- `GET /api/tags` - 利用可能なタグ一覧を取得
+- `POST /api/tags` - 新しいタグを作成
+- `PUT /api/tags/:name` - タグ情報を更新
+- `DELETE /api/tags/:name` - タグを削除
 
-#### 3.2 既存エンドポイントの拡張
+#### 3.2 既存エンドポイントの変更
 
-- `GET /api/tasks` - 関連付け情報を含めて取得するオプションを追加
-- `GET /api/tasks/:id` - 関連付け情報を含めて取得
+- `GET /api/tasks` - カテゴリパラメータを廃止し、タグによるフィルタリングパラメータを追加
+- `POST /api/tasks` - カテゴリフィールドを廃止し、複数タグのサポートを追加
+- `PUT /api/tasks/:id` - カテゴリフィールドを廃止し、タグの更新サポートを追加
 
 ## 技術的アプローチ
 
 ### 1. データ構造設計
 
-タスク関連付けを表現するために、以下の2つのアプローチを検討します：
+タグを効率的に管理するために、以下のアプローチを採用します：
 
-#### オプション1: 埋め込みアプローチ
-各タスクオブジェクト内に関連付け情報を直接埋め込みます。
+#### タグ情報の管理
 
-**メリット**:
-- 単一のタスク取得で関連情報も取得できる
-- 実装がシンプル
+タグ自体の情報（名前、色、説明など）は別のコレクション/ファイルで管理し、タスクにはタグ名の配列のみを保存します。これにより：
 
-**デメリット**:
-- 双方向の関連付けを維持するのが難しい
-- データの整合性を保つのが複雑になる可能性がある
+- タグ情報の一元管理が可能
+- タグの更新が全タスクに反映される
+- タグ使用状況の集計が容易
 
-#### オプション2: 分離アプローチ
-タスク関連付けを別のコレクション/テーブルで管理します。
+```json
+// tags.json
+{
+  "プロジェクトA": {
+    "color": "#ff5722",
+    "description": "プロジェクトAに関連するタスク"
+  },
+  "緊急": {
+    "color": "#f44336",
+    "description": "緊急対応が必要なタスク"
+  },
+  "会議": {
+    "color": "#2196f3",
+    "description": "会議に関連するタスク"
+  }
+}
 
-**メリット**:
-- 関連付けの一貫性を保ちやすい
-- 複雑な関連クエリに対応しやすい
-
-**デメリット**:
-- 追加のデータ取得が必要になる
-- 実装が若干複雑になる
-
-**決定**: オプション1の埋め込みアプローチを採用します。TodoLogはファイルベースのデータ保存を使用しているため、シンプルさを優先します。ただし、データの整合性を確保するためのロジックを慎重に実装します。
-
-### 2. フロントエンド実装
-
-#### 2.1 コンポーネント設計
-
-新しいコンポーネントを作成します：
-
-- `TaskRelationships.tsx` - 関連タスク一覧表示
-- `TaskSplitDialog.tsx` - タスク分割ダイアログ
-- `RelationshipForm.tsx` - 関連付け追加/編集フォーム
-
-#### 2.2 状態管理
-
-TaskContextを拡張して関連付け操作をサポートします：
-
-```typescript
-// useTaskActions フックの拡張
-export const useTaskActions = () => {
-  // 既存のアクション...
-
-  // タスク分割
-  const splitTask = useCallback(async (
-    parentId: string,
-    childTaskData: Partial<Task>
-  ) => {
-    dispatch({ type: 'SPLIT_TASK_START', payload: parentId });
-    
-    try {
-      const newTask = await apiClient.splitTask(parentId, childTaskData);
-      dispatch({ type: 'SPLIT_TASK_SUCCESS', payload: { parentId, childTask: newTask } });
-      return newTask;
-    } catch (error) {
-      dispatch({ 
-        type: 'SPLIT_TASK_ERROR', 
-        payload: {
-          id: parentId,
-          error: error instanceof Error ? error : new Error('タスクの分割に失敗しました')
-        }
-      });
-      throw error;
-    }
-  }, [dispatch]);
-
-  // 関連付け追加
-  const addTaskRelationship = useCallback(async (
-    taskId: string,
-    relatedTaskId: string,
-    type: RelationshipType
-  ) => {
-    // 実装...
-  }, [dispatch]);
-
-  // 関連付け削除
-  const removeTaskRelationship = useCallback(async (
-    taskId: string,
-    relationshipId: string
-  ) => {
-    // 実装...
-  }, [dispatch]);
-
-  return {
-    // 既存のアクション...
-    splitTask,
-    addTaskRelationship,
-    removeTaskRelationship,
-  };
-};
+// tasks.json (一部)
+[
+  {
+    "id": "task-1",
+    "title": "プロジェクトAのキックオフ会議",
+    "tags": ["プロジェクトA", "会議"],
+    // 他のフィールド...
+  }
+]
 ```
 
-### 3. バックエンド実装
+### 2. カテゴリからタグへの移行
 
-#### 3.1 データ永続化
+既存のカテゴリデータをタグに変換するためのマイグレーション戦略：
 
-タスクデータファイルのスキーマを拡張して関連付け情報を保存します。
-
-#### 3.2 API実装
-
-新しいエンドポイントを実装し、既存のエンドポイントを拡張します。
+1. 各タスクの `category` フィールドの値を `tags` 配列の最初の要素として設定
+2. 使用されているすべてのカテゴリ名をタグとして登録（色などの初期設定を含む）
+3. バックエンドAPIを更新して、古いクライアントからのカテゴリベースのリクエストをタグベースに変換
 
 ## 実装計画
 
-### フェーズ1: 基本データモデルとAPI（2日）
+### フェーズ1: 基本データモデルとAPI（3日）
 
-- [ ] タスクモデルの拡張
-- [ ] 関連付け操作のためのAPIエンドポイント実装
+- [ ] タスクモデルの変更（カテゴリからタグへ）
+  - [ ] `Task` インターフェースの更新（`category` を削除し、`tags` 配列を追加）
+  - [ ] 関連する型定義の更新
+  - [ ] バリデーションスキーマの更新
+
+- [ ] タグ管理のためのAPIエンドポイント実装
+  - [ ] タグ一覧取得 API
+  - [ ] タグ作成/更新/削除 API
+
 - [ ] データ永続化レイヤーの更新
+  - [ ] タグ情報保存用の新しいファイル構造の作成
+  - [ ] 既存のカテゴリデータをタグに変換するマイグレーションロジック
 
-### フェーズ2: タスク分割機能（2日）
+- [ ] バックエンドのタスク関連APIの更新
+  - [ ] タスク作成/更新APIでタグをサポート
+  - [ ] タスク取得APIでタグによるフィルタリングをサポート
 
-- [ ] タスク分割ダイアログの実装
-- [ ] 分割ロジックの実装
-- [ ] 親子関係の自動設定
+### フェーズ2: フロントエンドの基本コンポーネント（2日）
 
-### フェーズ3: 関連タスク表示（2日）
+- [ ] TagInputコンポーネントの実装
+  - [ ] 複数タグの入力と表示
+  - [ ] オートコンプリート機能
+  - [ ] タグの追加/削除UI
 
-- [ ] タスク詳細画面の拡張
-- [ ] 関連タスクコンポーネントの実装
-- [ ] 関連タスクのナビゲーション機能
+- [ ] 既存のカテゴリ選択UIの置き換え
+  - [ ] TaskFormコンポーネントの更新
+  - [ ] カテゴリ選択ドロップダウンをTagInputに置き換え
+  - [ ] 既存のカテゴリフィルターをタグフィルターに置き換え
 
-### フェーズ4: タスク関連付け管理（2日）
+- [ ] タグ表示コンポーネントの実装
+  - [ ] タスクリスト内でのタグ表示
+  - [ ] タスク詳細画面でのタグ表示
 
-- [ ] 関連付け追加/編集フォームの実装
-- [ ] タスク検索機能の実装
-- [ ] 関連付け削除機能
+### フェーズ3: タグ管理機能（2日）
 
-### フェーズ5: テストと最適化（2日）
+- [ ] タグ管理画面の実装
+  - [ ] タグ一覧表示
+  - [ ] タグの作成/編集/削除機能
+  - [ ] タグの色設定機能
+  - [ ] タグの説明追加機能
 
-- [ ] 単体テストの作成
-- [ ] 統合テストの作成
+- [ ] タグ使用状況の表示
+  - [ ] タグごとの使用タスク数の表示
+  - [ ] 未使用タグの識別と管理
+
+- [ ] 設定画面へのタグ管理セクション追加
+  - [ ] 既存の設定UIとの統合
+  - [ ] タグ管理へのナビゲーション
+
+### フェーズ4: タグベースのフィルタリングと検索（2日）
+
+- [ ] フィルタリングロジックの拡張
+  - [ ] 複数タグによるフィルタリング
+  - [ ] タグの包含/除外条件
+  - [ ] 既存のフィルター（優先度、完了状態など）との組み合わせ
+
+- [ ] タグクラウドの実装
+  - [ ] 使用頻度に基づく表示
+  - [ ] タグクラウドからのフィルタリング
+  - [ ] 視覚的なフィードバック
+
+- [ ] 検索機能の拡張
+  - [ ] タグを含めた検索
+  - [ ] 検索結果のタグによるグループ化
+
+### フェーズ5: UI/UXの最適化とテスト（2日）
+
+- [ ] UI/UXの改善
+  - [ ] タグ選択の使いやすさ向上
+  - [ ] タグ表示の視認性向上
+  - [ ] レスポンシブデザインの最適化
+
 - [ ] パフォーマンス最適化
-- [ ] エッジケースの処理
+  - [ ] タグフィルタリングの効率化
+  - [ ] タグ関連操作のキャッシュ戦略
 
-**合計予定工数: 10日**
+- [ ] テスト
+  - [ ] 単体テストの作成
+  - [ ] 統合テストの作成
+  - [ ] エッジケースの処理
+
+### フェーズ6: ドキュメントとフィードバック対応（1日）
+
+- [ ] ドキュメント作成
+  - [ ] タグ機能の使用方法ガイド
+  - [ ] APIドキュメントの更新
+  - [ ] 開発者向けドキュメントの更新
+
+- [ ] フィードバック対応の準備
+  - [ ] フィードバック収集メカニズムの実装
+  - [ ] 問題報告フォームの更新
+
+**合計予定工数: 12日**
 
 ## 詳細設計
 
-### 1. データモデル拡張
+### 1. TagContext の実装
 
 ```typescript
-// server/src/models/task.model.ts
+// contexts/TagContext.tsx
+import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { Tag } from '../types';
 
-// 関連タイプの定義
-export const RelationshipTypeEnum = z.enum([
-  'parent',
-  'child',
-  'related',
-  'blocks',
-  'blockedBy'
-]);
-export type RelationshipType = z.infer<typeof RelationshipTypeEnum>;
-
-// タスク関連付けのスキーマ
-export const TaskRelationshipSchema = z.object({
-  taskId: z.string().uuid('無効なタスクID形式です'),
-  type: RelationshipTypeEnum,
-  createdAt: z
-    .string()
-    .refine(isValidDate, { message: '無効な作成日時です' }),
-});
-export type TaskRelationship = z.infer<typeof TaskRelationshipSchema>;
-
-// タスクスキーマの拡張
-export const TaskSchema = CreateTaskSchema.extend({
-  id: z.string().uuid('無効なID形式です'),
-  createdAt: z
-    .string()
-    .refine(isValidDate, { message: '無効な作成日時です' }),
-  updatedAt: z
-    .string()
-    .refine(isValidDate, { message: '無効な更新日時です' }),
-  relationships: z.array(TaskRelationshipSchema).optional(),
-});
-```
-
-### 2. タスク分割UI
-
-```tsx
-// client/src/components/tasks/TaskSplitDialog.tsx
-import React, { useState } from 'react';
-import Modal from '../ui/Modal';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
-import { Priority } from '../../types';
-import './TaskSplitDialog.css';
-
-interface TaskSplitDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSplit: (childTaskData: {
-    title: string;
-    priority: Priority;
-    memo?: string;
-  }) => Promise<void>;
-  parentTaskTitle: string;
-  isSubmitting: boolean;
+interface TagState {
+  tags: Record<string, Tag>;
+  loading: boolean;
+  error: Error | null;
 }
 
-const TaskSplitDialog: React.FC<TaskSplitDialogProps> = ({
-  isOpen,
-  onClose,
-  onSplit,
-  parentTaskTitle,
-  isSubmitting
-}) => {
-  const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<Priority>(Priority.Medium);
-  const [memo, setMemo] = useState('');
+type TagAction =
+  | { type: 'FETCH_TAGS_START' }
+  | { type: 'FETCH_TAGS_SUCCESS'; payload: Record<string, Tag> }
+  | { type: 'FETCH_TAGS_ERROR'; payload: Error }
+  | { type: 'ADD_TAG_SUCCESS'; payload: { name: string; tag: Tag } }
+  | { type: 'UPDATE_TAG_SUCCESS'; payload: { name: string; tag: Tag } }
+  | { type: 'DELETE_TAG_SUCCESS'; payload: string };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
+const TagContext = createContext<
+  { state: TagState; dispatch: React.Dispatch<TagAction> } | undefined
+>(undefined);
 
-    try {
-      await onSplit({
-        title,
-        priority,
-        memo: memo.trim() || undefined
-      });
-      
-      // 成功したらフォームをリセット
-      setTitle('');
-      setPriority(Priority.Medium);
-      setMemo('');
-      onClose();
-    } catch (error) {
-      console.error('タスク分割エラー:', error);
-    }
-  };
+const tagReducer = (state: TagState, action: TagAction): TagState => {
+  switch (action.type) {
+    case 'FETCH_TAGS_START':
+      return { ...state, loading: true, error: null };
+    case 'FETCH_TAGS_SUCCESS':
+      return { tags: action.payload, loading: false, error: null };
+    case 'FETCH_TAGS_ERROR':
+      return { ...state, loading: false, error: action.payload };
+    case 'ADD_TAG_SUCCESS':
+      return {
+        ...state,
+        tags: {
+          ...state.tags,
+          [action.payload.name]: action.payload.tag
+        }
+      };
+    case 'UPDATE_TAG_SUCCESS':
+      return {
+        ...state,
+        tags: {
+          ...state.tags,
+          [action.payload.name]: action.payload.tag
+        }
+      };
+    case 'DELETE_TAG_SUCCESS':
+      const { [action.payload]: _, ...remainingTags } = state.tags;
+      return {
+        ...state,
+        tags: remainingTags
+      };
+    default:
+      return state;
+  }
+};
+
+export const TagProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(tagReducer, {
+    tags: {},
+    loading: false,
+    error: null
+  });
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="タスクを分割"
-    >
-      <div className="task-split-dialog">
-        <p className="parent-task-info">
-          親タスク: <strong>{parentTaskTitle}</strong>
-        </p>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="childTaskTitle">サブタスクのタイトル</label>
-            <Input
-              id="childTaskTitle"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="サブタスクのタイトルを入力"
-              required
-              autoFocus
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="childTaskPriority">優先度</label>
-            <select
-              id="childTaskPriority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as Priority)}
-              className="form-select"
-            >
-              <option value={Priority.High}>高</option>
-              <option value={Priority.Medium}>中</option>
-              <option value={Priority.Low}>低</option>
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="childTaskMemo">メモ (オプション)</label>
-            <textarea
-              id="childTaskMemo"
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              placeholder="サブタスクの詳細情報"
-              className="form-textarea"
-              rows={4}
-            />
-          </div>
-          
-          <div className="dialog-actions">
-            <Button
-              type="button"
-              variant="text"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              キャンセル
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-            >
-              分割して作成
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Modal>
+    <TagContext.Provider value={{ state, dispatch }}>
+      {children}
+    </TagContext.Provider>
   );
 };
 
-export default TaskSplitDialog;
+export const useTagContext = () => {
+  const context = useContext(TagContext);
+  if (context === undefined) {
+    throw new Error('useTagContext must be used within a TagProvider');
+  }
+  return context;
+};
 ```
 
-### 3. 関連タスク表示コンポーネント
+### 2. タグ入力コンポーネント
 
 ```tsx
-// client/src/components/tasks/TaskRelationships.tsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Task, RelationshipType } from '../../types';
-import Button from '../ui/Button';
-import './TaskRelationships.css';
+// components/tags/TagInput.tsx
+import React, { useState, useEffect, useRef } from 'react';
+import { useTagContext } from '../../contexts/TagContext';
+import './TagInput.css';
 
-interface TaskRelationshipsProps {
-  task: Task;
-  relatedTasks: Task[];
-  onAddRelationship: () => void;
-  onRemoveRelationship: (taskId: string, type: RelationshipType) => void;
+interface TagInputProps {
+  selectedTags: string[];
+  onChange: (tags: string[]) => void;
+  placeholder?: string;
 }
 
-const TaskRelationships: React.FC<TaskRelationshipsProps> = ({
-  task,
-  relatedTasks,
-  onAddRelationship,
-  onRemoveRelationship
+const TagInput: React.FC<TagInputProps> = ({
+  selectedTags,
+  onChange,
+  placeholder = 'タグを追加...'
 }) => {
-  const navigate = useNavigate();
-  
-  // 関連タイプ別にタスクをグループ化
-  const groupedTasks = {
-    parent: relatedTasks.filter(t => 
-      task.relationships?.some(r => r.taskId === t.id && r.type === RelationshipType.Parent)
-    ),
-    child: relatedTasks.filter(t => 
-      task.relationships?.some(r => r.taskId === t.id && r.type === RelationshipType.Child)
-    ),
-    related: relatedTasks.filter(t => 
-      task.relationships?.some(r => r.taskId === t.id && r.type === RelationshipType.Related)
-    ),
-    blocks: relatedTasks.filter(t => 
-      task.relationships?.some(r => r.taskId === t.id && r.type === RelationshipType.Blocks)
-    ),
-    blockedBy: relatedTasks.filter(t => 
-      task.relationships?.some(r => r.taskId === t.id && r.type === RelationshipType.BlockedBy)
-    ),
+  const { state: { tags } } = useTagContext();
+  const [inputValue, setInputValue] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // 利用可能なタグから、すでに選択されているタグを除外
+  const availableTags = Object.keys(tags).filter(
+    tag => !selectedTags.includes(tag)
+  );
+
+  // 入力値に基づいてフィルタリングされたタグ候補
+  const filteredSuggestions = inputValue
+    ? availableTags.filter(tag =>
+        tag.toLowerCase().includes(inputValue.toLowerCase())
+      )
+    : availableTags;
+
+  // タグを追加
+  const addTag = (tag: string) => {
+    if (tag && !selectedTags.includes(tag)) {
+      onChange([...selectedTags, tag]);
+    }
+    setInputValue('');
   };
-  
-  // 関連タスクが1つもない場合
-  const hasRelatedTasks = Object.values(groupedTasks).some(group => group.length > 0);
-  
-  if (!hasRelatedTasks) {
-    return (
-      <div className="task-relationships">
-        <div className="task-relationships-header">
-          <h2>関連タスク</h2>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={onAddRelationship}
-          >
-            関連タスクを追加
-          </Button>
-        </div>
-        <p className="no-relationships">関連するタスクはありません</p>
-      </div>
-    );
-  }
-  
+
+  // タグを削除
+  const removeTag = (tagToRemove: string) => {
+    onChange(selectedTags.filter(tag => tag !== tagToRemove));
+  };
+
+  // 候補からタグを選択
+  const selectSuggestion = (suggestion: string) => {
+    addTag(suggestion);
+    setShowSuggestions(false);
+    inputRef.current?.focus();
+  };
+
+  // クリックイベントのハンドラ（候補リストの外側をクリックしたら閉じる）
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        inputRef.current !== event.target
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="task-relationships">
-      <div className="task-relationships-header">
-        <h2>関連タスク</h2>
-        <Button
-          variant="secondary"
-          size="small"
-          onClick={onAddRelationship}
-        >
-          関連タスクを追加
-        </Button>
+    <div className="tag-input-container">
+      <div className="selected-tags">
+        {selectedTags.map(tag => (
+          <div
+            key={tag}
+            className="tag-item"
+            style={{
+              backgroundColor: tags[tag]?.color || '#e0e0e0'
+            }}
+          >
+            <span className="tag-text">{tag}</span>
+            <button
+              type="button"
+              className="tag-remove"
+              onClick={() => removeTag(tag)}
+              aria-label={`${tag}を削除`}
+            >
+              ×
+            </button>
+          </div>
+        ))}
       </div>
-      
-      {groupedTasks.parent.length > 0 && (
-        <div className="relationship-group">
-          <h3>親タスク</h3>
-          <ul className="related-tasks-list">
-            {groupedTasks.parent.map(parentTask => (
-              <li key={parentTask.id} className="related-task-item">
-                <div className="related-task-info">
-                  <span 
-                    className="related-task-title"
-                    onClick={() => navigate(`/tasks/${parentTask.id}`)}
-                  >
-                    {parentTask.title}
-                  </span>
-                  <span className={`task-status ${parentTask.completed ? 'completed' : 'active'}`}>
-                    {parentTask.completed ? '完了' : '未完了'}
-                  </span>
-                </div>
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => onRemoveRelationship(parentTask.id, RelationshipType.Parent)}
-                >
-                  解除
-                </Button>
-              </li>
+
+      <div className="tag-input-wrapper">
+        <input
+          ref={inputRef}
+          type="text"
+          className="tag-input"
+          value={inputValue}
+          onChange={e => setInputValue(e.target.value)}
+          onFocus={() => setShowSuggestions(true)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && inputValue) {
+              e.preventDefault();
+              addTag(inputValue);
+            } else if (e.key === 'Backspace' && !inputValue && selectedTags.length > 0) {
+              removeTag(selectedTags[selectedTags.length - 1]);
+            }
+          }}
+          placeholder={selectedTags.length === 0 ? placeholder : ''}
+        />
+
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div ref={suggestionsRef} className="tag-suggestions">
+            {filteredSuggestions.map(suggestion => (
+              <div
+                key={suggestion}
+                className="tag-suggestion-item"
+                onClick={() => selectSuggestion(suggestion)}
+                style={{
+                  borderLeft: `4px solid ${tags[suggestion]?.color || '#e0e0e0'}`
+                }}
+              >
+                {suggestion}
+              </div>
             ))}
-          </ul>
-        </div>
-      )}
-      
-      {groupedTasks.child.length > 0 && (
-        <div className="relationship-group">
-          <h3>サブタスク</h3>
-          <ul className="related-tasks-list">
-            {groupedTasks.child.map(childTask => (
-              <li key={childTask.id} className="related-task-item">
-                <div className="related-task-info">
-                  <span 
-                    className="related-task-title"
-                    onClick={() => navigate(`/tasks/${childTask.id}`)}
-                  >
-                    {childTask.title}
-                  </span>
-                  <span className={`task-status ${childTask.completed ? 'completed' : 'active'}`}>
-                    {childTask.completed ? '完了' : '未完了'}
-                  </span>
-                </div>
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => onRemoveRelationship(childTask.id, RelationshipType.Child)}
-                >
-                  解除
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      
-      {/* 他の関連タイプも同様に表示 */}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default TaskRelationships;
+export default TagInput;
+```
+
+### 3. タグフィルターコンポーネント
+
+```tsx
+// components/filters/TagFilter.tsx
+import React from 'react';
+import { useTagContext } from '../../contexts/TagContext';
+import './TagFilter.css';
+
+interface TagFilterProps {
+  selectedTags: string[];
+  onChange: (tags: string[]) => void;
+}
+
+const TagFilter: React.FC<TagFilterProps> = ({ selectedTags, onChange }) => {
+  const { state: { tags } } = useTagContext();
+  
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      onChange(selectedTags.filter(t => t !== tag));
+    } else {
+      onChange([...selectedTags, tag]);
+    }
+  };
+  
+  const clearTags = () => {
+    onChange([]);
+  };
+  
+  return (
+    <div className="tag-filter">
+      <div className="tag-filter-header">
+        <h3>タグでフィルター</h3>
+        {selectedTags.length > 0 && (
+          <button
+            type="button"
+            className="clear-tags-button"
+            onClick={clearTags}
+          >
+            クリア
+          </button>
+        )}
+      </div>
+      
+      <div className="tag-filter-list">
+        {Object.keys(tags).length === 0 ? (
+          <p className="no-tags-message">タグがありません</p>
+        ) : (
+          Object.entries(tags).map(([tagName, tagInfo]) => (
+            <div
+              key={tagName}
+              className={`tag-filter-item ${selectedTags.includes(tagName) ? 'selected' : ''}`}
+              onClick={() => toggleTag(tagName)}
+              style={{
+                borderLeft: `4px solid ${tagInfo.color || '#e0e0e0'}`
+              }}
+            >
+              <span className="tag-name">{tagName}</span>
+              {selectedTags.includes(tagName) && (
+                <span className="tag-selected-indicator">✓</span>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default TagFilter;
 ```
 
 ## 期待される成果
 
-1. **ユーザー体験の向上**
-   - 大きなタスクを管理しやすい小さなタスクに分割できる
-   - タスク間の関連性を視覚的に把握できる
-   - 関連するタスク間を簡単に移動できる
+1. **柔軟なタスク分類**
+   - 複数の視点からタスクを分類できる
+   - より細かく、かつ多角的なタスク管理が可能
+   - 関連するタスクを簡単に見つけられる
 
-2. **タスク管理の効率化**
-   - 階層的なタスク構造による整理
-   - 依存関係の明確化
-   - 関連タスクのグループ化
+2. **視覚的な整理**
+   - 色分けされたタグによる視覚的な区別
+   - タグクラウドによる全体像の把握
+   - 重要なタグの強調表示
 
-3. **機能の拡張性**
-   - 将来的なガントチャート表示などの基盤となる
-   - タスクの依存関係に基づいた自動スケジューリングの可能性
+3. **検索性の向上**
+   - タグベースの高度な検索
+   - 複数条件による絞り込み
+   - 関連タスクの発見
 
 ## リスクと対策
 
-1. **データ整合性の問題**
-   - **リスク**: 双方向の関連付けで不整合が発生する可能性
-   - **対策**: 関連付け操作時に両方のタスクを更新する一貫したロジックを実装
+1. **タグの乱立**
+   - **リスク**: ユーザーが多数のタグを作成し、管理が難しくなる
+   - **対策**: タグの使用状況の可視化、未使用タグのクリーンアップ機能
 
-2. **UI複雑化**
-   - **リスク**: 関連タスクの表示でUIが複雑になる
-   - **対策**: 折りたたみ可能なセクションやタブなどで整理し、必要に応じて情報を表示
+2. **パフォーマンス低下**
+   - **リスク**: 多数のタグによるフィルタリングでパフォーマンスが低下
+   - **対策**: 効率的なインデックス作成、クライアント側でのキャッシュ
 
-3. **パフォーマンス低下**
-   - **リスク**: 関連タスクの取得でデータ量が増加
-   - **対策**: 必要に応じた遅延読み込みと効率的なキャッシュ戦略
+3. **移行に伴う混乱**
+   - **リスク**: カテゴリからタグへの移行でユーザーが混乱する
+   - **対策**: 明確なUI表示と説明、初回表示時のガイダンス
 
 ## 結論
 
-タスク関連付け機能の実装により、TodoLogアプリケーションはより高度なタスク管理ツールへと進化します。特に大きなプロジェクトや複雑なタスクを扱う際に、ユーザーの生産性と組織力を大幅に向上させることが期待できます。
+カテゴリからタグベースのシステムへの移行により、TodoLogアプリケーションはより柔軟で強力なタスク管理ツールへと進化します。単一カテゴリの制限を取り払い、複数タグによる多角的な分類が可能になることで、ユーザーの多様なニーズに対応できるようになります。また、視覚的な要素を強化することで、タスク管理の効率と使いやすさが向上します。
