@@ -13,154 +13,62 @@ TodoLogアプリケーションでキーボードショートカットが機能�
 ### フェーズ1: 問題の特定と原因分析
 
 1. **現在のショートカット実装の調査**
-   - `useKeyboardShortcuts` フックの実装を確認
-   - ショートカットを使用しているコンポーネントの特定
-   - イベントリスナーの登録状況の確認
+   - [ ] `useKeyboardShortcuts` フックの実装を確認
+   - [ ] ショートカットを使用しているコンポーネントの特定
+   - [ ] イベントリスナーの登録状況の確認
 
 2. **問題の切り分け**
-   - グローバルショートカットとコンポーネント固有ショートカットの区別
-   - イベント伝播の問題の有無
-   - モーダルやフォーカス状態による影響
+   - [ ] グローバルショートカットとコンポーネント固有ショートカットの区別
+   - [ ] イベント伝播の問題の有無
+   - [ ] モーダルやフォーカス状態による影響
 
 3. **テスト環境での検証**
-   - 既存のテストケースの確認
-   - 手動テストによる問題の再現
+   - [ ] 既存のテストケースの確認
+   - [ ] 手動テストによる問題の再現
 
 ### フェーズ2: 解決策の設計
 
 1. **アーキテクチャの見直し**
-   - グローバルなキーボードショートカット管理の検討
-   - `KeyboardShortcutsContext` の導入検討
+   - [ ] グローバルなキーボードショートカット管理の検討
+   - [ ] `KeyboardShortcutsContext` の導入検討
 
 2. **実装方針の決定**
-   - イベントリスナーの適切な登録場所
-   - コンポーネント間の責任分担
-   - ショートカットの優先順位付け
+   - [ ] イベントリスナーの適切な登録場所
+   - [ ] コンポーネント間の責任分担
+   - [ ] ショートカットの優先順位付け
 
 ### フェーズ3: 実装
 
 1. **KeyboardShortcutsContextの作成**
-   ```typescript
-   // src/contexts/KeyboardShortcutsContext.tsx
-   import React, { createContext, useContext, ReactNode } from 'react';
-   import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-
-   interface ShortcutInfo {
-     shortcut: string;
-     description: string;
-   }
-
-   interface KeyboardShortcutsContextType {
-     shortcuts: ShortcutInfo[];
-   }
-
-   const KeyboardShortcutsContext = createContext<KeyboardShortcutsContextType | undefined>(undefined);
-
-   export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-     // グローバルショートカットの定義
-     const globalShortcuts = [
-       { key: 'n', action: () => {/* 新規タスク作成 */}, description: '新規タスク作成' },
-       { key: '/', action: () => {/* 検索フォーカス */}, description: '検索' },
-       { key: 'h', action: () => {/* ヘルプ表示 */}, description: 'ヘルプ表示' },
-       // 他のグローバルショートカット
-     ];
-
-     // useKeyboardShortcutsフックを使用
-     const { getShortcutList } = useKeyboardShortcuts(globalShortcuts);
-     const shortcuts = getShortcutList();
-
-     return (
-       <KeyboardShortcutsContext.Provider value={{ shortcuts }}>
-         {children}
-       </KeyboardShortcutsContext.Provider>
-     );
-   };
-
-   export const useKeyboardShortcutsContext = () => {
-     const context = useContext(KeyboardShortcutsContext);
-     if (context === undefined) {
-       throw new Error('useKeyboardShortcutsContext must be used within a KeyboardShortcutsProvider');
-     }
-     return context;
-   };
-   ```
+   - [ ] コンテキスト基本構造の実装
+   - [ ] グローバルショートカットの定義
+   - [ ] ショートカット管理ロジックの実装
 
 2. **App.tsxへの統合**
-   ```typescript
-   // src/App.tsx の修正
-   import { KeyboardShortcutsProvider } from './contexts/KeyboardShortcutsContext';
-
-   const App: React.FC = () => {
-     return (
-       <BrowserRouter>
-         <ThemeProvider>
-           <NotificationProvider>
-             <SettingsProvider>
-               <ServerSettingsProvider>
-                 <TaskFilesProvider>
-                   <KeyboardShortcutsProvider> {/* 追加 */}
-                     <TaskProvider>
-                       <NotificationContainer />
-                       <Routes>
-                         {/* ... */}
-                       </Routes>
-                     </TaskProvider>
-                   </KeyboardShortcutsProvider>
-                 </TaskFilesProvider>
-               </ServerSettingsProvider>
-             </SettingsProvider>
-           </NotificationProvider>
-         </ThemeProvider>
-       </BrowserRouter>
-     );
-   };
-   ```
+   - [ ] KeyboardShortcutsProviderの追加
+   - [ ] 既存のコンテキスト階層への適切な配置
 
 3. **ショートカットヘルプコンポーネントの統合**
-   ```typescript
-   // src/components/layouts/MainLayout.tsx の修正
-   import { useKeyboardShortcutsContext } from '../../contexts/KeyboardShortcutsContext';
-   import ShortcutHelp from '../ui/ShortcutHelp';
-
-   const MainLayout: React.FC = () => {
-     const { shortcuts } = useKeyboardShortcutsContext();
-     
-     // ...
-
-     return (
-       <div className={`app-container ${theme}`}>
-         <header className="header">
-           {/* ... */}
-           <div className="header__actions">
-             <TaskFileSelector />
-             <ShortcutHelp shortcuts={shortcuts} /> {/* 追加 */}
-             {/* ... */}
-           </div>
-         </header>
-         
-         {/* ... */}
-       </div>
-     );
-   };
-   ```
+   - [ ] ShortcutHelpコンポーネントの拡張
+   - [ ] MainLayoutへの統合
 
 4. **useKeyboardShortcutsフックの修正（必要に応じて）**
-   - イベント伝播の問題があれば修正
-   - フォーカス管理の改善
+   - [ ] イベント伝播の問題修正
+   - [ ] フォーカス管理の改善
 
 ### フェーズ4: テストと検証
 
 1. **単体テスト**
-   - `KeyboardShortcutsContext` のテスト
-   - 修正した `useKeyboardShortcuts` フックのテスト
+   - [ ] `KeyboardShortcutsContext` のテスト
+   - [ ] 修正した `useKeyboardShortcuts` フックのテスト
 
 2. **統合テスト**
-   - 実際のコンポーネントでのショートカット動作確認
-   - モーダル表示時やフォーム入力時の挙動確認
+   - [ ] 実際のコンポーネントでのショートカット動作確認
+   - [ ] モーダル表示時やフォーム入力時の挙動確認
 
 3. **ユーザーテスト**
-   - 実際のユースケースでのショートカット動作確認
-   - エッジケースの検証
+   - [ ] 実際のユースケースでのショートカット動作確認
+   - [ ] エッジケースの検証
 
 ## 実装スケジュール
 
