@@ -72,7 +72,7 @@ TodoLogは、シンプルで使いやすいタスク管理アプリケーショ�
 - タスクへのメモ追加機能
 - タスクの完了状態の切り替え
 - タスクの優先度設定
-- タスクのカテゴリ分け
+- タスクのタグ付け
 - タスクの期限設定
 
 ### データ永続化
@@ -183,7 +183,7 @@ todolog/
 | DELETE | /api/tasks/:id | タスクの削除 |
 | PUT | /api/tasks/:id/toggle | タスクの完了状態の切り替え |
 | PUT | /api/tasks/:id/memo | タスクのメモ更新 |
-| GET | /api/categories | カテゴリ一覧の取得 |
+| GET | /api/tags | タグ一覧の取得 |
 | POST | /api/backups | バックアップの作成 |
 | GET | /api/backups | バックアップ一覧の取得 |
 | POST | /api/backups/:filename/restore | バックアップからの復元 |
@@ -200,7 +200,7 @@ interface Task {
   title: string;       // タスクのタイトル
   completed: boolean;  // 完了状態
   priority: Priority;  // 優先度（High, Medium, Low）
-  category?: string;   // カテゴリ（オプション）
+  tags?: string[];     // タグ（オプション）
   dueDate?: string;    // 期限（ISO形式の文字列）
   createdAt: string;   // 作成日時（ISO形式の文字列）
   updatedAt: string;   // 更新日時（ISO形式の文字列）

@@ -10,7 +10,7 @@ describe('useTaskFilters フック', () => {
       title: 'タスク1',
       completed: false,
       priority: Priority.High,
-      category: 'カテゴリA',
+      tags: ['タグA'],
       dueDate: '2025-05-01T00:00:00.000Z',
       createdAt: '2025-04-15T10:00:00.000Z',
       updatedAt: '2025-04-15T10:00:00.000Z',
@@ -21,7 +21,7 @@ describe('useTaskFilters フック', () => {
       title: 'タスク2',
       completed: true,
       priority: Priority.Medium,
-      category: 'カテゴリB',
+      tags: ['タグB'],
       createdAt: '2025-04-16T10:00:00.000Z',
       updatedAt: '2025-04-16T10:00:00.000Z',
     },
@@ -75,24 +75,24 @@ describe('useTaskFilters フック', () => {
     expect(result.current.filteredTasks[0].priority).toBe(Priority.Low);
   });
 
-  it('カテゴリフィルターが正しく動作する', () => {
+  it('タグフィルターが正しく動作する', () => {
     const { result } = renderHook(() => useTaskFilters(mockTasks));
     
-    // カテゴリAのタスクのみ表示
+    // タグAのタスクのみ表示
     act(() => {
-      result.current.setFilters({ ...result.current.filters, tags: ['カテゴリA'] });
+      result.current.setFilters({ ...result.current.filters, tags: ['タグA'] });
     });
     
     expect(result.current.filteredTasks).toHaveLength(1);
-    expect(result.current.filteredTasks[0].category).toBe('カテゴリA');
+    expect(result.current.filteredTasks[0].tags).toContain('タグA');
     
-    // カテゴリBのタスクのみ表示
+    // タグBのタスクのみ表示
     act(() => {
-      result.current.setFilters({ ...result.current.filters, tags: ['カテゴリB'] });
+      result.current.setFilters({ ...result.current.filters, tags: ['タグB'] });
     });
     
     expect(result.current.filteredTasks).toHaveLength(1);
-    expect(result.current.filteredTasks[0].category).toBe('カテゴリB');
+    expect(result.current.filteredTasks[0].tags).toContain('タグB');
   });
 
   it('検索フィルターが正しく動作する', () => {
@@ -114,9 +114,9 @@ describe('useTaskFilters フック', () => {
     expect(result.current.filteredTasks).toHaveLength(1);
     expect(result.current.filteredTasks[0].id).toBe('1');
     
-    // カテゴリで検索
+    // タグで検索
     act(() => {
-      result.current.setFilters({ ...result.current.filters, searchTerm: 'カテゴリA' });
+      result.current.setFilters({ ...result.current.filters, searchTerm: 'タグA' });
     });
     
     expect(result.current.filteredTasks).toHaveLength(1);
@@ -126,24 +126,24 @@ describe('useTaskFilters フック', () => {
   it('複数のフィルターを組み合わせることができる', () => {
     const { result } = renderHook(() => useTaskFilters(mockTasks));
     
-    // 高優先度かつカテゴリAのタスク
+    // 高優先度かつタグAのタスク
     act(() => {
       result.current.setFilters({
         ...result.current.filters,
         priority: Priority.High,
-        category: 'カテゴリA'
+        tags: ['タグA']
       });
     });
     
     expect(result.current.filteredTasks).toHaveLength(1);
     expect(result.current.filteredTasks[0].id).toBe('1');
     
-    // 低優先度かつカテゴリBのタスク（該当なし）
+    // 低優先度かつタグBのタスク（該当なし）
     act(() => {
       result.current.setFilters({
         ...result.current.filters,
         priority: Priority.Low,
-        tags: ['カテゴリB']
+        tags: ['タグB']
       });
     });
     

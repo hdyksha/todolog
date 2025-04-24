@@ -13,7 +13,6 @@ import Modal from '../components/ui/Modal';
 import TaskForm from '../components/tasks/TaskForm';
 import FilterPanel from '../components/filters/FilterPanel';
 import TaskSortControl from '../components/tasks/TaskSortControl';
-import CategoryBadge from '../components/categories/CategoryBadge';
 import TagBadge from '../components/tags/TagBadge';
 import ArchiveSection from '../components/archive/ArchiveSection';
 import './HomePage.css';
@@ -26,7 +25,6 @@ const HomePage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState<string[]>([]);
   const navigate = useNavigate();
 
   // タスクのフィルタリングとソート
@@ -71,16 +69,16 @@ const HomePage: React.FC = () => {
     };
   }, [registerShortcut, unregisterShortcut, resetFilters]);
 
-  // カテゴリ一覧の抽出
+  // タグ一覧の抽出（現在は使用していないが、将来的に使用する可能性があるため残しておく）
+  const [tags, setTags] = useState<string[]>([]);
   useEffect(() => {
-    const uniqueCategories = Array.from(
+    const uniqueTags = Array.from(
       new Set(
         tasks
-          .filter((task) => task.category)
-          .map((task) => task.category as string)
+          .flatMap((task) => task.tags || [])
       )
     );
-    setCategories(uniqueCategories);
+    setTags(uniqueTags);
   }, [tasks]);
 
   // キーボードショートカットからのタスク作成モーダルを開くイベントリスナー
@@ -305,18 +303,6 @@ const HomePage: React.FC = () => {
                             />
                           ))}
                         </div>
-                      )}
-                      
-                      {/* 後方互換性のためにcategoryも表示 */}
-                      {task.category && !task.tags?.includes(task.category) && (
-                        <CategoryBadge
-                          category={task.category}
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCategoryClick(task.category!);
-                          }}
-                        />
                       )}
                       
                       {task.dueDate && (

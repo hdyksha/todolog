@@ -22,8 +22,6 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   memo?: string;
-  // 後方互換性のためにcategoryフィールドを残す（オプショナル）
-  category?: string;
 }
 
 // 通知の型定義
@@ -39,8 +37,6 @@ export interface FilterOptions {
   priority: Priority | 'all';
   tags?: string[];
   searchTerm: string;
-  // 後方互換性のためにcategoryフィールドを残す
-  category?: string | null;
 }
 
 // ユーザー設定の型定義

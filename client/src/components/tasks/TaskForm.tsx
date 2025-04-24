@@ -37,11 +37,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
       if (task.tags) {
         task.tags.forEach(tag => allTags.add(tag));
       }
-      
-      // 後方互換性のためにcategoryも追加
-      if (task.category) {
-        allTags.add(task.category);
-      }
     });
     
     return Array.from(allTags);
@@ -53,10 +48,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
       setTitle(task.title);
       setPriority(task.priority);
       setTags(task.tags || []);
-      // 後方互換性のためにcategoryも処理
-      if (task.category && (!task.tags || !task.tags.includes(task.category))) {
-        setTags(prev => [...prev, task.category!]);
-      }
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
       setMemo(task.memo || '');
     }

@@ -22,7 +22,6 @@ export interface Task {
   createdAt: string;   // 作成日時（ISO形式の文字列）
   updatedAt: string;   // 更新日時（ISO形式の文字列）
   memo?: string;       // メモ（オプション）
-  category?: string;   // 後方互換性のためのカテゴリ（オプション）
 }
 
 // タスクフィルターの型定義

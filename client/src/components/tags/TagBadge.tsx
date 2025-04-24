@@ -4,7 +4,7 @@ import './TagBadge.css';
 interface TagBadgeProps {
   tag: string;
   color?: string;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   size?: 'small' | 'medium' | 'large';
   className?: string;
 }

@@ -4,7 +4,7 @@ import { useTaskContext } from '../contexts/TaskContext';
 import { useTaskActions } from '../hooks/useTaskActions';
 import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
 import Button from '../components/ui/Button';
-import CategoryBadge from '../components/categories/CategoryBadge';
+import TagBadge from '../components/tags/TagBadge';
 import TaskMemoViewer from '../components/TaskMemoViewer';
 import MarkdownHelpModal from '../components/MarkdownHelpModal';
 import { Priority } from '../types';
@@ -229,10 +229,14 @@ const TaskDetailPage: React.FC = () => {
           </span>
         </div>
 
-        {task.category && (
-          <div className="task-detail-category">
-            <span className="task-detail-label">カテゴリ</span>
-            <CategoryBadge category={task.category} />
+        {task.tags && task.tags.length > 0 && (
+          <div className="task-detail-tags">
+            <span className="task-detail-label">タグ</span>
+            <div className="task-tags-container">
+              {task.tags.map(tag => (
+                <TagBadge key={tag} tag={tag} />
+              ))}
+            </div>
           </div>
         )}
 

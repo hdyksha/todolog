@@ -61,7 +61,6 @@ export const api = {
   async createTask(taskData: {
     title: string;
     priority?: Priority;
-    category?: string;
     tags?: string[];
     dueDate?: string;
     memo?: string;

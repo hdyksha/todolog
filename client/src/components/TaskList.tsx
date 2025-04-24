@@ -7,7 +7,6 @@ interface TaskListProps {
   tasks: Task[];
   filter: TaskFilter;
   sort: TaskSort;
-  categories: string[];
   onToggleComplete: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onEditTask: (id: string) => void;
@@ -20,7 +19,6 @@ const TaskList: React.FC<TaskListProps> = ({
   tasks,
   filter,
   sort,
-  categories,
   onToggleComplete,
   onDeleteTask,
   onEditTask,

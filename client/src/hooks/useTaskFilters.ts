@@ -37,17 +37,12 @@ export const useTaskFilters = (tasks: Task[]) => {
       if (filters.tags && filters.tags.length > 0) {
         // タスクにタグがない場合はフィルタリング対象外
         if (!task.tags || task.tags.length === 0) {
-          // 後方互換性のためにcategoryをチェック
-          if (task.category && filters.tags.includes(task.category)) {
-            // カテゴリがタグとして選択されている場合は表示
-            return true;
-          }
           return false;
         }
         
         // 選択されたタグのいずれかがタスクのタグに含まれているかチェック
         const hasMatchingTag = filters.tags.some(tag => 
-          task.tags?.includes(tag) || task.category === tag
+          task.tags?.includes(tag)
         );
         
         if (!hasMatchingTag) {
@@ -62,14 +57,11 @@ export const useTaskFilters = (tasks: Task[]) => {
         const memoMatch = task.memo
           ? task.memo.toLowerCase().includes(searchLower)
           : false;
-        const categoryMatch = task.category
-          ? task.category.toLowerCase().includes(searchLower)
-          : false;
         const tagsMatch = task.tags
           ? task.tags.some(tag => tag.toLowerCase().includes(searchLower))
           : false;
 
-        if (!titleMatch && !memoMatch && !categoryMatch && !tagsMatch) {
+        if (!titleMatch && !memoMatch && !tagsMatch) {
           return false;
         }
       }

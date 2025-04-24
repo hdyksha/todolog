@@ -74,19 +74,6 @@ const TaskItem: React.FC<TaskItemProps> = ({
             </div>
           )}
           
-          {/* 後方互換性のためにcategoryも表示 */}
-          {task.category && !task.tags?.includes(task.category) && (
-            <div className="task-category">
-              <TagBadge
-                tag={task.category}
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              />
-            </div>
-          )}
-          
           {task.dueDate && (
             <span className="task-due-date">
               {new Date(task.dueDate).toLocaleDateString()}
