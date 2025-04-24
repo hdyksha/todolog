@@ -6,7 +6,7 @@ import { SortOption } from '../components/tasks/TaskSortControl';
 // デフォルトのフィルター設定
 const defaultFilters: FilterOptions = {
   priority: 'all',
-  category: null,
+  tags: [],
   searchTerm: '',
 };
 
@@ -33,9 +33,26 @@ export const useTaskFilters = (tasks: Task[]) => {
         return false;
       }
 
-      // カテゴリでフィルタリング
-      if (filters.category && task.category !== filters.category) {
-        return false;
+      // タグでフィルタリング
+      if (filters.tags && filters.tags.length > 0) {
+        // タスクにタグがない場合はフィルタリング対象外
+        if (!task.tags || task.tags.length === 0) {
+          // 後方互換性のためにcategoryをチェック
+          if (task.category && filters.tags.includes(task.category)) {
+            // カテゴリがタグとして選択されている場合は表示
+            return true;
+          }
+          return false;
+        }
+        
+        // 選択されたタグのいずれかがタスクのタグに含まれているかチェック
+        const hasMatchingTag = filters.tags.some(tag => 
+          task.tags?.includes(tag) || task.category === tag
+        );
+        
+        if (!hasMatchingTag) {
+          return false;
+        }
       }
 
       // 検索語でフィルタリング
@@ -48,8 +65,11 @@ export const useTaskFilters = (tasks: Task[]) => {
         const categoryMatch = task.category
           ? task.category.toLowerCase().includes(searchLower)
           : false;
+        const tagsMatch = task.tags
+          ? task.tags.some(tag => tag.toLowerCase().includes(searchLower))
+          : false;
 
-        if (!titleMatch && !memoMatch && !categoryMatch) {
+        if (!titleMatch && !memoMatch && !categoryMatch && !tagsMatch) {
           return false;
         }
       }

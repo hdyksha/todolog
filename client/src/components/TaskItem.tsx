@@ -1,7 +1,7 @@
 import React from 'react';
 import { Task, Priority } from '../types';
 import Button from './ui/Button';
-import CategoryBadge from './categories/CategoryBadge';
+import TagBadge from './tags/TagBadge';
 import './TaskItem.css';
 
 interface TaskItemProps {
@@ -58,15 +58,33 @@ const TaskItem: React.FC<TaskItemProps> = ({
             </span>
           )}
           
-          {task.category && (
-            <CategoryBadge
-              category={task.category}
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                // カテゴリクリック時の処理（オプション）
-              }}
-            />
+          {task.tags && task.tags.length > 0 && (
+            <div className="task-tags">
+              {task.tags.map(tag => (
+                <TagBadge
+                  key={tag}
+                  tag={tag}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // タグクリック時の処理（オプション）
+                  }}
+                />
+              ))}
+            </div>
+          )}
+          
+          {/* 後方互換性のためにcategoryも表示 */}
+          {task.category && !task.tags?.includes(task.category) && (
+            <div className="task-category">
+              <TagBadge
+                tag={task.category}
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              />
+            </div>
           )}
           
           {task.dueDate && (

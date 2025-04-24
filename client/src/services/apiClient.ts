@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { Task } from '../types';
+import { Task, Tag } from '../types';
 
 // APIのベースURL
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -25,6 +25,7 @@ axiosInstance.interceptors.response.use(
 
 // タスクのキャッシュ
 let tasksCache: Task[] | null = null;
+let tagsCache: Record<string, Tag> | null = null;
 
 // APIクライアント
 export const apiClient = {
@@ -118,14 +119,73 @@ export const apiClient = {
     return response.data;
   },
 
-  // カテゴリ一覧の取得
-  async fetchCategories(): Promise<string[]> {
-    const response = await axiosInstance.get<string[]>('/categories');
+  // タグ一覧の取得
+  async fetchTags(forceRefresh = false): Promise<Record<string, Tag>> {
+    // キャッシュがあり、強制更新でなければキャッシュを返す
+    if (tagsCache && !forceRefresh) {
+      return tagsCache;
+    }
+
+    const response = await axiosInstance.get<Record<string, Tag>>('/tags');
+    tagsCache = response.data;
     return response.data;
+  },
+
+  // タグの作成
+  async createTag(name: string, tagData: Partial<Tag>): Promise<Tag> {
+    const response = await axiosInstance.post<Tag>(`/tags/${name}`, tagData);
+    
+    // キャッシュの更新
+    if (tagsCache) {
+      tagsCache = { ...tagsCache, [name]: response.data };
+    }
+    
+    return response.data;
+  },
+
+  // タグの更新
+  async updateTag(name: string, tagData: Partial<Tag>): Promise<Tag> {
+    const response = await axiosInstance.put<Tag>(`/tags/${name}`, tagData);
+    
+    // キャッシュの更新
+    if (tagsCache) {
+      tagsCache = { ...tagsCache, [name]: response.data };
+    }
+    
+    return response.data;
+  },
+
+  // タグの削除
+  async deleteTag(name: string): Promise<void> {
+    await axiosInstance.delete(`/tags/${name}`);
+    
+    // キャッシュの更新
+    if (tagsCache && tagsCache[name]) {
+      const { [name]: _, ...rest } = tagsCache;
+      tagsCache = rest;
+    }
+  },
+
+  // 未使用タグのクリーンアップ
+  async cleanupUnusedTags(): Promise<string[]> {
+    const response = await axiosInstance.post<{ deletedTags: string[] }>('/tags/cleanup');
+    
+    // キャッシュの更新
+    if (tagsCache) {
+      response.data.deletedTags.forEach(tag => {
+        if (tagsCache && tagsCache[tag]) {
+          const { [tag]: _, ...rest } = tagsCache;
+          tagsCache = rest;
+        }
+      });
+    }
+    
+    return response.data.deletedTags;
   },
 
   // キャッシュのクリア
   clearCache() {
     tasksCache = null;
+    tagsCache = null;
   }
 };

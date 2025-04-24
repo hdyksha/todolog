@@ -25,7 +25,7 @@ export const useTaskActions = () => {
   const addTask = useCallback(async (
     title: string, 
     priority: Priority,
-    category?: string,
+    tags?: string[],
     dueDate?: string,
     memo?: string
   ) => {
@@ -36,7 +36,7 @@ export const useTaskActions = () => {
         title,
         priority,
         completed: false,
-        ...(category && { category }),
+        ...(tags && { tags }),
         ...(dueDate && { dueDate }),
         ...(memo && { memo }),
       });

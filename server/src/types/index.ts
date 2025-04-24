@@ -5,24 +5,31 @@ export enum Priority {
   Low = 'low'
 }
 
+// タグの型定義
+export interface Tag {
+  color: string;       // タグの色
+  description?: string; // タグの説明
+}
+
 // タスクの型定義
 export interface Task {
   id: string;          // ユニークID
   title: string;       // タスクのタイトル
   completed: boolean;  // 完了状態
   priority: Priority;  // 優先度（High, Medium, Low）
-  category?: string;   // カテゴリ（オプション）
+  tags?: string[];     // タグ（オプション）
   dueDate?: string;    // 期限（ISO形式の文字列）
   createdAt: string;   // 作成日時（ISO形式の文字列）
   updatedAt: string;   // 更新日時（ISO形式の文字列）
   memo?: string;       // メモ（オプション）
+  category?: string;   // 後方互換性のためのカテゴリ（オプション）
 }
 
 // タスクフィルターの型定義
 export interface TaskFilter {
   status: 'all' | 'completed' | 'active';
   priority?: Priority;
-  category?: string;
+  tags?: string[];
   searchTerm?: string;
 }
 

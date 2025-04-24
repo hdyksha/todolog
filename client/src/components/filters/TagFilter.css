@@ -1,0 +1,78 @@
+.tag-filter {
+  margin-bottom: 16px;
+}
+
+.tag-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tag-filter-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.clear-tags-button {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.clear-tags-button:hover {
+  text-decoration: underline;
+}
+
+.tag-filter-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-filter-item {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.tag-filter-item:hover {
+  transform: translateY(-1px);
+}
+
+.tag-filter-item.selected {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tag-selected-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: bold;
+}
+
+.no-tags-message {
+  color: #888;
+  font-style: italic;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}

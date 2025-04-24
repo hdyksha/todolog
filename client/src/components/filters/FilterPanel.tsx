@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
-import { Priority } from '../../types';
+import { Priority, Tag } from '../../types';
 import Button from '../ui/Button';
+import TagFilter from './TagFilter';
 import './FilterPanel.css';
 
 export interface FilterOptions {
   priority: Priority | 'all';
-  category: string | null;
+  tags?: string[];
   searchTerm: string;
 }
 
 interface FilterPanelProps {
   filters: FilterOptions;
   onFilterChange: (filters: FilterOptions) => void;
-  categories: string[];
+  availableTags: Record<string, Tag>;
   onClearFilters: () => void;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
   filters,
   onFilterChange,
-  categories,
+  availableTags,
   onClearFilters,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -28,9 +29,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     onFilterChange({ ...filters, priority });
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const category = e.target.value === 'all' ? null : e.target.value;
-    onFilterChange({ ...filters, category });
+  const handleTagsChange = (tags: string[]) => {
+    onFilterChange({ ...filters, tags });
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +40,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   // クイックフィルターが適用されているかどうか
   const hasActiveFilters =
     filters.priority !== 'all' ||
-    filters.category !== null ||
+    (filters.tags && filters.tags.length > 0) ||
     filters.searchTerm !== '';
 
   return (
@@ -112,22 +112,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
           </div>
           
-          {categories.length > 0 && (
+          {Object.keys(availableTags).length > 0 && (
             <div className="filter-section">
-              <h3 className="filter-section-title">カテゴリ</h3>
-              <select
-                className="filter-category-select"
-                value={filters.category || 'all'}
-                onChange={handleCategoryChange}
-                aria-label="カテゴリでフィルター"
-              >
-                <option value="all">すべてのカテゴリ</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+              <TagFilter
+                selectedTags={filters.tags || []}
+                onChange={handleTagsChange}
+                availableTags={availableTags}
+              />
             </div>
           )}
         </div>

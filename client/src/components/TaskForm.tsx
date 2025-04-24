@@ -1,31 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Task, Priority } from '../types';
+import { Task, Priority, Tag } from '../types';
+import TagInput from './tags/TagInput';
 import './TaskForm.css';
 
 interface TaskFormProps {
   task?: Task;
-  categories: string[];
+  availableTags: Record<string, Tag>;
   onSave: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => void;
   onCancel: () => void;
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
   task,
-  categories,
+  availableTags,
   onSave,
   onCancel,
 }) => {
   // フォームの状態
   const [title, setTitle] = useState(task?.title || '');
   const [priority, setPriority] = useState<Priority>(task?.priority || Priority.Medium);
-  const [category, setCategory] = useState(task?.category || '');
-  const [newCategory, setNewCategory] = useState('');
+  const [tags, setTags] = useState<string[]>(task?.tags || []);
   const [dueDate, setDueDate] = useState(
     task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''
   );
   const [memo, setMemo] = useState(task?.memo || '');
   const [completed, setCompleted] = useState(task?.completed || false);
-  const [showNewCategory, setShowNewCategory] = useState(false);
 
   // バリデーション状態
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -58,15 +57,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
       parsedDueDate = new Date(dueDate);
     }
 
-    // カテゴリの処理
-    const finalCategory = showNewCategory ? newCategory : category;
-
     // タスクオブジェクトの作成
     const taskData = {
       id: task?.id,
       title: title.trim(),
       priority,
-      category: finalCategory || undefined,
+      tags: tags.length > 0 ? tags : undefined,
       dueDate: parsedDueDate,
       memo: memo.trim() || undefined,
       completed,
@@ -108,46 +104,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
         </div>
 
         <div className="form-group">
-          <label htmlFor="category">カテゴリ</label>
-          {!showNewCategory ? (
-            <>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                <option value="">カテゴリなし</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => setShowNewCategory(true)}
-              >
-                新しいカテゴリを作成
-              </button>
-            </>
-          ) : (
-            <>
-              <input
-                type="text"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="新しいカテゴリ名"
-              />
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => setShowNewCategory(false)}
-              >
-                既存のカテゴリから選択
-              </button>
-            </>
-          )}
+          <label htmlFor="tags">タグ</label>
+          <TagInput
+            selectedTags={tags}
+            onChange={setTags}
+            availableTags={availableTags}
+            placeholder="タグを追加..."
+          />
         </div>
 
         <div className="form-group">
@@ -195,5 +158,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     </div>
   );
 };
+
+export default TaskForm;
 
 export default TaskForm;

@@ -14,6 +14,7 @@ import TaskForm from '../components/tasks/TaskForm';
 import FilterPanel from '../components/filters/FilterPanel';
 import TaskSortControl from '../components/tasks/TaskSortControl';
 import CategoryBadge from '../components/categories/CategoryBadge';
+import TagBadge from '../components/tags/TagBadge';
 import ArchiveSection from '../components/archive/ArchiveSection';
 import './HomePage.css';
 
@@ -108,7 +109,7 @@ const HomePage: React.FC = () => {
   const handleCreateTask = async (taskData: Partial<Task>) => {
     setIsSubmitting(true);
     try {
-      await addTask(taskData.title!, taskData.priority!, taskData.category, taskData.dueDate, taskData.memo);
+      await addTask(taskData.title!, taskData.priority!, taskData.tags, taskData.dueDate, taskData.memo);
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('タスク作成エラー:', error);
@@ -155,8 +156,8 @@ const HomePage: React.FC = () => {
   };
 
   // カテゴリでフィルタリング
-  const handleCategoryClick = (category: string) => {
-    setFilters({ ...filters, category });
+  const handleCategoryClick = (tag: string) => {
+    setFilters({ ...filters, tags: [tag] });
   };
 
   // ローディング中の表示
@@ -211,7 +212,23 @@ const HomePage: React.FC = () => {
       <FilterPanel
         filters={filters}
         onFilterChange={setFilters}
-        categories={categories}
+        availableTags={tasks.reduce((acc, task) => {
+          // タグの処理
+          if (task.tags) {
+            task.tags.forEach(tag => {
+              if (!acc[tag]) {
+                acc[tag] = { color: '#4a90e2' }; // デフォルトカラー
+              }
+            });
+          }
+          
+          // 後方互換性のためにcategoryも処理
+          if (task.category && !acc[task.category]) {
+            acc[task.category] = { color: '#4a90e2' }; // デフォルトカラー
+          }
+          
+          return acc;
+        }, {} as Record<string, { color: string }>)}
         onClearFilters={resetFilters}
       />
 
@@ -274,7 +291,24 @@ const HomePage: React.FC = () => {
                         </span>
                       )}
                       
-                      {task.category && (
+                      {task.tags && task.tags.length > 0 && (
+                        <div className="task-tags">
+                          {task.tags.map(tag => (
+                            <TagBadge
+                              key={tag}
+                              tag={tag}
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCategoryClick(tag);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 後方互換性のためにcategoryも表示 */}
+                      {task.category && !task.tags?.includes(task.category) && (
                         <CategoryBadge
                           category={task.category}
                           size="small"
