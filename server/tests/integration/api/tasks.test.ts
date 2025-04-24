@@ -83,7 +83,7 @@ describe('タスクAPI', () => {
       const newTask = {
         title: '新しいタスク',
         priority: 'high',
-        category: 'テスト',
+        tags: ['テスト'],
       };
       
       const response = await request(app)
@@ -95,13 +95,14 @@ describe('タスクAPI', () => {
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('title', newTask.title);
       expect(response.body).toHaveProperty('priority', newTask.priority);
-      expect(response.body).toHaveProperty('category', newTask.category);
+      expect(response.body).toHaveProperty('tags');
+      expect(response.body.tags).toEqual(expect.arrayContaining(['テスト']));
       expect(response.body).toHaveProperty('completed', false);
       expect(response.body).toHaveProperty('createdAt');
       expect(response.body).toHaveProperty('updatedAt');
     });
     
-    it('無効なデータの場合は400を返すべき', async () => {
+    it('無効なデータの場合は422を返すべき', async () => {
       const invalidTask = {
         // タイトルが欠けている
         priority: 'high',
@@ -112,7 +113,7 @@ describe('タスクAPI', () => {
         .send(invalidTask)
         .set('Accept', 'application/json');
       
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
     });
   });
   

@@ -201,6 +201,20 @@ export class TaskService {
     return this.updateTask(id, { memo });
   }
   
+  // タグ一覧の取得
+  async getTags(): Promise<string[]> {
+    const tasks = await this.getAllTasks();
+    const tagsSet = new Set<string>();
+    
+    tasks.forEach(task => {
+      if (task.tags && task.tags.length > 0) {
+        task.tags.forEach(tag => tagsSet.add(tag));
+      }
+    });
+    
+    return Array.from(tagsSet);
+  }
+  
   // データのバックアップを作成
   async createBackup(): Promise<string> {
     const tasksFile = await this.getTasksFilename();

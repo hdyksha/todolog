@@ -22,7 +22,7 @@ describe('タスクモデル', () => {
         title: 'テストタスク',
         priority: 'medium' as const,
         completed: false,
-        category: 'テスト',
+        tags: [],
         dueDate: '2025-12-31T23:59:59Z',
         memo: 'これはテストです',
       };
@@ -94,7 +94,7 @@ describe('タスクモデル', () => {
         title: 'テストタスク',
         completed: false,
         priority: 'high' as const,
-        category: 'テスト',
+        tags: [],
         dueDate: '2025-12-31T23:59:59Z',
         memo: 'これはテストです',
         createdAt: '2025-01-01T00:00:00Z',

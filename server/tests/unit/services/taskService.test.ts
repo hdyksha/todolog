@@ -163,15 +163,18 @@ describe('TaskService', () => {
     expect(toggledAgain).toHaveProperty('completed', false);
   });
   
-  it('カテゴリ一覧を取得できるべき', async () => {
-    await taskService.createTask({ title: 'タスク1', category: 'カテゴリA' });
-    await taskService.createTask({ title: 'タスク2', category: 'カテゴリB' });
-    await taskService.createTask({ title: 'タスク3', category: 'カテゴリA' });
+  it('タグでタスクをフィルタリングできるべき', async () => {
+    await taskService.createTask({ title: 'タスク1', tags: ['タグA'] });
+    await taskService.createTask({ title: 'タスク2', tags: ['タグB'] });
+    await taskService.createTask({ title: 'タスク3', tags: ['タグA', 'タグC'] });
     
-    const categories = await taskService.getCategories();
+    const tasksWithTagA = await taskService.getAllTasks({ tags: ['タグA'] });
+    expect(tasksWithTagA).toHaveLength(2);
     
-    expect(categories).toHaveLength(2);
-    expect(categories).toContain('カテゴリA');
-    expect(categories).toContain('カテゴリB');
+    const tasksWithTagB = await taskService.getAllTasks({ tags: ['タグB'] });
+    expect(tasksWithTagB).toHaveLength(1);
+    
+    const tasksWithTagC = await taskService.getAllTasks({ tags: ['タグC'] });
+    expect(tasksWithTagC).toHaveLength(1);
   });
 });

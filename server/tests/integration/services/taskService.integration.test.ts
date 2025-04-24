@@ -55,7 +55,7 @@ describe('TaskService統合テスト', () => {
     const taskData = {
       title: '統合テスト用タスク',
       priority: 'high' as const,
-      category: 'テスト',
+      tags: ['テスト'],
     };
     
     const createdTask = await taskService.createTask(taskData);
@@ -108,20 +108,20 @@ describe('TaskService統合テスト', () => {
   
   it('複数のタスクを作成して取得できるべき', async () => {
     // 複数のタスクを作成
-    await taskService.createTask({ title: 'タスク1', category: 'カテゴリA' });
-    await taskService.createTask({ title: 'タスク2', category: 'カテゴリB' });
-    await taskService.createTask({ title: 'タスク3', category: 'カテゴリA' });
+    await taskService.createTask({ title: 'タスク1', tags: ['タグA'] });
+    await taskService.createTask({ title: 'タスク2', tags: ['タグB'] });
+    await taskService.createTask({ title: 'タスク3', tags: ['タグA', 'タグC'] });
     
     // タスク一覧を取得
     const tasks = await taskService.getAllTasks();
     
     expect(tasks).toHaveLength(3);
     
-    // カテゴリ一覧を取得
-    const categories = await taskService.getCategories();
+    // タグでフィルタリング
+    const tasksWithTagA = await taskService.getAllTasks({ tags: ['タグA'] });
+    expect(tasksWithTagA).toHaveLength(2);
     
-    expect(categories).toHaveLength(2);
-    expect(categories).toContain('カテゴリA');
-    expect(categories).toContain('カテゴリB');
+    const tasksWithTagB = await taskService.getAllTasks({ tags: ['タグB'] });
+    expect(tasksWithTagB).toHaveLength(1);
   });
 });

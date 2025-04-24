@@ -87,7 +87,7 @@ describe('Error Handlers', () => {
       errorHandler(err, req, res, next);
       expect(res.json).toHaveBeenCalledWith({
         error: {
-          code: 'INTERNAL_SERVER_ERROR',
+          code: 'InternalServerError',
           message: 'テストエラー',
         }
       });
@@ -98,7 +98,7 @@ describe('Error Handlers', () => {
       errorHandler(err, req, res, next);
       expect(res.json).toHaveBeenCalledWith({
         error: {
-          code: 'INTERNAL_SERVER_ERROR',
+          code: 'InternalServerError',
           message: '内部サーバーエラーが発生しました',
         }
       });

@@ -171,6 +171,16 @@ export class TaskController {
     }
   };
 
+  // タグ一覧の取得
+  getTags = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const tags = await this.taskService.getTags();
+      res.status(200).json(tags);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   // バックアップの作成
   createBackup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

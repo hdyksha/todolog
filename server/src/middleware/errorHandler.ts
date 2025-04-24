@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger.js';
-import { ApiError, InternalServerError } from '../utils/error.js';
+import { ApiError, InternalServerError, ValidationError } from '../utils/error.js';
 import { ZodError } from 'zod';
-import { ValidationError } from '../utils/error.js';
 
 // 404エラーハンドラー
 export const notFoundHandler = (req: Request, res: Response) => {
@@ -32,13 +31,23 @@ export const errorHandler = (
 
   // Zodのバリデーションエラーを処理
   if (err instanceof ZodError) {
-    const validationError = new ValidationError(err);
-    return res.status(validationError.statusCode).json(validationError.toResponse());
+    const validationError = new ValidationError(err.message);
+    return res.status(validationError.statusCode).json({
+      error: {
+        code: validationError.name,
+        message: validationError.message
+      }
+    });
   }
 
   // APIエラーを処理
   if (err instanceof ApiError) {
-    return res.status(err.statusCode).json(err.toResponse());
+    return res.status(err.statusCode).json({
+      error: {
+        code: err.name,
+        message: err.message
+      }
+    });
   }
 
   // その他のエラーは500 Internal Server Errorとして処理
@@ -46,5 +55,10 @@ export const errorHandler = (
     process.env.NODE_ENV === 'production' ? '内部サーバーエラーが発生しました' : err.message
   );
   
-  res.status(serverError.statusCode).json(serverError.toResponse());
+  res.status(serverError.statusCode).json({
+    error: {
+      code: serverError.name,
+      message: serverError.message
+    }
+  });
 };

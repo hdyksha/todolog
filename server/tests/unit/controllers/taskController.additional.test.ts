@@ -20,7 +20,7 @@ describe('TaskController追加テスト', () => {
     mockTaskService = {
       toggleTaskCompletion: vi.fn(),
       updateTaskMemo: vi.fn(),
-      getCategories: vi.fn(),
+      getTags: vi.fn(),
       createBackup: vi.fn(),
       listBackups: vi.fn(),
       restoreFromBackup: vi.fn(),
@@ -105,20 +105,20 @@ describe('TaskController追加テスト', () => {
     });
   });
 
-  describe('getCategories', () => {
-    it('カテゴリ一覧を取得するべき', async () => {
-      const mockCategories = ['仕事', '個人', '買い物'];
-      vi.mocked(mockTaskService.getCategories).mockResolvedValue(mockCategories);
+  describe('getTags', () => {
+    it('タグ一覧を取得するべき', async () => {
+      const mockTags = ['仕事', '個人', '買い物'];
+      vi.mocked(mockTaskService.getTags).mockResolvedValue(mockTags);
 
-      await taskController.getCategories(
+      await taskController.getTags(
         mockRequest as Request,
         mockResponse as Response,
         mockNext
       );
 
-      expect(mockTaskService.getCategories).toHaveBeenCalled();
+      expect(mockTaskService.getTags).toHaveBeenCalled();
       expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.json).toHaveBeenCalledWith(mockCategories);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockTags);
     });
   });
 
