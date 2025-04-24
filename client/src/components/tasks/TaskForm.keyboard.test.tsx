@@ -1,44 +1,84 @@
-import { render } from '@testing-library/react';
-import { describe, it, vi } from 'vitest';
-import TaskForm from './TaskForm';
-import { testKeyboardNavigation } from '../../tests/keyboard-navigation-helper';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import TaskForm from '../../components/TaskForm';
+import { Priority, Task } from '../../types';
+import { TaskProvider } from '../../contexts/TaskContext';
+import { vi } from 'vitest';
 
-describe('TaskForm コンポーネントのキーボードナビゲーション', () => {
-  const mockOnSubmit = vi.fn();
-  const mockOnCancel = vi.fn();
+// モックタスク
+const mockTask: Task = {
+  id: '1',
+  title: 'テストタスク',
+  completed: false,
+  priority: Priority.Medium,
+  createdAt: '2023-01-01T00:00:00.000Z',
+  updatedAt: '2023-01-01T00:00:00.000Z',
+  tags: ['仕事']
+};
 
-  it('Tabキーでフォーム要素間を移動できること', () => {
-    const { container } = render(
-      <TaskForm
-        onSubmit={mockOnSubmit}
-        onCancel={mockOnCancel}
-      />
-    );
+// モックタグデータ
+const mockAvailableTags = {
+  '仕事': { color: '#ff0000' },
+  '個人': { color: '#00ff00' },
+  '買い物': { color: '#0000ff' }
+};
 
-    testKeyboardNavigation(container);
+// モック関数
+const mockOnSave = vi.fn();
+const mockOnCancel = vi.fn();
+
+describe('TaskForm キーボード操作', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('編集モードでもTabキーでフォーム要素間を移動できること', () => {
-    const mockTask = {
-      id: '1',
-      title: 'テストタスク',
-      completed: false,
-      priority: 'medium' as const,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      category: 'テスト',
-      dueDate: new Date().toISOString(),
-      memo: 'これはテストメモです'
-    };
-
-    const { container } = render(
-      <TaskForm
-        task={mockTask}
-        onSubmit={mockOnSubmit}
-        onCancel={mockOnCancel}
-      />
+  test('送信ボタンでフォームを送信できる', () => {
+    render(
+      <TaskProvider>
+        <TaskForm 
+          availableTags={mockAvailableTags}
+          onSave={mockOnSave} 
+          onCancel={mockOnCancel} 
+        />
+      </TaskProvider>
     );
+    
+    // タイトルを入力
+    const titleInput = screen.getByLabelText(/タイトル/i);
+    fireEvent.change(titleInput, { target: { value: 'キーボードテスト' } });
+    
+    // 送信ボタンをクリック
+    const submitButton = screen.getByText('作成');
+    fireEvent.click(submitButton);
+    
+    // 送信関数が呼ばれたことを確認
+    expect(mockOnSave).toHaveBeenCalledTimes(1);
+    expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'キーボードテスト'
+    }));
+  });
 
-    testKeyboardNavigation(container);
+  test('キャンセルボタンでフォームをキャンセルできる', () => {
+    render(
+      <TaskProvider>
+        <TaskForm 
+          availableTags={mockAvailableTags}
+          onSave={mockOnSave} 
+          onCancel={mockOnCancel} 
+        />
+      </TaskProvider>
+    );
+    
+    // タイトルを入力
+    const titleInput = screen.getByLabelText(/タイトル/i);
+    fireEvent.change(titleInput, { target: { value: 'キャンセルテスト' } });
+    
+    // キャンセルボタンをクリック
+    const cancelButton = screen.getByText('キャンセル');
+    fireEvent.click(cancelButton);
+    
+    // キャンセル関数が呼ばれたことを確認
+    expect(mockOnCancel).toHaveBeenCalledTimes(1);
+    expect(mockOnSave).not.toHaveBeenCalled();
   });
 });

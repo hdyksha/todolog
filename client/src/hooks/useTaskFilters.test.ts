@@ -80,7 +80,7 @@ describe('useTaskFilters フック', () => {
     
     // カテゴリAのタスクのみ表示
     act(() => {
-      result.current.setFilters({ ...result.current.filters, category: 'カテゴリA' });
+      result.current.setFilters({ ...result.current.filters, tags: ['カテゴリA'] });
     });
     
     expect(result.current.filteredTasks).toHaveLength(1);
@@ -88,7 +88,7 @@ describe('useTaskFilters フック', () => {
     
     // カテゴリBのタスクのみ表示
     act(() => {
-      result.current.setFilters({ ...result.current.filters, category: 'カテゴリB' });
+      result.current.setFilters({ ...result.current.filters, tags: ['カテゴリB'] });
     });
     
     expect(result.current.filteredTasks).toHaveLength(1);
@@ -143,7 +143,7 @@ describe('useTaskFilters フック', () => {
       result.current.setFilters({
         ...result.current.filters,
         priority: Priority.Low,
-        category: 'カテゴリB'
+        tags: ['カテゴリB']
       });
     });
     
@@ -157,7 +157,7 @@ describe('useTaskFilters フック', () => {
     act(() => {
       result.current.setFilters({
         priority: Priority.High,
-        category: 'カテゴリA',
+        tags: ['カテゴリA'],
         searchTerm: '重要'
       });
     });
@@ -169,7 +169,7 @@ describe('useTaskFilters フック', () => {
     
     expect(result.current.filters).toEqual({
       priority: 'all',
-      category: null,
+      tags: [],
       searchTerm: ''
     });
     expect(result.current.filteredTasks).toHaveLength(3);

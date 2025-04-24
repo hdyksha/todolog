@@ -1,136 +1,256 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { apiClient } from './apiClient';
+import { Priority } from '../types';
 
-// apiClientのメソッドを直接モック化
-const originalApiClient = { ...apiClient };
+// fetchのモック設定
+vi.mock('global', () => ({
+  fetch: vi.fn()
+}));
 
 describe('apiClient', () => {
   beforeEach(() => {
-    // テスト前にキャッシュとモックをクリア
-    apiClient.clearCache();
-    vi.clearAllMocks();
-  });
-
-  afterAll(() => {
-    // テスト後に元のメソッドを復元
-    Object.assign(apiClient, originalApiClient);
+    // テスト前にモックをリセット
+    vi.resetAllMocks();
   });
 
   it('fetchTasks: タスク一覧を取得できる', async () => {
-    // モックの戻り値を設定
+    // モックレスポンスの設定
     const mockTasks = [
-      { id: '1', title: 'タスク1', completed: false },
-      { id: '2', title: 'タスク2', completed: true }
+      {
+        id: '1',
+        title: 'テストタスク1',
+        completed: false,
+        priority: Priority.High,
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
+        dueDate: null
+      }
     ];
-    
-    // 関数を直接モック
-    apiClient.fetchTasks = vi.fn().mockResolvedValue(mockTasks);
-    
-    const tasks = await apiClient.fetchTasks();
-    
-    expect(tasks).toEqual(mockTasks);
-    expect(apiClient.fetchTasks).toHaveBeenCalledTimes(1);
-  });
 
-  it('fetchTaskById: 特定のタスクを取得できる', async () => {
-    // モックの戻り値を設定
-    const mockTask = { id: '1', title: 'タスク1', completed: false };
-    
-    // 関数を直接モック
-    apiClient.fetchTaskById = vi.fn().mockResolvedValue(mockTask);
-    
-    const task = await apiClient.fetchTaskById('1');
-    
-    expect(task).toEqual(mockTask);
-    expect(apiClient.fetchTaskById).toHaveBeenCalledWith('1');
+    // fetchのモック実装
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockTasks)
+      } as Response)
+    );
+
+    // APIを呼び出し
+    const result = await apiClient.fetchTasks();
+
+    // 期待する結果の検証
+    expect(result).toEqual(mockTasks);
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/tasks');
   });
 
   it('createTask: 新しいタスクを作成できる', async () => {
-    // モックの戻り値を設定
-    const newTaskData = { title: '新しいタスク', completed: false };
-    const createdTask = { id: 'new-id', ...newTaskData, createdAt: '2025-04-20T00:00:00.000Z', updatedAt: '2025-04-20T00:00:00.000Z' };
-    
-    // 関数を直接モック
-    apiClient.createTask = vi.fn().mockResolvedValue(createdTask);
-    
-    const result = await apiClient.createTask(newTaskData);
-    
+    // 新しいタスクのデータ
+    const newTask = {
+      title: '新しいタスク',
+      priority: Priority.Medium
+    };
+
+    // 作成後のタスク（IDなどが追加される）
+    const createdTask = {
+      id: '123',
+      title: '新しいタスク',
+      priority: Priority.Medium,
+      completed: false,
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-01T00:00:00.000Z',
+      dueDate: null
+    };
+
+    // fetchのモック実装
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(createdTask)
+      } as Response)
+    );
+
+    // APIを呼び出し
+    const result = await apiClient.createTask(newTask);
+
+    // 期待する結果の検証
     expect(result).toEqual(createdTask);
-    expect(apiClient.createTask).toHaveBeenCalledWith(newTaskData);
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:3001/api/tasks',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask)
+      })
+    );
   });
 
   it('updateTask: タスクを更新できる', async () => {
-    // モックの戻り値を設定
-    const taskId = '1';
-    const updateData = { title: '更新されたタスク', completed: true };
-    const updatedTask = { id: taskId, ...updateData, updatedAt: '2025-04-20T00:00:00.000Z' };
+    // 更新するタスクのID
+    const taskId = '123';
     
-    // 関数を直接モック
-    apiClient.updateTask = vi.fn().mockResolvedValue(updatedTask);
-    
+    // 更新データ
+    const updateData = {
+      title: '更新されたタスク',
+      priority: Priority.High
+    };
+
+    // 更新後のタスク
+    const updatedTask = {
+      id: taskId,
+      title: '更新されたタスク',
+      priority: Priority.High,
+      completed: false,
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-02T00:00:00.000Z',
+      dueDate: null
+    };
+
+    // fetchのモック実装
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(updatedTask)
+      } as Response)
+    );
+
+    // APIを呼び出し
     const result = await apiClient.updateTask(taskId, updateData);
-    
+
+    // 期待する結果の検証
     expect(result).toEqual(updatedTask);
-    expect(apiClient.updateTask).toHaveBeenCalledWith(taskId, updateData);
+    expect(global.fetch).toHaveBeenCalledWith(
+      `http://localhost:3001/api/tasks/${taskId}`,
+      expect.objectContaining({
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      })
+    );
   });
 
   it('deleteTask: タスクを削除できる', async () => {
-    // 関数を直接モック
-    apiClient.deleteTask = vi.fn().mockResolvedValue(undefined);
-    
-    await apiClient.deleteTask('1');
-    
-    expect(apiClient.deleteTask).toHaveBeenCalledWith('1');
+    // 削除するタスクのID
+    const taskId = '123';
+
+    // fetchのモック実装
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({})
+      } as Response)
+    );
+
+    // APIを呼び出し
+    await apiClient.deleteTask(taskId);
+
+    // 期待する結果の検証
+    expect(global.fetch).toHaveBeenCalledWith(
+      `http://localhost:3001/api/tasks/${taskId}`,
+      expect.objectContaining({
+        method: 'DELETE'
+      })
+    );
   });
 
-  it('toggleTaskCompletion: タスクの完了状態を切り替えられる', async () => {
-    // モックの戻り値を設定
-    const taskId = '1';
-    const toggledTask = { id: taskId, title: 'タスク1', completed: true, updatedAt: '2025-04-20T00:00:00.000Z' };
-    
-    // 関数を直接モック
-    apiClient.toggleTaskCompletion = vi.fn().mockResolvedValue(toggledTask);
-    
-    const result = await apiClient.toggleTaskCompletion(taskId);
-    
-    expect(result).toEqual(toggledTask);
-    expect(apiClient.toggleTaskCompletion).toHaveBeenCalledWith(taskId);
+  it('fetchTags: タグ一覧を取得できる', async () => {
+    // モックレスポンスの設定
+    const mockTags = {
+      '仕事': { color: '#ff0000' },
+      '個人': { color: '#00ff00' }
+    };
+
+    // fetchのモック実装
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockTags)
+      } as Response)
+    );
+
+    // APIを呼び出し
+    const result = await apiClient.fetchTags();
+
+    // 期待する結果の検証
+    expect(result).toEqual(mockTags);
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/tags');
   });
 
-  it('updateTaskMemo: タスクのメモを更新できる', async () => {
-    // モックの戻り値を設定
-    const taskId = '1';
-    const memo = '新しいメモ';
-    const updatedTask = { id: taskId, title: 'タスク1', memo, updatedAt: '2025-04-20T00:00:00.000Z' };
-    
-    // 関数を直接モック
-    apiClient.updateTaskMemo = vi.fn().mockResolvedValue(updatedTask);
-    
-    const result = await apiClient.updateTaskMemo(taskId, memo);
-    
-    expect(result).toEqual(updatedTask);
-    expect(apiClient.updateTaskMemo).toHaveBeenCalledWith(taskId, memo);
+  it('createTag: 新しいタグを作成できる', async () => {
+    // 新しいタグのデータ
+    const tagName = '新しいタグ';
+    const color = '#cccccc';
+
+    // 作成後のタグ一覧
+    const updatedTags = {
+      '仕事': { color: '#ff0000' },
+      '個人': { color: '#00ff00' },
+      '新しいタグ': { color: '#cccccc' }
+    };
+
+    // fetchのモック実装
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(updatedTags)
+      } as Response)
+    );
+
+    // APIを呼び出し
+    const result = await apiClient.createTag(tagName, color);
+
+    // 期待する結果の検証
+    expect(result).toEqual(updatedTags);
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:3001/api/tags',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagName, color })
+      })
+    );
   });
 
-  it('fetchCategories: カテゴリ一覧を取得できる', async () => {
-    // モックの戻り値を設定
-    const mockCategories = ['仕事', '個人', '買い物'];
-    
-    // 関数を直接モック
-    apiClient.fetchCategories = vi.fn().mockResolvedValue(mockCategories);
-    
-    const categories = await apiClient.fetchCategories();
-    
-    expect(categories).toEqual(mockCategories);
-    expect(apiClient.fetchCategories).toHaveBeenCalledTimes(1);
+  it('deleteTag: タグを削除できる', async () => {
+    // 削除するタグ名
+    const tagName = '仕事';
+
+    // 削除後のタグ一覧
+    const updatedTags = {
+      '個人': { color: '#00ff00' }
+    };
+
+    // fetchのモック実装
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(updatedTags)
+      } as Response)
+    );
+
+    // APIを呼び出し
+    const result = await apiClient.deleteTag(tagName);
+
+    // 期待する結果の検証
+    expect(result).toEqual(updatedTags);
+    expect(global.fetch).toHaveBeenCalledWith(
+      `http://localhost:3001/api/tags/${encodeURIComponent(tagName)}`,
+      expect.objectContaining({
+        method: 'DELETE'
+      })
+    );
   });
 
-  it('clearCache: キャッシュをクリアできる', () => {
-    // キャッシュをクリア
-    apiClient.clearCache();
-    
-    // キャッシュがクリアされたことを確認する方法はないが、
-    // エラーが発生しないことを確認
-    expect(() => apiClient.clearCache()).not.toThrow();
+  it('エラーハンドリング: APIエラー時に例外をスローする', async () => {
+    // fetchのモック実装（エラーレスポンス）
+    vi.spyOn(global, 'fetch').mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ error: 'Not Found' })
+      } as Response)
+    );
+
+    // APIを呼び出し、例外が発生することを確認
+    await expect(apiClient.fetchTasks()).rejects.toThrow('Not Found');
   });
 });

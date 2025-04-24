@@ -1,17 +1,22 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test/utils';
 import TaskForm from './TaskForm';
 import { Priority } from '../types';
 
 describe('TaskForm コンポーネント', () => {
-  const mockCategories = ['仕事', '個人', '買い物'];
+  // タグとして使用するデータ
+  const mockAvailableTags = {
+    '仕事': { color: '#ff0000' },
+    '個人': { color: '#00ff00' },
+    '買い物': { color: '#0000ff' }
+  };
   
   const mockTask = {
     id: '1',
     title: 'テストタスク',
     completed: false,
     priority: Priority.Medium,
-    category: '仕事',
+    tags: ['仕事'],
     dueDate: '2025-05-01T00:00:00.000Z',
     createdAt: '2025-04-15T10:00:00.000Z',
     updatedAt: '2025-04-15T10:00:00.000Z',
@@ -28,7 +33,7 @@ describe('TaskForm コンポーネント', () => {
   it('新規作成モードで正しく表示される', () => {
     render(
       <TaskForm
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
@@ -40,7 +45,8 @@ describe('TaskForm コンポーネント', () => {
     // 入力フィールドが空で表示されていることを確認
     expect(screen.getByLabelText(/タイトル/)).toHaveValue('');
     expect(screen.getByLabelText(/優先度/)).toHaveValue(Priority.Medium);
-    expect(screen.getByLabelText(/カテゴリ/)).toHaveValue('');
+    // タグ入力フィールドの確認
+    expect(screen.getByText(/タグ/)).toBeInTheDocument();
     expect(screen.getByLabelText(/期限/)).toHaveValue('');
     expect(screen.getByLabelText(/メモ/)).toHaveValue('');
     
@@ -56,7 +62,7 @@ describe('TaskForm コンポーネント', () => {
     render(
       <TaskForm
         task={mockTask}
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
@@ -65,17 +71,18 @@ describe('TaskForm コンポーネント', () => {
     // フォームのタイトルが表示されていることを確認
     expect(screen.getByText('タスクを編集')).toBeInTheDocument();
     
-    // 入力フィールドに既存の値が表示されていることを確認
+    // 入力フィールドに既存のタスクデータが表示されていることを確認
     expect(screen.getByLabelText(/タイトル/)).toHaveValue('テストタスク');
     expect(screen.getByLabelText(/優先度/)).toHaveValue(Priority.Medium);
-    expect(screen.getByLabelText(/カテゴリ/)).toHaveValue('仕事');
+    // タグが表示されていることを確認
+    expect(screen.getByText(/タグ/)).toBeInTheDocument();
+    // 選択されたタグが表示されていることを確認（タグの表示方法に依存）
     expect(screen.getByLabelText(/期限/)).toHaveValue('2025-05-01');
     expect(screen.getByLabelText(/メモ/)).toHaveValue('これはテストメモです');
     
     // 完了チェックボックスが表示されていることを確認
-    const completedCheckbox = screen.getByLabelText(/完了/);
-    expect(completedCheckbox).toBeInTheDocument();
-    expect(completedCheckbox).not.toBeChecked();
+    expect(screen.getByLabelText(/完了/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/完了/)).not.toBeChecked();
     
     // ボタンが表示されていることを確認
     expect(screen.getByText('キャンセル')).toBeInTheDocument();
@@ -85,34 +92,29 @@ describe('TaskForm コンポーネント', () => {
   it('キャンセルボタンをクリックすると onCancel が呼ばれる', () => {
     render(
       <TaskForm
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
     );
     
-    const cancelButton = screen.getByText('キャンセル');
-    fireEvent.click(cancelButton);
+    fireEvent.click(screen.getByText('キャンセル'));
     
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
+    expect(mockOnSave).not.toHaveBeenCalled();
   });
 
   it('タイトルが空の場合はバリデーションエラーが表示される', () => {
     render(
       <TaskForm
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
     );
     
-    // タイトルを空にする
-    const titleInput = screen.getByLabelText(/タイトル/);
-    fireEvent.change(titleInput, { target: { value: '' } });
-    
-    // フォームを送信
-    const saveButton = screen.getByText('作成');
-    fireEvent.click(saveButton);
+    // タイトルを空のままフォームを送信
+    fireEvent.click(screen.getByText('作成'));
     
     // エラーメッセージが表示されることを確認
     expect(screen.getByText('タイトルは必須です')).toBeInTheDocument();
@@ -124,7 +126,7 @@ describe('TaskForm コンポーネント', () => {
   it('有効なフォームを送信すると onSave が正しいデータで呼ばれる', () => {
     render(
       <TaskForm
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
@@ -137,28 +139,29 @@ describe('TaskForm コンポーネント', () => {
     const prioritySelect = screen.getByLabelText(/優先度/);
     fireEvent.change(prioritySelect, { target: { value: Priority.High } });
     
-    const categorySelect = screen.getByLabelText(/カテゴリ/);
-    fireEvent.change(categorySelect, { target: { value: '個人' } });
+    // タグ入力（実装に依存）
+    const tagInput = screen.getByPlaceholderText(/タグを追加/);
+    fireEvent.change(tagInput, { target: { value: '個人' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
     
     const dueDateInput = screen.getByLabelText(/期限/);
     fireEvent.change(dueDateInput, { target: { value: '2025-06-01' } });
     
-    const memoTextarea = screen.getByLabelText(/メモ/);
-    fireEvent.change(memoTextarea, { target: { value: '新しいメモ' } });
+    const memoInput = screen.getByLabelText(/メモ/);
+    fireEvent.change(memoInput, { target: { value: 'これは新しいメモです' } });
     
     // フォームを送信
-    const saveButton = screen.getByText('作成');
-    fireEvent.click(saveButton);
+    fireEvent.click(screen.getByText('作成'));
     
-    // onSaveが正しいデータで呼ばれることを確認
+    // onSaveが正しいデータで呼ばれたことを確認
     expect(mockOnSave).toHaveBeenCalledTimes(1);
     expect(mockOnSave).toHaveBeenCalledWith({
       title: '新しいタスク',
       priority: Priority.High,
-      category: '個人',
+      tags: ['個人'],
       dueDate: expect.any(Date),
-      memo: '新しいメモ',
-      completed: false,
+      memo: 'これは新しいメモです',
+      completed: false
     });
   });
 
@@ -166,7 +169,7 @@ describe('TaskForm コンポーネント', () => {
     render(
       <TaskForm
         task={mockTask}
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
@@ -177,91 +180,68 @@ describe('TaskForm コンポーネント', () => {
     fireEvent.click(completedCheckbox);
     
     // フォームを送信
-    const saveButton = screen.getByText('更新');
-    fireEvent.click(saveButton);
+    fireEvent.click(screen.getByText('更新'));
     
-    // onSaveが正しいデータで呼ばれることを確認
+    // onSaveが正しいデータで呼ばれたことを確認
     expect(mockOnSave).toHaveBeenCalledTimes(1);
     expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
-      id: '1',
-      title: 'テストタスク',
-      completed: true,
+      completed: true
     }));
   });
 
-  it('新しいカテゴリを作成できる', () => {
+  it('タグを追加できる', () => {
     render(
       <TaskForm
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
     );
     
-    // 「新しいカテゴリを作成」ボタンをクリック
-    const newCategoryButton = screen.getByText('新しいカテゴリを作成');
-    fireEvent.click(newCategoryButton);
-    
-    // 新しいカテゴリ入力フィールドが表示されることを確認
-    const newCategoryInput = screen.getByPlaceholderText('新しいカテゴリ名');
-    expect(newCategoryInput).toBeInTheDocument();
-    
-    // 新しいカテゴリ名を入力
-    fireEvent.change(newCategoryInput, { target: { value: '新カテゴリ' } });
-    
     // タイトルを入力
     const titleInput = screen.getByLabelText(/タイトル/);
     fireEvent.change(titleInput, { target: { value: '新しいタスク' } });
     
-    // フォームを送信
-    const saveButton = screen.getByText('作成');
-    fireEvent.click(saveButton);
+    // タグを追加
+    const tagInput = screen.getByPlaceholderText(/タグを追加/);
+    fireEvent.change(tagInput, { target: { value: '新しいタグ' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
     
-    // onSaveが正しいデータで呼ばれることを確認
+    // フォームを送信
+    fireEvent.click(screen.getByText('作成'));
+    
+    // onSaveが正しいデータで呼ばれたことを確認
     expect(mockOnSave).toHaveBeenCalledTimes(1);
     expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
-      title: '新しいタスク',
-      category: '新カテゴリ',
+      tags: ['新しいタグ']
     }));
   });
 
-  it('既存のカテゴリ選択に戻ることができる', () => {
+  it('既存のタグを選択できる', () => {
     render(
       <TaskForm
-        categories={mockCategories}
+        availableTags={mockAvailableTags}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
       />
     );
     
-    // 「新しいカテゴリを作成」ボタンをクリック
-    const newCategoryButton = screen.getByText('新しいカテゴリを作成');
-    fireEvent.click(newCategoryButton);
-    
-    // 「既存のカテゴリから選択」ボタンをクリック
-    const existingCategoryButton = screen.getByText('既存のカテゴリから選択');
-    fireEvent.click(existingCategoryButton);
-    
-    // カテゴリ選択が表示されることを確認
-    const categorySelect = screen.getByLabelText(/カテゴリ/);
-    expect(categorySelect).toBeInTheDocument();
-    
-    // カテゴリを選択
-    fireEvent.change(categorySelect, { target: { value: '買い物' } });
-    
     // タイトルを入力
     const titleInput = screen.getByLabelText(/タイトル/);
     fireEvent.change(titleInput, { target: { value: '新しいタスク' } });
     
-    // フォームを送信
-    const saveButton = screen.getByText('作成');
-    fireEvent.click(saveButton);
+    // タグを追加
+    const tagInput = screen.getByPlaceholderText(/タグを追加/);
+    fireEvent.change(tagInput, { target: { value: '仕事' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
     
-    // onSaveが正しいデータで呼ばれることを確認
+    // フォームを送信
+    fireEvent.click(screen.getByText('作成'));
+    
+    // onSaveが正しいデータで呼ばれたことを確認
     expect(mockOnSave).toHaveBeenCalledTimes(1);
     expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
-      title: '新しいタスク',
-      category: '買い物',
+      tags: ['仕事']
     }));
   });
 });

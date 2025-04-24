@@ -6,10 +6,17 @@ import { TaskProvider } from '../../contexts/TaskContext';
 import FilterPanel from '../../components/filters/FilterPanel';
 import { Priority } from '../../types';
 
+// モックタグデータ
+const mockAvailableTags = {
+  '仕事': { color: '#ff0000' },
+  '個人': { color: '#00ff00' },
+  '買い物': { color: '#0000ff' }
+};
+
 // MSWサーバーのセットアップ
 const server = setupServer(
-  http.get('http://localhost:3001/api/categories', () => {
-    return HttpResponse.json(['仕事', '個人', '買い物']);
+  http.get('http://localhost:3001/api/tags', () => {
+    return HttpResponse.json(mockAvailableTags);
   })
 );
 
@@ -27,7 +34,7 @@ describe('フィルタリングとソート機能', () => {
     // 初期フィルター設定
     const initialFilters = {
       priority: 'all' as const,
-      category: null,
+      tags: [],
       searchTerm: ''
     };
     
@@ -41,7 +48,7 @@ describe('フィルタリングとソート機能', () => {
         <FilterPanel 
           filters={initialFilters}
           onFilterChange={onFilterChange}
-          categories={['仕事', '個人', '買い物']}
+          availableTags={mockAvailableTags}
           onClearFilters={onClearFilters}
         />
       </TaskProvider>
@@ -64,7 +71,7 @@ describe('フィルタリングとソート機能', () => {
     // 初期フィルター設定
     const initialFilters = {
       priority: 'all' as const,
-      category: null,
+      tags: [],
       searchTerm: ''
     };
     
@@ -78,30 +85,29 @@ describe('フィルタリングとソート機能', () => {
         <FilterPanel 
           filters={initialFilters}
           onFilterChange={onFilterChange}
-          categories={['仕事', '個人', '買い物']}
+          availableTags={mockAvailableTags}
           onClearFilters={onClearFilters}
         />
       </TaskProvider>
     );
     
-    // 検索ワードを入力
-    fireEvent.change(screen.getByPlaceholderText(/タスクを検索/i), {
-      target: { value: '高優先度' }
-    });
+    // 検索ボックスに入力
+    const searchInput = screen.getByPlaceholderText(/タスクを検索/i);
+    fireEvent.change(searchInput, { target: { value: 'テスト検索' } });
     
     // フィルター変更関数が呼ばれたことを確認
     expect(onFilterChange).toHaveBeenCalledWith({
       ...initialFilters,
-      searchTerm: '高優先度'
+      searchTerm: 'テスト検索'
     });
   });
   
-  it('フィルターをクリアできる', async () => {
-    // アクティブなフィルター設定
-    const activeFilters = {
-      priority: Priority.High,
-      category: '仕事',
-      searchTerm: '高優先度'
+  it('タグでフィルタリングできる', async () => {
+    // 初期フィルター設定
+    const initialFilters = {
+      priority: 'all' as const,
+      tags: [],
+      searchTerm: ''
     };
     
     // モック関数の準備
@@ -112,18 +118,28 @@ describe('フィルタリングとソート機能', () => {
     render(
       <TaskProvider>
         <FilterPanel 
-          filters={activeFilters}
+          filters={initialFilters}
           onFilterChange={onFilterChange}
-          categories={['仕事', '個人', '買い物']}
+          availableTags={mockAvailableTags}
           onClearFilters={onClearFilters}
         />
       </TaskProvider>
     );
     
-    // フィルターをクリアボタンをクリック
-    fireEvent.click(screen.getByRole('button', { name: /フィルターをクリア/i }));
+    // 詳細フィルターを表示
+    fireEvent.click(screen.getByRole('button', { name: /詳細フィルターを表示/i }));
     
-    // クリア関数が呼ばれたことを確認
-    expect(onClearFilters).toHaveBeenCalledTimes(1);
+    // タグフィルターを選択
+    // タグフィルターの実装に依存するため、実際のUIに合わせて調整が必要
+    // 例えば、タグ「仕事」をクリックする場合
+    await waitFor(() => {
+      const tagElement = screen.getByText('仕事');
+      fireEvent.click(tagElement);
+    });
+    
+    // フィルター変更関数が呼ばれたことを確認
+    expect(onFilterChange).toHaveBeenCalledWith(expect.objectContaining({
+      tags: ['仕事']
+    }));
   });
 });

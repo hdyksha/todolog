@@ -12,17 +12,25 @@ const mockTask: Task = {
   title: '既存のタスク',
   completed: false,
   priority: Priority.Medium,
-  createdAt: new Date('2025-04-15T10:00:00.000Z'),
-  updatedAt: new Date('2025-04-15T10:00:00.000Z'),
-  category: 'テスト',
-  dueDate: new Date('2025-05-01T00:00:00.000Z'),
+  createdAt: '2025-04-15T10:00:00.000Z',
+  updatedAt: '2025-04-15T10:00:00.000Z',
+  tags: ['テスト'],
+  dueDate: '2025-05-01T00:00:00.000Z',
   memo: 'これはテスト用のメモです'
+};
+
+// モックタグデータ
+const mockAvailableTags = {
+  '仕事': { color: '#ff0000' },
+  '個人': { color: '#00ff00' },
+  '買い物': { color: '#0000ff' },
+  'テスト': { color: '#ffff00' }
 };
 
 // MSWサーバーのセットアップ
 const server = setupServer(
-  http.get('http://localhost:3001/api/categories', () => {
-    return HttpResponse.json(['仕事', '個人', '買い物', 'テスト']);
+  http.get('http://localhost:3001/api/tags', () => {
+    return HttpResponse.json(mockAvailableTags);
   })
 );
 
@@ -46,7 +54,7 @@ describe('タスク編集フロー', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask}
-          categories={['仕事', '個人', '買い物', 'テスト']} 
+          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
         />
@@ -56,7 +64,10 @@ describe('タスク編集フロー', () => {
     // 各フィールドの値を確認
     expect(screen.getByLabelText(/タイトル/i)).toHaveValue('既存のタスク');
     expect(screen.getByLabelText(/優先度/i)).toHaveValue(Priority.Medium);
-    expect(screen.getByLabelText(/カテゴリ/i)).toHaveValue('テスト');
+    // タグが表示されていることを確認
+    expect(screen.getByText(/タグ/i)).toBeInTheDocument();
+    // 選択されたタグ「テスト」が表示されていることを確認
+    expect(screen.getByText('テスト')).toBeInTheDocument();
     expect(screen.getByLabelText(/期限/i)).toHaveValue('2025-05-01');
     expect(screen.getByLabelText(/メモ/i)).toHaveValue('これはテスト用のメモです');
     expect(screen.getByLabelText(/完了/i)).not.toBeChecked();
@@ -72,7 +83,7 @@ describe('タスク編集フロー', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask}
-          categories={['仕事', '個人', '買い物', 'テスト']} 
+          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
         />
@@ -80,31 +91,46 @@ describe('タスク編集フロー', () => {
     );
     
     // タイトルを変更
-    fireEvent.change(screen.getByLabelText(/タイトル/i), {
-      target: { value: '更新されたタスク' }
-    });
+    const titleInput = screen.getByLabelText(/タイトル/i);
+    fireEvent.change(titleInput, { target: { value: '更新されたタスク' } });
     
     // 優先度を変更
-    fireEvent.change(screen.getByLabelText(/優先度/i), {
-      target: { value: Priority.High }
-    });
+    const prioritySelect = screen.getByLabelText(/優先度/i);
+    fireEvent.change(prioritySelect, { target: { value: Priority.High } });
+    
+    // タグを追加（実装に依存）
+    // 既存のタグ「テスト」は既に選択されている
+    // 新しいタグ「仕事」を追加
+    const tagInput = screen.getByLabelText('タグを追加');
+    fireEvent.change(tagInput, { target: { value: '仕事' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
+    
+    // 期限を変更
+    const dueDateInput = screen.getByLabelText(/期限/i);
+    fireEvent.change(dueDateInput, { target: { value: '2025-06-01' } });
+    
+    // メモを変更
+    const memoInput = screen.getByLabelText(/メモ/i);
+    fireEvent.change(memoInput, { target: { value: '更新されたメモです' } });
     
     // 完了状態を変更
-    fireEvent.click(screen.getByLabelText(/完了/i));
+    const completedCheckbox = screen.getByLabelText(/完了/i);
+    fireEvent.click(completedCheckbox);
     
     // フォームを送信
     fireEvent.click(screen.getByText('更新'));
     
-    // 送信成功を確認
-    await waitFor(() => {
-      expect(onSave).toHaveBeenCalledTimes(1);
-      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
-        id: 'test-task-id',
-        title: '更新されたタスク',
-        priority: Priority.High,
-        completed: true
-      }));
-    });
+    // onSaveが正しいデータで呼ばれたことを確認
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'test-task-id',
+      title: '更新されたタスク',
+      priority: Priority.High,
+      tags: expect.arrayContaining(['テスト', '仕事']),
+      dueDate: expect.any(Date),
+      memo: '更新されたメモです',
+      completed: true
+    }));
   });
   
   it('バリデーションエラーが表示される', async () => {
@@ -117,25 +143,22 @@ describe('タスク編集フロー', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask}
-          categories={['仕事', '個人', '買い物', 'テスト']} 
+          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
         />
       </TaskProvider>
     );
     
-    // タイトルを空にする
-    fireEvent.change(screen.getByLabelText(/タイトル/i), {
-      target: { value: '' }
-    });
+    // タイトルを空に変更
+    const titleInput = screen.getByLabelText(/タイトル/i);
+    fireEvent.change(titleInput, { target: { value: '' } });
     
     // フォームを送信
     fireEvent.click(screen.getByText('更新'));
     
     // バリデーションエラーが表示されることを確認
-    await waitFor(() => {
-      expect(screen.getByText(/タイトルは必須です/i)).toBeInTheDocument();
-    });
+    expect(screen.getByText('タイトルは必須です')).toBeInTheDocument();
     
     // onSaveが呼ばれていないことを確認
     expect(onSave).not.toHaveBeenCalled();

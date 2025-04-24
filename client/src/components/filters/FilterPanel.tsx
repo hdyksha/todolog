@@ -112,7 +112,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
           </div>
           
-          {Object.keys(availableTags).length > 0 && (
+          {availableTags && Object.keys(availableTags).length > 0 && (
             <div className="filter-section">
               <TagFilter
                 selectedTags={filters.tags || []}

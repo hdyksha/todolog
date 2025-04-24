@@ -160,5 +160,3 @@ const TaskForm: React.FC<TaskFormProps> = ({
 };
 
 export default TaskForm;
-
-export default TaskForm;

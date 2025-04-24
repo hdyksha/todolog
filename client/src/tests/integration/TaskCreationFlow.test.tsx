@@ -6,6 +6,13 @@ import { TaskProvider } from '../../contexts/TaskContext';
 import TaskForm from '../../components/TaskForm';
 import { Priority } from '../../types';
 
+// モックタグデータ
+const mockAvailableTags = {
+  '仕事': { color: '#ff0000' },
+  '個人': { color: '#00ff00' },
+  '買い物': { color: '#0000ff' }
+};
+
 // MSWサーバーのセットアップ
 const server = setupServer(
   http.post('http://localhost:3001/api/tasks', async ({ request }) => {
@@ -18,8 +25,8 @@ const server = setupServer(
     }, { status: 201 });
   }),
   
-  http.get('http://localhost:3001/api/categories', () => {
-    return HttpResponse.json(['仕事', '個人', '買い物']);
+  http.get('http://localhost:3001/api/tags', () => {
+    return HttpResponse.json(mockAvailableTags);
   })
 );
 
@@ -42,7 +49,7 @@ describe('タスク作成フロー', () => {
     render(
       <TaskProvider>
         <TaskForm 
-          categories={['仕事', '個人', '買い物']} 
+          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
         />
@@ -59,7 +66,12 @@ describe('タスク作成フロー', () => {
       target: { value: Priority.High }
     });
     
-    // フォームを送信（クラス名で特定）
+    // タグを追加
+    const tagInput = screen.getByLabelText('タグを追加');
+    fireEvent.change(tagInput, { target: { value: '仕事' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
+    
+    // フォームを送信
     const saveButton = screen.getByText('作成');
     fireEvent.click(saveButton);
     
@@ -68,7 +80,8 @@ describe('タスク作成フロー', () => {
       expect(onSave).toHaveBeenCalledTimes(1);
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
         title: '新しいテストタスク',
-        priority: Priority.High
+        priority: Priority.High,
+        tags: ['仕事']
       }));
     });
   });
@@ -82,21 +95,19 @@ describe('タスク作成フロー', () => {
     render(
       <TaskProvider>
         <TaskForm 
-          categories={['仕事', '個人', '買い物']} 
+          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
         />
       </TaskProvider>
     );
     
-    // タイトルを入力せずに送信
+    // タイトルを空のままフォームを送信
     const saveButton = screen.getByText('作成');
     fireEvent.click(saveButton);
     
     // バリデーションエラーが表示されることを確認
-    await waitFor(() => {
-      expect(screen.getByText(/タイトルは必須です/i)).toBeInTheDocument();
-    });
+    expect(screen.getByText('タイトルは必須です')).toBeInTheDocument();
     
     // onSaveが呼ばれていないことを確認
     expect(onSave).not.toHaveBeenCalled();
@@ -111,7 +122,7 @@ describe('タスク作成フロー', () => {
     render(
       <TaskProvider>
         <TaskForm 
-          categories={['仕事', '個人', '買い物']} 
+          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
         />
@@ -119,9 +130,13 @@ describe('タスク作成フロー', () => {
     );
     
     // キャンセルボタンをクリック
-    fireEvent.click(screen.getByText(/キャンセル/i));
+    const cancelButton = screen.getByText('キャンセル');
+    fireEvent.click(cancelButton);
     
     // onCancelが呼ばれたことを確認
     expect(onCancel).toHaveBeenCalledTimes(1);
+    
+    // onSaveが呼ばれていないことを確認
+    expect(onSave).not.toHaveBeenCalled();
   });
 });
