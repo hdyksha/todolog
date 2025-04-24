@@ -27,6 +27,7 @@ export const CreateTaskSchema = z.object({
     .refine(val => !val || isValidDate(val), {
       message: '有効な日付形式ではありません',
     })
+    .nullable()
     .optional(),
   memo: z
     .string()
