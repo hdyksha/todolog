@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTaskActions } from './useTaskActions';
-import { apiClient } from '../services/apiClient';
+import api from '../services/api';
 import { Priority } from '../types';
 import { TaskProvider } from '../contexts/TaskContext';
 
@@ -18,9 +18,9 @@ import { TaskProvider } from '../contexts/TaskContext';
  * 3. テストヘルパーを作成して、非同期更新を適切に処理する
  */
 
-// apiClientのモック
-vi.mock('../services/apiClient', () => ({
-  apiClient: {
+// apiのモック
+vi.mock('../services/api', () => ({
+  default: {
     fetchTasks: vi.fn(),
     createTask: vi.fn(),
     updateTask: vi.fn(),
@@ -46,7 +46,7 @@ describe('useTaskActions フック', () => {
 
   it('fetchTasks: タスク一覧を取得できる', async () => {
     // モックの戻り値を設定
-    (apiClient.fetchTasks as vi.Mock).mockResolvedValue([mockTask]);
+    (api.fetchTasks as vi.Mock).mockResolvedValue([mockTask]);
     
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <TaskProvider>{children}</TaskProvider>
@@ -58,12 +58,12 @@ describe('useTaskActions フック', () => {
       await result.current.fetchTasks();
     });
     
-    expect(apiClient.fetchTasks).toHaveBeenCalledTimes(1);
+    expect(api.fetchTasks).toHaveBeenCalledTimes(1);
   });
 
   it('addTask: 新しいタスクを追加できる', async () => {
     // モックの戻り値を設定
-    (apiClient.createTask as vi.Mock).mockResolvedValue({
+    (api.createTask as vi.Mock).mockResolvedValue({
       ...mockTask,
       id: 'new-task-id',
       title: '新しいタスク'
@@ -79,8 +79,8 @@ describe('useTaskActions フック', () => {
       await result.current.addTask('新しいタスク', Priority.Medium);
     });
     
-    expect(apiClient.createTask).toHaveBeenCalledTimes(1);
-    expect(apiClient.createTask).toHaveBeenCalledWith({
+    expect(api.createTask).toHaveBeenCalledTimes(1);
+    expect(api.createTask).toHaveBeenCalledWith({
       title: '新しいタスク',
       priority: Priority.Medium,
       completed: false
@@ -93,7 +93,7 @@ describe('useTaskActions フック', () => {
       ...mockTask,
       title: '更新されたタスク'
     };
-    (apiClient.updateTask as vi.Mock).mockResolvedValue(updatedTask);
+    (api.updateTask as vi.Mock).mockResolvedValue(updatedTask);
     
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <TaskProvider>{children}</TaskProvider>
@@ -105,13 +105,13 @@ describe('useTaskActions フック', () => {
       await result.current.updateTask(updatedTask);
     });
     
-    expect(apiClient.updateTask).toHaveBeenCalledTimes(1);
-    expect(apiClient.updateTask).toHaveBeenCalledWith('1', updatedTask);
+    expect(api.updateTask).toHaveBeenCalledTimes(1);
+    expect(api.updateTask).toHaveBeenCalledWith('1', updatedTask);
   });
 
   it('deleteTask: タスクを削除できる', async () => {
     // モックの戻り値を設定
-    (apiClient.deleteTask as vi.Mock).mockResolvedValue(undefined);
+    (api.deleteTask as vi.Mock).mockResolvedValue(undefined);
     
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <TaskProvider>{children}</TaskProvider>
@@ -123,8 +123,8 @@ describe('useTaskActions フック', () => {
       await result.current.deleteTask('1');
     });
     
-    expect(apiClient.deleteTask).toHaveBeenCalledTimes(1);
-    expect(apiClient.deleteTask).toHaveBeenCalledWith('1');
+    expect(api.deleteTask).toHaveBeenCalledTimes(1);
+    expect(api.deleteTask).toHaveBeenCalledWith('1');
   });
 
   it('toggleTaskCompletion: タスクの完了状態を切り替えられる', async () => {
@@ -133,7 +133,7 @@ describe('useTaskActions フック', () => {
       ...mockTask,
       completed: true
     };
-    (apiClient.toggleTaskCompletion as vi.Mock).mockResolvedValue(toggledTask);
+    (api.toggleTaskCompletion as vi.Mock).mockResolvedValue(toggledTask);
     
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <TaskProvider>{children}</TaskProvider>
@@ -145,8 +145,8 @@ describe('useTaskActions フック', () => {
       await result.current.toggleTaskCompletion('1');
     });
     
-    expect(apiClient.toggleTaskCompletion).toHaveBeenCalledTimes(1);
-    expect(apiClient.toggleTaskCompletion).toHaveBeenCalledWith('1');
+    expect(api.toggleTaskCompletion).toHaveBeenCalledTimes(1);
+    expect(api.toggleTaskCompletion).toHaveBeenCalledWith('1');
   });
 
   it('updateMemo: タスクのメモを更新できる', async () => {
@@ -155,7 +155,7 @@ describe('useTaskActions フック', () => {
       ...mockTask,
       memo: '更新されたメモ'
     };
-    (apiClient.updateTaskMemo as vi.Mock).mockResolvedValue(updatedTask);
+    (api.updateTaskMemo as vi.Mock).mockResolvedValue(updatedTask);
     
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <TaskProvider>{children}</TaskProvider>
@@ -167,7 +167,7 @@ describe('useTaskActions フック', () => {
       await result.current.updateMemo('1', '更新されたメモ');
     });
     
-    expect(apiClient.updateTaskMemo).toHaveBeenCalledTimes(1);
-    expect(apiClient.updateTaskMemo).toHaveBeenCalledWith('1', '更新されたメモ');
+    expect(api.updateTaskMemo).toHaveBeenCalledTimes(1);
+    expect(api.updateTaskMemo).toHaveBeenCalledWith('1', '更新されたメモ');
   });
 });

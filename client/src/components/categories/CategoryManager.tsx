@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiClient } from '../../services/apiClient';
+import api from '../../services/api';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import CategoryBadge from './CategoryBadge';
@@ -20,7 +20,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onSelectCategory }) =
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const fetchedCategories = await apiClient.fetchCategories();
+        const fetchedCategories = await api.fetchCategories();
         setCategories(fetchedCategories);
         setError(null);
       } catch (err) {

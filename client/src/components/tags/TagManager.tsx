@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiClient } from '../../services/apiClient';
+import api from '../../services/api';
 import './TagManager.css';
 
 interface TagManagerProps {
@@ -27,7 +27,7 @@ const TagManager: React.FC<TagManagerProps> = ({ onSelectTag }) => {
   const fetchTags = async () => {
     setIsLoading(true);
     try {
-      const fetchedTags = await apiClient.fetchTags();
+      const fetchedTags = await api.fetchTags();
       setTags(fetchedTags);
       setError(null);
     } catch (err) {
@@ -47,7 +47,7 @@ const TagManager: React.FC<TagManagerProps> = ({ onSelectTag }) => {
     }
 
     try {
-      const updatedTags = await apiClient.createTag(newTagName, newTagColor);
+      const updatedTags = await api.createTag(newTagName, newTagColor);
       setTags(updatedTags);
       setNewTagName('');
       setNewTagColor('#cccccc');
@@ -64,7 +64,7 @@ const TagManager: React.FC<TagManagerProps> = ({ onSelectTag }) => {
     }
 
     try {
-      const updatedTags = await apiClient.deleteTag(tagName);
+      const updatedTags = await api.deleteTag(tagName);
       setTags(updatedTags);
       setError(null);
     } catch (err: any) {

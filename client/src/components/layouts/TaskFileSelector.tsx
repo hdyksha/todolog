@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useServerSettings } from '../../contexts/ServerSettingsContext';
 import { useTaskFiles } from '../../contexts/TaskFilesContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { apiClient } from '../../services/apiClient';
+import api from '../../services/api';
 import './TaskFileSelector.css';
 
 const TaskFileSelector: React.FC = () => {
@@ -26,9 +26,6 @@ const TaskFileSelector: React.FC = () => {
     try {
       await switchTaskFile(filename);
       setIsOpen(false);
-      
-      // キャッシュをクリアしてタスクを再読み込み
-      apiClient.clearCache();
       
       // ページをリロード
       window.location.reload();

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTaskContext } from '../contexts/TaskContext';
-import { apiClient } from '../services/apiClient';
+import api from '../services/api';
 import { Task, Priority } from '../types';
 
 export const useTaskActions = () => {
@@ -11,7 +11,7 @@ export const useTaskActions = () => {
     dispatch({ type: 'FETCH_TASKS_START' });
     
     try {
-      const tasks = await apiClient.fetchTasks(forceRefresh);
+      const tasks = await api.fetchTasks(forceRefresh);
       dispatch({ type: 'FETCH_TASKS_SUCCESS', payload: tasks });
     } catch (error) {
       dispatch({ 
@@ -32,7 +32,7 @@ export const useTaskActions = () => {
     dispatch({ type: 'ADD_TASK_START' });
     
     try {
-      const newTask = await apiClient.createTask({
+      const newTask = await api.createTask({
         title,
         priority,
         completed: false,
@@ -57,7 +57,7 @@ export const useTaskActions = () => {
     dispatch({ type: 'UPDATE_TASK_START', payload: task.id });
     
     try {
-      const updatedTask = await apiClient.updateTask(task.id, task);
+      const updatedTask = await api.updateTask(task.id, task);
       dispatch({ type: 'UPDATE_TASK_SUCCESS', payload: updatedTask });
       return updatedTask;
     } catch (error) {
@@ -77,7 +77,7 @@ export const useTaskActions = () => {
     dispatch({ type: 'DELETE_TASK_START', payload: id });
     
     try {
-      await apiClient.deleteTask(id);
+      await api.deleteTask(id);
       dispatch({ type: 'DELETE_TASK_SUCCESS', payload: id });
     } catch (error) {
       dispatch({ 
@@ -96,7 +96,7 @@ export const useTaskActions = () => {
     dispatch({ type: 'TOGGLE_TASK_START', payload: id });
     
     try {
-      const updatedTask = await apiClient.toggleTaskCompletion(id);
+      const updatedTask = await api.toggleTaskCompletion(id);
       dispatch({ type: 'TOGGLE_TASK_SUCCESS', payload: updatedTask });
     } catch (error) {
       dispatch({ 
@@ -115,7 +115,7 @@ export const useTaskActions = () => {
     dispatch({ type: 'UPDATE_MEMO_START', payload: id });
     
     try {
-      const updatedTask = await apiClient.updateTaskMemo(id, memo);
+      const updatedTask = await api.updateTaskMemo(id, memo);
       dispatch({ type: 'UPDATE_MEMO_SUCCESS', payload: updatedTask });
     } catch (error) {
       dispatch({ 

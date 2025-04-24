@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { apiClient } from './apiClient';
+import api from './api';
 import { Priority } from '../types';
 
 // fetchのモック設定
@@ -7,7 +7,7 @@ vi.mock('global', () => ({
   fetch: vi.fn()
 }));
 
-describe('apiClient', () => {
+describe('api', () => {
   beforeEach(() => {
     // テスト前にモックをリセット
     vi.resetAllMocks();
@@ -36,11 +36,11 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し
-    const result = await apiClient.fetchTasks();
+    const result = await api.fetchTasks();
 
     // 期待する結果の検証
     expect(result).toEqual(mockTasks);
-    expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/tasks');
+    expect(global.fetch).toHaveBeenCalledWith('/api/tasks', expect.anything());
   });
 
   it('createTask: 新しいタスクを作成できる', async () => {
@@ -70,15 +70,17 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し
-    const result = await apiClient.createTask(newTask);
+    const result = await api.createTask(newTask);
 
     // 期待する結果の検証
     expect(result).toEqual(createdTask);
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:3001/api/tasks',
+      '/api/tasks',
       expect.objectContaining({
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json'
+        }),
         body: JSON.stringify(newTask)
       })
     );
@@ -114,15 +116,17 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し
-    const result = await apiClient.updateTask(taskId, updateData);
+    const result = await api.updateTask(taskId, updateData);
 
     // 期待する結果の検証
     expect(result).toEqual(updatedTask);
     expect(global.fetch).toHaveBeenCalledWith(
-      `http://localhost:3001/api/tasks/${taskId}`,
+      `/api/tasks/${taskId}`,
       expect.objectContaining({
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json'
+        }),
         body: JSON.stringify(updateData)
       })
     );
@@ -141,11 +145,11 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し
-    await apiClient.deleteTask(taskId);
+    await api.deleteTask(taskId);
 
     // 期待する結果の検証
     expect(global.fetch).toHaveBeenCalledWith(
-      `http://localhost:3001/api/tasks/${taskId}`,
+      `/api/tasks/${taskId}`,
       expect.objectContaining({
         method: 'DELETE'
       })
@@ -168,11 +172,11 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し
-    const result = await apiClient.fetchTags();
+    const result = await api.fetchTags();
 
     // 期待する結果の検証
     expect(result).toEqual(mockTags);
-    expect(global.fetch).toHaveBeenCalledWith('http://localhost:3001/api/tags');
+    expect(global.fetch).toHaveBeenCalledWith('/api/tags');
   });
 
   it('createTag: 新しいタグを作成できる', async () => {
@@ -196,15 +200,17 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し
-    const result = await apiClient.createTag(tagName, color);
+    const result = await api.createTag(tagName, color);
 
     // 期待する結果の検証
     expect(result).toEqual(updatedTags);
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:3001/api/tags',
+      '/api/tags',
       expect.objectContaining({
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json'
+        }),
         body: JSON.stringify({ tagName, color })
       })
     );
@@ -228,12 +234,12 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し
-    const result = await apiClient.deleteTag(tagName);
+    const result = await api.deleteTag(tagName);
 
     // 期待する結果の検証
     expect(result).toEqual(updatedTags);
     expect(global.fetch).toHaveBeenCalledWith(
-      `http://localhost:3001/api/tags/${encodeURIComponent(tagName)}`,
+      `/api/tags/${encodeURIComponent(tagName)}`,
       expect.objectContaining({
         method: 'DELETE'
       })
@@ -251,6 +257,6 @@ describe('apiClient', () => {
     );
 
     // APIを呼び出し、例外が発生することを確認
-    await expect(apiClient.fetchTasks()).rejects.toThrow('Not Found');
+    await expect(api.fetchTasks()).rejects.toThrow('タスクの取得に失敗しました');
   });
 });

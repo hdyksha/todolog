@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Task, Priority } from '../types';
-import * as api from '../services/api';
+import api from '../services/api';
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
