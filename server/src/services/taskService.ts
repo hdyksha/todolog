@@ -3,15 +3,18 @@ import { FileService } from './fileService.js';
 import { Task, CreateTaskInput, UpdateTaskInput } from '../models/task.model.js';
 import { logger } from '../utils/logger.js';
 import { SettingsService } from './settingsService.js';
+import { TagService } from './tagService.js';
 
 export class TaskService {
   private fileService: FileService;
   private settingsService: SettingsService | null = null;
+  private tagService: TagService | null = null;
   private readonly DEFAULT_TASKS_FILE = 'tasks.json';
 
-  constructor(fileService: FileService, settingsService?: SettingsService) {
+  constructor(fileService: FileService, settingsService?: SettingsService, tagService?: TagService) {
     this.fileService = fileService;
     this.settingsService = settingsService || null;
+    this.tagService = tagService || null;
   }
 
   /**
@@ -30,6 +33,44 @@ export class TaskService {
       }
     }
     return this.DEFAULT_TASKS_FILE;
+  }
+
+  /**
+   * 新しいタグを自動的に登録する
+   * @param tags タグの配列
+   */
+  private async registerNewTags(tags: string[]): Promise<void> {
+    if (!this.tagService) {
+      logger.warn('タグサービスが利用できないため、タグの自動登録をスキップします');
+      return;
+    }
+    
+    try {
+      const existingTags = await this.tagService.getAllTags();
+      logger.info(`既存のタグを確認: ${Object.keys(existingTags).join(', ')}`);
+      
+      for (const tag of tags) {
+        // タグが存在しない場合のみ登録
+        if (!existingTags[tag]) {
+          logger.info(`新しいタグを登録します: ${tag}`);
+          // デフォルトの色とタグの説明を設定
+          const defaultColors = [
+            '#4a90e2', '#50b83c', '#f49342', '#9c6ade', '#47c1bf', 
+            '#5c6ac4', '#de3618', '#8a8a8a', '#bf0711', '#00848e'
+          ];
+          const randomColor = defaultColors[Math.floor(Math.random() * defaultColors.length)];
+          
+          await this.tagService.createTag(tag, {
+            color: randomColor,
+            description: `${tag}に関するタスク`
+          });
+          
+          logger.info(`新しいタグを自動登録しました: ${tag}`);
+        }
+      }
+    } catch (error) {
+      logger.error('タグの自動登録に失敗しました', { error: (error as Error).message });
+    }
   }
 
   // 全タスクの取得（フィルタリングとソート機能付き）
@@ -134,6 +175,11 @@ export class TaskService {
     tasks.push(newTask);
     await this.fileService.writeFile(tasksFile, tasks);
     
+    // 新しいタグを自動的に登録
+    if (this.tagService && newTask.tags && newTask.tags.length > 0) {
+      await this.registerNewTags(newTask.tags);
+    }
+    
     logger.info(`タスクが作成されました: ${newTask.id}`);
     return newTask;
   }
@@ -156,6 +202,11 @@ export class TaskService {
     
     tasks[taskIndex] = updatedTask;
     await this.fileService.writeFile(tasksFile, tasks);
+    
+    // 新しいタグを自動的に登録
+    if (this.tagService && updatedTask.tags && updatedTask.tags.length > 0) {
+      await this.registerNewTags(updatedTask.tags);
+    }
     
     logger.info(`タスクが更新されました: ${id}`);
     return updatedTask;

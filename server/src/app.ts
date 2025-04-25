@@ -40,8 +40,8 @@ export function createApp() {
 
   // サービスの初期化
   const fileService = new FileService(env.DATA_DIR);
-  const taskService = new TaskService(fileService);
   const tagService = new TagService(fileService);
+  const taskService = new TaskService(fileService, undefined, tagService);
 
   // ヘルスチェックエンドポイント
   app.get('/health', cacheControl(60), (req, res) => {

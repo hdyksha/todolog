@@ -3,12 +3,14 @@ import { TaskController } from '../controllers/taskController.js';
 import { TaskService } from '../services/taskService.js';
 import { FileService } from '../services/fileService.js';
 import { SettingsService } from '../services/settingsService.js';
+import { TagService } from '../services/tagService.js';
 import { cacheControl, noCacheAfterMutation } from '../middleware/cache.js';
 
 // サービスのインスタンス化
 const settingsService = new SettingsService();
 const fileService = new FileService(undefined, settingsService);
-const taskService = new TaskService(fileService, settingsService);
+const tagService = new TagService(fileService);
+const taskService = new TaskService(fileService, settingsService, tagService);
 const taskController = new TaskController(taskService);
 
 // ルーターの作成

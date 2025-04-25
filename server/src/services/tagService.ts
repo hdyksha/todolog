@@ -39,7 +39,8 @@ export class TagService {
     const tags = await this.getAllTags();
     
     if (tags[name]) {
-      throw new Error(`タグ "${name}" は既に存在します`);
+      logger.info(`タグ "${name}" は既に存在します`);
+      return tags[name];
     }
     
     const newTag: Tag = {
