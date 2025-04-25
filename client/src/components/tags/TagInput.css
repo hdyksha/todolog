@@ -3,32 +3,55 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  min-height: 38px;
-  background-color: #fff;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 6px;
+  min-height: 42px;
+  background-color: var(--input-bg, #fff);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tag-input-container:focus-within {
+  border-color: var(--primary-color, #4a90e2);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .tag-item {
   display: flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.35rem 0.7rem;
+  border-radius: 16px;
   background-color: #e0e0e0;
   font-size: 0.875rem;
   color: #fff;
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  animation: tagAppear 0.2s ease-out;
+}
+
+@keyframes tagAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tag-text {
-  margin-right: 0.25rem;
+  margin-right: 0.35rem;
+  font-weight: 500;
 }
 
 .tag-remove {
@@ -41,13 +64,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
+  transition: background-color 0.15s ease;
 }
 
 .tag-remove:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.tag-remove:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 .tag-input-wrapper {
@@ -59,32 +88,95 @@
   width: 100%;
   border: none;
   outline: none;
-  padding: 0.25rem;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.9rem;
   background: transparent;
+  color: var(--text-color, #333);
+}
+
+.tag-input::placeholder {
+  color: var(--placeholder-color, #aaa);
+  opacity: 0.8;
 }
 
 .tag-suggestions {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 5px);
   left: 0;
   width: 100%;
   max-height: 200px;
   overflow-y: auto;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  background-color: var(--dropdown-bg, #fff);
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tag-suggestion-item {
-  padding: 0.5rem;
+  padding: 0.7rem;
   cursor: pointer;
   color: #fff;
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  transition: filter 0.15s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tag-suggestion-item:last-child {
+  border-bottom: none;
 }
 
 .tag-suggestion-item:hover {
   filter: brightness(1.1);
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .tag-input-container {
+    border-color: var(--border-color-dark, #444);
+    background-color: var(--input-bg-dark, #222);
+  }
+  
+  .tag-input {
+    color: var(--text-color-dark, #eee);
+  }
+  
+  .tag-input::placeholder {
+    color: var(--placeholder-color-dark, #777);
+  }
+  
+  .tag-suggestions {
+    background-color: var(--dropdown-bg-dark, #333);
+    border-color: var(--border-color-dark, #444);
+  }
+}
+
+[data-theme="dark"] .tag-input-container {
+  border-color: var(--border-color-dark, #444);
+  background-color: var(--input-bg-dark, #222);
+}
+
+[data-theme="dark"] .tag-input {
+  color: var(--text-color-dark, #eee);
+}
+
+[data-theme="dark"] .tag-input::placeholder {
+  color: var(--placeholder-color-dark, #777);
+}
+
+[data-theme="dark"] .tag-suggestions {
+  background-color: var(--dropdown-bg-dark, #333);
+  border-color: var(--border-color-dark, #444);
 }

@@ -8,7 +8,7 @@ const mockTasks: Task[] = [
     title: 'プレゼンテーション資料作成',
     completed: false,
     priority: Priority.High,
-    category: '仕事',
+    tags: ['仕事', 'プロジェクトA'],
     createdAt: '2025-04-15T10:00:00.000Z',
     updatedAt: '2025-04-15T10:00:00.000Z',
     dueDate: '2025-04-20T00:00:00.000Z',
@@ -19,7 +19,7 @@ const mockTasks: Task[] = [
     title: '買い物リスト作成',
     completed: true,
     priority: Priority.Medium,
-    category: '個人',
+    tags: ['個人', '買い物'],
     createdAt: '2025-04-14T10:00:00.000Z',
     updatedAt: '2025-04-16T10:00:00.000Z',
     dueDate: '2025-04-18T00:00:00.000Z',
@@ -30,7 +30,7 @@ const mockTasks: Task[] = [
     title: 'ジムに行く',
     completed: false,
     priority: Priority.Low,
-    category: '健康',
+    tags: ['健康'],
     createdAt: '2025-04-16T10:00:00.000Z',
     updatedAt: '2025-04-16T10:00:00.000Z',
     dueDate: '2025-04-25T00:00:00.000Z',
@@ -38,8 +38,14 @@ const mockTasks: Task[] = [
   }
 ];
 
-// モックカテゴリデータ
-const mockCategories = ['仕事', '個人', '健康', '買い物'];
+// モックタグデータ
+const mockTags = {
+  '仕事': { color: '#4a90e2', description: '仕事関連のタスク' },
+  '個人': { color: '#50e3c2', description: '個人的なタスク' },
+  '健康': { color: '#b8e986', description: '健康に関するタスク' },
+  '買い物': { color: '#f5a623', description: '買い物リスト' },
+  'プロジェクトA': { color: '#bd10e0', description: 'プロジェクトAに関するタスク' }
+};
 
 // APIリクエストハンドラー
 export const handlers = [
@@ -156,19 +162,49 @@ export const handlers = [
     }
   }),
   
-  // カテゴリ一覧の取得
-  http.get('http://localhost:3001/api/categories', () => {
-    return HttpResponse.json(mockCategories);
+  // タグ一覧の取得
+  http.get('http://localhost:3001/api/tags', () => {
+    return HttpResponse.json(mockTags);
   }),
   
-  // カテゴリの追加
-  http.post('http://localhost:3001/api/categories', () => {
-    return HttpResponse.json({ success: true }, { status: 201 });
+  // タグの作成
+  http.post('http://localhost:3001/api/tags', async ({ request }) => {
+    const body = await request.json();
+    const { tagName, color, description } = body;
+    
+    return HttpResponse.json({
+      name: tagName,
+      color: color || '#4a90e2',
+      description: description || ''
+    }, { status: 201 });
   }),
   
-  // カテゴリの削除
-  http.delete('http://localhost:3001/api/categories/:name', () => {
+  // タグの更新
+  http.put('http://localhost:3001/api/tags/:name', async ({ params, request }) => {
+    const { name } = params;
+    const body = await request.json();
+    
+    return HttpResponse.json({
+      name,
+      ...body
+    });
+  }),
+  
+  // タグの削除
+  http.delete('http://localhost:3001/api/tags/:name', () => {
     return HttpResponse.json({ success: true });
+  }),
+  
+  // タグの使用状況取得
+  http.get('http://localhost:3001/api/tags/usage', () => {
+    const usage = {
+      '仕事': 1,
+      '個人': 1,
+      '健康': 1,
+      '買い物': 1,
+      'プロジェクトA': 1
+    };
+    return HttpResponse.json(usage);
   }),
   
   // ヘルスチェック

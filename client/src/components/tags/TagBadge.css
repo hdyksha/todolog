@@ -5,39 +5,60 @@
   border-radius: 16px;
   color: #fff;
   font-weight: 500;
-  padding: 0 8px;
+  padding: 0 10px;
   margin: 0 4px;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
 }
 
 .tag-badge-small {
   font-size: 0.7rem;
-  height: 18px;
-  min-width: 18px;
+  height: 20px;
+  min-width: 20px;
 }
 
 .tag-badge-medium {
   font-size: 0.8rem;
-  height: 24px;
-  min-width: 24px;
+  height: 26px;
+  min-width: 26px;
 }
 
 .tag-badge-large {
   font-size: 0.9rem;
-  height: 30px;
-  min-width: 30px;
-  padding: 0 12px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 14px;
 }
 
 .tag-badge-clickable {
   cursor: pointer;
-  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.tag-badge-clickable::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background 0.15s ease;
+  border-radius: inherit;
 }
 
 .tag-badge-clickable:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.tag-badge-clickable:hover::after {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .tag-badge-clickable:active {
@@ -45,13 +66,49 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
+.tag-badge-clickable:active::after {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.tag-badge-clickable:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* アニメーション */
+@keyframes tagPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tag-badge-new {
+  animation: tagPulse 1s ease-in-out;
+}
+
 /* ダークモード対応 */
 @media (prefers-color-scheme: dark) {
   .tag-badge {
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .tag-badge-clickable:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 }
 
 [data-theme="dark"] .tag-badge {
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .tag-badge-clickable:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
