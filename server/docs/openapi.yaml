@@ -11,8 +11,8 @@ servers:
 tags:
   - name: tasks
     description: タスク管理
-  - name: categories
-    description: カテゴリ管理
+  - name: tags
+    description: タグ管理
   - name: backups
     description: バックアップ管理
   - name: data
@@ -402,6 +402,109 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/tags:
+    get:
+      summary: タグ一覧の取得
+      description: 登録されているすべてのタグを取得します。
+      tags:
+        - tags
+      responses:
+        '200':
+          description: タグ一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Tag'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: 新しいタグの作成
+      description: 新しいタグを作成します。
+      tags:
+        - tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tagName
+                - color
+              properties:
+                tagName:
+                  type: string
+                  example: プロジェクトA
+                color:
+                  type: string
+                  example: '#ff5722'
+                description:
+                  type: string
+                  example: プロジェクトAに関連するタスク
+      responses:
+        '201':
+          description: タグが作成されました
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Tag'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /api/tags/{tagName}:
+    delete:
+      summary: タグの削除
+      description: 指定されたタグを削除します。
+      tags:
+        - tags
+      parameters:
+        - name: tagName
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 削除するタグの名前
+      responses:
+        '200':
+          description: タグが削除されました
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Tag'
+        '404':
+          description: タグが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/import:
     post:
       summary: タスクデータのインポート
@@ -606,10 +709,12 @@ components:
           enum: [high, medium, low]
           description: タスクの優先度
           example: medium
-        category:
-          type: string
-          description: タスクのカテゴリ
-          example: 買い物
+        tags:
+          type: array
+          description: タスクに付けられたタグのリスト
+          items:
+            type: string
+          example: ["買い物", "緊急"]
         dueDate:
           type: string
           format: date-time
@@ -619,6 +724,18 @@ components:
           type: string
           description: タスクに関するメモ
           example: 牛乳、卵、パンを買う
+          
+    Tag:
+      type: object
+      properties:
+        color:
+          type: string
+          description: タグの色（HEX形式）
+          example: '#ff5722'
+        description:
+          type: string
+          description: タグの説明
+          example: プロジェクトAに関連するタスク
 
     MemoUpdateRequest:
       type: object
