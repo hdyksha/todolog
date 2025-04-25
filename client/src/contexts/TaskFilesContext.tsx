@@ -49,7 +49,9 @@ export const TaskFilesProvider: React.FC<{ children: ReactNode }> = ({ children 
       const files = await settingsApi.fetchRecentTaskFiles();
       // 最近使用したファイルのうち、実際に存在するファイルのみをフィルタリング
       const existingFiles = await settingsApi.fetchTaskFiles('.json');
-      const validRecentFiles = files.filter(file => existingFiles.includes(file));
+      const validRecentFiles = files.filter(file => 
+        Array.isArray(existingFiles) && existingFiles.includes(file)
+      );
       setRecentFiles(validRecentFiles);
     } catch (err) {
       setError(err instanceof Error ? err.message : '最近使用したファイルの取得に失敗しました');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task, TaskFilter, TaskSort, Priority } from '../types';
 import TaskItem from './TaskItem';
 import './TaskList.css';
@@ -28,6 +28,17 @@ const TaskList: React.FC<TaskListProps> = ({
 }) => {
   // アーカイブセクションの表示状態
   const [isArchiveVisible, setIsArchiveVisible] = useState(true);
+  
+  // タスクからタグ一覧を抽出
+  const tags = useMemo(() => {
+    const tagSet = new Set<string>();
+    tasks.forEach(task => {
+      if (task.tags && Array.isArray(task.tags)) {
+        task.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet);
+  }, [tasks]);
   
   // タスクをアクティブとアーカイブに分類
   const activeTasks = tasks.filter(task => !task.completed);
@@ -127,9 +138,9 @@ const TaskList: React.FC<TaskListProps> = ({
               onChange={handleCategoryChange}
             >
               <option value="all">すべて</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+              {Array.isArray(tags) && tags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
                 </option>
               ))}
             </select>

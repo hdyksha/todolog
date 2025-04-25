@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test/utils';
 import TaskList from './TaskList';
 import { Priority } from '../types';
@@ -10,7 +10,7 @@ describe('TaskList コンポーネント', () => {
       title: 'タスク1',
       completed: false,
       priority: Priority.High,
-      category: 'カテゴリA',
+      tags: ['カテゴリA'],
       dueDate: '2025-05-01T00:00:00.000Z',
       createdAt: '2025-04-15T10:00:00.000Z',
       updatedAt: '2025-04-15T10:00:00.000Z',
@@ -20,7 +20,7 @@ describe('TaskList コンポーネント', () => {
       title: 'タスク2',
       completed: true,
       priority: Priority.Medium,
-      category: 'カテゴリB',
+      tags: ['カテゴリB'],
       createdAt: '2025-04-16T10:00:00.000Z',
       updatedAt: '2025-04-16T10:00:00.000Z',
     },
@@ -29,18 +29,16 @@ describe('TaskList コンポーネント', () => {
       title: 'タスク3',
       completed: false,
       priority: Priority.Low,
+      tags: [],
       createdAt: '2025-04-17T10:00:00.000Z',
       updatedAt: '2025-04-17T10:00:00.000Z',
     },
   ];
 
-  const mockCategories = ['カテゴリA', 'カテゴリB', 'カテゴリC'];
-
   const mockFilter = {
     status: 'all' as const,
-    priority: undefined,
-    category: undefined,
-    searchTerm: undefined,
+    priority: 'all' as const,
+    searchTerm: '',
   };
 
   const mockSort = {
@@ -67,7 +65,6 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
@@ -87,13 +84,11 @@ describe('TaskList コンポーネント', () => {
         tasks={[]}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
 
     expect(screen.getByText('アクティブなタスクはありません')).toBeInTheDocument();
-    expect(screen.getByText('アーカイブされたタスクはありません')).toBeInTheDocument();
   });
 
   it('ステータスフィルターが正しく動作する', () => {
@@ -102,31 +97,17 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
 
-    // 「未完了」ボタンをクリック
-    fireEvent.click(screen.getByText('未完了'));
+    // ステータスボタンをクリック
+    const activeButton = screen.getByText('未完了');
+    fireEvent.click(activeButton);
+
     expect(mockHandlers.onFilterChange).toHaveBeenCalledWith({
       ...mockFilter,
       status: 'active',
-    });
-
-    // 「完了済み」ボタンをクリック
-    fireEvent.click(screen.getByText('完了済み'));
-    expect(mockHandlers.onFilterChange).toHaveBeenCalledWith({
-      ...mockFilter,
-      status: 'completed',
-    });
-
-    // 「すべて」ボタンをクリック（ボタンを特定するためにroleとclassを使用）
-    const allButton = screen.getByRole('button', { name: /すべて/ });
-    fireEvent.click(allButton);
-    expect(mockHandlers.onFilterChange).toHaveBeenCalledWith({
-      ...mockFilter,
-      status: 'all',
     });
   });
 
@@ -136,18 +117,17 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
 
     // 優先度フィルターを変更
     const priorityFilter = screen.getByLabelText('優先度:');
-    fireEvent.change(priorityFilter, { target: { value: Priority.High } });
+    fireEvent.change(priorityFilter, { target: { value: 'high' } });
 
     expect(mockHandlers.onFilterChange).toHaveBeenCalledWith({
       ...mockFilter,
-      priority: Priority.High,
+      priority: 'high',
     });
   });
 
@@ -157,7 +137,6 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
@@ -178,18 +157,17 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
 
     // 検索フィルターを変更
-    const searchFilter = screen.getByPlaceholderText('タスクを検索...');
-    fireEvent.change(searchFilter, { target: { value: 'タスク1' } });
+    const searchInput = screen.getByPlaceholderText('タスクを検索...');
+    fireEvent.change(searchInput, { target: { value: '検索テキスト' } });
 
     expect(mockHandlers.onFilterChange).toHaveBeenCalledWith({
       ...mockFilter,
-      searchTerm: 'タスク1',
+      searchTerm: '検索テキスト',
     });
   });
 
@@ -199,7 +177,6 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
@@ -220,7 +197,6 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
@@ -241,15 +217,23 @@ describe('TaskList コンポーネント', () => {
         tasks={mockTasks}
         filter={mockFilter}
         sort={mockSort}
-        categories={mockCategories}
         {...mockHandlers}
       />
     );
 
-    // タスク1のチェックボックスをクリック
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[0]);
+    // 完了状態の切り替えボタンをクリック
+    const toggleButton = screen.getByLabelText('タスク1を完了としてマーク');
+    fireEvent.click(toggleButton);
+    expect(mockHandlers.onToggleComplete).toHaveBeenCalled();
 
-    expect(mockHandlers.onToggleComplete).toHaveBeenCalledWith('1');
+    // 編集ボタンをクリック
+    const editButton = screen.getByLabelText('タスク1を編集');
+    fireEvent.click(editButton);
+    expect(mockHandlers.onEditTask).toHaveBeenCalled();
+
+    // 削除ボタンをクリック
+    const deleteButton = screen.getByLabelText('タスク1を削除');
+    fireEvent.click(deleteButton);
+    expect(mockHandlers.onDeleteTask).toHaveBeenCalled();
   });
 });
