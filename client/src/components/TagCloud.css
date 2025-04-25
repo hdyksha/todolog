@@ -1,0 +1,42 @@
+.tag-cloud-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.tag-cloud-item {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.tag-cloud-item:hover {
+  transform: translateY(-2px);
+}
+
+.tag-cloud-item.selected {
+  transform: translateY(-2px);
+}
+
+.tag-usage-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--color-primary, #4a90e2);
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.no-tags-message {
+  color: var(--color-text-secondary, #888);
+  font-style: italic;
+  margin: 1rem 0;
+}

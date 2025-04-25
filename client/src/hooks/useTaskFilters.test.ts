@@ -170,7 +170,8 @@ describe('useTaskFilters フック', () => {
     expect(result.current.filters).toEqual({
       priority: 'all',
       tags: [],
-      searchTerm: ''
+      searchTerm: '',
+      tagFilterMode: 'any'
     });
     expect(result.current.filteredTasks).toHaveLength(3);
   });

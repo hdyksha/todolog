@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import { Priority, Tag } from '../../types';
 import Button from '../ui/Button';
 import TagFilter from './TagFilter';
+import TagCloudFilter from './TagCloudFilter';
 import './FilterPanel.css';
 
 export interface FilterOptions {
   priority: Priority | 'all';
   tags?: string[];
   searchTerm: string;
+  tagFilterMode?: 'any' | 'all';
 }
 
 interface FilterPanelProps {
   filters: FilterOptions;
   onFilterChange: (filters: FilterOptions) => void;
   availableTags: Record<string, Tag>;
+  tagUsage?: Record<string, number>;
   onClearFilters: () => void;
 }
 
@@ -21,6 +24,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   filters,
   onFilterChange,
   availableTags,
+  tagUsage,
   onClearFilters,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -33,8 +37,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     onFilterChange({ ...filters, tags });
   };
 
+  const handleTagFilterModeChange = (mode: 'any' | 'all') => {
+    onFilterChange({ ...filters, tagFilterMode: mode });
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({ ...filters, searchTerm: e.target.value });
+  };
+
+  const handleTagSelect = (tag: string) => {
+    // タグが既に選択されている場合は削除、そうでなければ追加
+    const newTags = filters.tags?.includes(tag)
+      ? filters.tags.filter(t => t !== tag)
+      : [...(filters.tags || []), tag];
+    
+    onFilterChange({ ...filters, tags: newTags });
   };
 
   // クイックフィルターが適用されているかどうか
@@ -118,7 +135,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 selectedTags={filters.tags || []}
                 onChange={handleTagsChange}
                 availableTags={availableTags}
+                filterMode={filters.tagFilterMode || 'any'}
+                onFilterModeChange={handleTagFilterModeChange}
               />
+              
+              {tagUsage && (
+                <TagCloudFilter
+                  availableTags={availableTags}
+                  tagUsage={tagUsage}
+                  selectedTags={filters.tags || []}
+                  onTagSelect={handleTagSelect}
+                />
+              )}
             </div>
           )}
         </div>

@@ -163,12 +163,12 @@ export const handlers = [
   }),
   
   // タグ一覧の取得
-  http.get('http://localhost:3001/api/tags', () => {
+  http.get('/api/tags', () => {
     return HttpResponse.json(mockTags);
   }),
   
   // タグの作成
-  http.post('http://localhost:3001/api/tags', async ({ request }) => {
+  http.post('/api/tags', async ({ request }) => {
     const body = await request.json();
     const { tagName, color, description } = body;
     
@@ -180,7 +180,7 @@ export const handlers = [
   }),
   
   // タグの更新
-  http.put('http://localhost:3001/api/tags/:name', async ({ params, request }) => {
+  http.put('/api/tags/:name', async ({ params, request }) => {
     const { name } = params;
     const body = await request.json();
     
@@ -191,12 +191,12 @@ export const handlers = [
   }),
   
   // タグの削除
-  http.delete('http://localhost:3001/api/tags/:name', () => {
+  http.delete('/api/tags/:name', () => {
     return HttpResponse.json({ success: true });
   }),
   
   // タグの使用状況取得
-  http.get('http://localhost:3001/api/tags/usage', () => {
+  http.get('/api/tags/usage', () => {
     const usage = {
       '仕事': 1,
       '個人': 1,

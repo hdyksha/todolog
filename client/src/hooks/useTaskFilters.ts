@@ -8,6 +8,7 @@ const defaultFilters: FilterOptions = {
   priority: 'all',
   tags: [],
   searchTerm: '',
+  tagFilterMode: 'any',
 };
 
 // デフォルトのソート設定
@@ -40,13 +41,24 @@ export const useTaskFilters = (tasks: Task[]) => {
           return false;
         }
         
-        // 選択されたタグのいずれかがタスクのタグに含まれているかチェック
-        const hasMatchingTag = filters.tags.some(tag => 
-          task.tags?.includes(tag)
-        );
-        
-        if (!hasMatchingTag) {
-          return false;
+        if (filters.tagFilterMode === 'all') {
+          // すべてのタグを含む必要がある場合
+          const hasAllTags = filters.tags.every(tag => 
+            task.tags?.includes(tag)
+          );
+          
+          if (!hasAllTags) {
+            return false;
+          }
+        } else {
+          // いずれかのタグを含む場合（デフォルト）
+          const hasMatchingTag = filters.tags.some(tag => 
+            task.tags?.includes(tag)
+          );
+          
+          if (!hasMatchingTag) {
+            return false;
+          }
         }
       }
 

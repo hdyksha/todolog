@@ -6,6 +6,8 @@ import { useTaskFilters } from '../hooks/useTaskFilters';
 import { useSettings } from '../contexts/SettingsContext';
 import { useArchiveStats } from '../hooks/useArchiveStats';
 import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
+import { useTagStats } from '../hooks/useTagStats';
+import { useTags } from '../hooks/useTags';
 import { Priority, Task } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -20,6 +22,8 @@ import './HomePage.css';
 const HomePage: React.FC = () => {
   const { tasks, loading, error } = useTaskContext();
   const { fetchTasks, addTask, toggleTaskCompletion, deleteTask, updateTask } = useTaskActions();
+  const { tags } = useTags();
+  const { usage: tagUsage } = useTagStats(tasks, tags);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -68,18 +72,6 @@ const HomePage: React.FC = () => {
       unregisterShortcut('r');
     };
   }, [registerShortcut, unregisterShortcut, resetFilters]);
-
-  // タグ一覧の抽出（現在は使用していないが、将来的に使用する可能性があるため残しておく）
-  const [tags, setTags] = useState<string[]>([]);
-  useEffect(() => {
-    const uniqueTags = Array.from(
-      new Set(
-        tasks
-          .flatMap((task) => task.tags || [])
-      )
-    );
-    setTags(uniqueTags);
-  }, [tasks]);
 
   // キーボードショートカットからのタスク作成モーダルを開くイベントリスナー
   useEffect(() => {
@@ -210,23 +202,8 @@ const HomePage: React.FC = () => {
       <FilterPanel
         filters={filters}
         onFilterChange={setFilters}
-        availableTags={tasks.reduce((acc, task) => {
-          // タグの処理
-          if (task.tags) {
-            task.tags.forEach(tag => {
-              if (!acc[tag]) {
-                acc[tag] = { color: '#4a90e2' }; // デフォルトカラー
-              }
-            });
-          }
-          
-          // 後方互換性のためにcategoryも処理
-          if (task.category && !acc[task.category]) {
-            acc[task.category] = { color: '#4a90e2' }; // デフォルトカラー
-          }
-          
-          return acc;
-        }, {} as Record<string, { color: string }>)}
+        availableTags={tags}
+        tagUsage={tagUsage}
         onClearFilters={resetFilters}
       />
 

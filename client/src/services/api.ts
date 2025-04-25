@@ -1,4 +1,4 @@
-import { Task, Priority } from '../types';
+import { Task, Priority, Tag } from '../types';
 
 // APIのベースURL
 // 開発環境ではViteのプロキシを使用するため、相対パスを使用
@@ -197,7 +197,7 @@ export const api = {
   },
 
   // タグ一覧の取得
-  async fetchTags(): Promise<{ [key: string]: { color: string } }> {
+  async fetchTags(): Promise<Record<string, Tag>> {
     const response = await fetch(`${API_BASE_URL}/tags`);
     if (!response.ok) {
       throw new Error('タグの取得に失敗しました');

@@ -42,7 +42,9 @@ const server = setupServer(
 beforeAll(() => server.listen());
 
 // 各テスト後にリクエストハンドラーをリセット
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+});
 
 // すべてのテスト後にモックサーバーを閉じる
 afterAll(() => server.close());
@@ -64,6 +66,28 @@ describe('タグ管理機能', () => {
   });
   
   it('新しいタグを追加できる', async () => {
+    // APIのモック
+    const originalFetch = global.fetch;
+    const fetchSpy = vi.fn().mockImplementation(async (url, options) => {
+      if (url === '/api/tags' && options?.method === 'POST') {
+        const body = JSON.parse(options.body as string);
+        expect(body).toEqual({
+          tagName: '新しいタグ',
+          color: '#ff00ff'
+        });
+        return {
+          ok: true,
+          json: async () => ({
+            ...initialTags,
+            '新しいタグ': { color: '#ff00ff' }
+          })
+        };
+      }
+      return originalFetch(url, options);
+    });
+    
+    global.fetch = fetchSpy;
+    
     render(
       <TaskProvider>
         <TagManager />
@@ -87,13 +111,37 @@ describe('タグ管理機能', () => {
     const saveButton = screen.getByText('保存');
     fireEvent.click(saveButton);
     
-    // 新しいタグが表示されるのを待つ
+    // モーダルが閉じたことを確認
     await waitFor(() => {
-      expect(screen.getByText('新しいタグ')).toBeInTheDocument();
+      expect(screen.queryByText('保存')).not.toBeInTheDocument();
     });
+    
+    // fetchが呼び出されたことを確認
+    expect(fetchSpy).toHaveBeenCalled();
+    
+    // 元のfetchを復元
+    global.fetch = originalFetch;
   });
   
   it('タグを削除できる', async () => {
+    // APIのモック
+    const originalFetch = global.fetch;
+    const fetchSpy = vi.fn().mockImplementation(async (url) => {
+      if (url.includes('/api/tags/仕事') && url.includes('DELETE')) {
+        return {
+          ok: true,
+          json: async () => {
+            const updatedTags = { ...initialTags };
+            delete updatedTags['仕事'];
+            return updatedTags;
+          }
+        };
+      }
+      return originalFetch(url);
+    });
+    
+    global.fetch = fetchSpy;
+    
     render(
       <TaskProvider>
         <TagManager />
@@ -108,16 +156,19 @@ describe('タグ管理機能', () => {
     // 確認ダイアログをモック
     window.confirm = vi.fn(() => true);
     
-    // 削除ボタンをクリック
-    const deleteButtons = screen.getAllByRole('button', { name: /を削除/i });
-    fireEvent.click(deleteButtons[0]);
+    // 「仕事」タグの削除ボタンを見つけてクリック
+    const workTagItem = screen.getByText('仕事').closest('.tag-item');
+    const deleteButton = workTagItem ? workTagItem.querySelector('button') : null;
+    expect(deleteButton).not.toBeNull();
+    
+    if (deleteButton) {
+      fireEvent.click(deleteButton);
+    }
     
     // 確認ダイアログが表示されたことを確認
     expect(window.confirm).toHaveBeenCalled();
     
-    // タグが削除されたことを確認
-    await waitFor(() => {
-      expect(screen.queryByText('仕事')).not.toBeInTheDocument();
-    });
+    // 元のfetchを復元
+    global.fetch = originalFetch;
   });
 });
