@@ -7,6 +7,7 @@ export enum Priority {
 
 // タグの型定義
 export interface Tag {
+  name?: string; // 主にAPIレスポンス用
   color: string;
   description?: string;
 }
@@ -17,7 +18,7 @@ export interface Task {
   title: string;
   completed: boolean;
   priority: Priority;
-  tags?: string[];
+  tags: string[]; // 必須フィールドに変更
   dueDate?: string;
   createdAt: string;
   updatedAt: string;

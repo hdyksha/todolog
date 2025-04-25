@@ -40,10 +40,21 @@ const MainLayout: React.FC = () => {
       scope: 'グローバル'
     });
     
+    // タグ管理ページへのショートカット
+    registerShortcut({
+      key: 't',
+      ctrlKey: true,
+      shiftKey: true,
+      action: () => navigate('/tags'),
+      description: 'タグ管理ページへ移動',
+      scope: 'グローバル'
+    });
+    
     return () => {
       unregisterShortcut('d', { ctrlKey: true });
       unregisterShortcut('g', { shiftKey: true });
       unregisterShortcut(',', { ctrlKey: true });
+      unregisterShortcut('t', { ctrlKey: true, shiftKey: true });
     };
   }, [registerShortcut, unregisterShortcut, toggleTheme, navigate]);
   
@@ -66,6 +77,9 @@ const MainLayout: React.FC = () => {
               <ul className="nav-list">
                 <li className={`nav-item ${isActive('/')}`}>
                   <Link to="/" className="nav-link">タスク</Link>
+                </li>
+                <li className={`nav-item ${isActive('/tags')}`}>
+                  <Link to="/tags" className="nav-link">タグ管理</Link>
                 </li>
                 <li className={`nav-item ${isActive('/settings')}`}>
                   <Link to="/settings" className="nav-link">設定</Link>

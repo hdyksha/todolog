@@ -7,10 +7,12 @@ import { ServerSettingsProvider } from './contexts/ServerSettingsContext';
 import { TaskFilesProvider } from './contexts/TaskFilesContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { KeyboardShortcutsProvider } from './contexts/KeyboardShortcutsContext';
+import { TagProvider } from './contexts/TagContext';
 import MainLayout from './components/layouts/MainLayout';
 import HomePage from './pages/HomePage';
 import TaskDetailPage from './pages/TaskDetailPage';
 import SettingsPage from './pages/SettingsPage';
+import TagManagementPage from './pages/TagManagementPage';
 import NotificationContainer from './components/NotificationContainer';
 import ShortcutHelpModal from './components/ShortcutHelpModal';
 import './styles/variables.css';
@@ -26,18 +28,21 @@ const App: React.FC = () => {
             <ServerSettingsProvider>
               <TaskFilesProvider>
                 <TaskProvider>
-                  <KeyboardShortcutsProvider>
-                    <NotificationContainer />
-                    <ShortcutHelpModal />
-                    <Routes>
-                      <Route path="/" element={<MainLayout />}>
-                        <Route index element={<HomePage />} />
-                        <Route path="tasks/:id" element={<TaskDetailPage />} />
-                        <Route path="settings" element={<SettingsPage />} />
-                        <Route path="*" element={<div>ページが見つかりません</div>} />
-                      </Route>
-                    </Routes>
-                  </KeyboardShortcutsProvider>
+                  <TagProvider>
+                    <KeyboardShortcutsProvider>
+                      <NotificationContainer />
+                      <ShortcutHelpModal />
+                      <Routes>
+                        <Route path="/" element={<MainLayout />}>
+                          <Route index element={<HomePage />} />
+                          <Route path="tasks/:id" element={<TaskDetailPage />} />
+                          <Route path="settings" element={<SettingsPage />} />
+                          <Route path="tags" element={<TagManagementPage />} />
+                          <Route path="*" element={<div>ページが見つかりません</div>} />
+                        </Route>
+                      </Routes>
+                    </KeyboardShortcutsProvider>
+                  </TagProvider>
                 </TaskProvider>
               </TaskFilesProvider>
             </ServerSettingsProvider>

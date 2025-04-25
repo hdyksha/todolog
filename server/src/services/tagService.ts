@@ -1,162 +1,178 @@
-import { FileService } from './fileService.js';
-import { Tag, CreateTagInput, UpdateTagInput } from '../models/tag.model.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
+import { TaskService } from './taskService.js';
+
+// タグの型定義
+interface Tag {
+  color: string;
+  description?: string;
+}
 
 export class TagService {
-  private fileService: FileService;
-  private readonly TAGS_FILE = 'tags.json';
-
-  constructor(fileService: FileService) {
-    this.fileService = fileService;
+  private taskService: TaskService | null = null;
+  
+  constructor(taskService?: TaskService) {
+    this.taskService = taskService || null;
+  }
+  
+  /**
+   * タスクサービスを設定
+   */
+  setTaskService(taskService: TaskService) {
+    this.taskService = taskService;
   }
 
   /**
-   * すべてのタグを取得する
-   * @returns タグのオブジェクト
+   * タグファイルのパスを取得
+   */
+  getTagsFilePath() {
+    return path.join(env.DATA_DIR, 'tags.json');
+  }
+
+  /**
+   * すべてのタグを取得
    */
   async getAllTags(): Promise<Record<string, Tag>> {
-    logger.info(`タグを読み込み中: ${this.TAGS_FILE}`);
-    return await this.fileService.readFile<Record<string, Tag>>(this.TAGS_FILE, {});
-  }
-
-  /**
-   * 特定のタグを取得する
-   * @param name タグ名
-   * @returns タグ情報、存在しない場合はnull
-   */
-  async getTagByName(name: string): Promise<Tag | null> {
-    const tags = await this.getAllTags();
-    return tags[name] || null;
-  }
-
-  /**
-   * 新しいタグを作成する
-   * @param name タグ名
-   * @param tagData タグデータ
-   * @returns 作成されたタグ
-   */
-  async createTag(name: string, tagData: CreateTagInput): Promise<Tag> {
-    const tags = await this.getAllTags();
-    
-    if (tags[name]) {
-      logger.info(`タグ "${name}" は既に存在します`);
-      return tags[name];
+    try {
+      const filePath = this.getTagsFilePath();
+      
+      try {
+        await fs.access(filePath);
+      } catch (error) {
+        // ファイルが存在しない場合は空のオブジェクトを返す
+        return {};
+      }
+      
+      const data = await fs.readFile(filePath, 'utf-8');
+      return JSON.parse(data);
+    } catch (error) {
+      logger.error('Failed to get all tags', { error });
+      return {};
     }
-    
-    const newTag: Tag = {
-      name,
-      color: tagData.color,
-      description: tagData.description
-    };
-    
-    tags[name] = newTag;
-    
-    await this.fileService.writeFile(this.TAGS_FILE, tags);
-    logger.info(`タグを作成しました: ${name}`);
-    
-    return newTag;
   }
 
   /**
-   * タグを更新する
-   * @param name タグ名
-   * @param tagData 更新するタグデータ
-   * @returns 更新されたタグ
+   * タグを保存
    */
-  async updateTag(name: string, tagData: UpdateTagInput): Promise<Tag> {
-    const tags = await this.getAllTags();
-    
-    if (!tags[name]) {
-      throw new Error(`タグ "${name}" が見つかりません`);
+  async saveTags(tags: Record<string, Tag>): Promise<void> {
+    try {
+      const filePath = this.getTagsFilePath();
+      const dirPath = path.dirname(filePath);
+      
+      try {
+        await fs.access(dirPath);
+      } catch (error) {
+        // ディレクトリが存在しない場合は作成
+        await fs.mkdir(dirPath, { recursive: true });
+      }
+      
+      await fs.writeFile(filePath, JSON.stringify(tags, null, 2), 'utf-8');
+    } catch (error) {
+      logger.error('Failed to save tags', { error });
+      throw new Error('Failed to save tags');
     }
-    
-    const updatedTag: Tag = {
-      ...tags[name],
-      ...tagData
-    };
-    
-    tags[name] = updatedTag;
-    
-    await this.fileService.writeFile(this.TAGS_FILE, tags);
-    logger.info(`タグを更新しました: ${name}`);
-    
-    return updatedTag;
   }
 
   /**
-   * タグを削除する
-   * @param name タグ名
-   * @returns 削除が成功したかどうか
+   * 新しいタグを作成
+   */
+  async createTag(name: string, tag: Tag): Promise<Tag> {
+    try {
+      const tags = await this.getAllTags();
+      
+      if (tags[name]) {
+        throw new Error(`Tag "${name}" already exists`);
+      }
+      
+      tags[name] = tag;
+      await this.saveTags(tags);
+      
+      return tag;
+    } catch (error) {
+      logger.error('Failed to create tag', { error, name });
+      throw error;
+    }
+  }
+
+  /**
+   * タグを更新
+   */
+  async updateTag(name: string, tag: Tag): Promise<Tag | null> {
+    try {
+      const tags = await this.getAllTags();
+      
+      if (!tags[name]) {
+        return null;
+      }
+      
+      tags[name] = tag;
+      await this.saveTags(tags);
+      
+      return tag;
+    } catch (error) {
+      logger.error('Failed to update tag', { error, name });
+      throw error;
+    }
+  }
+
+  /**
+   * タグを削除
    */
   async deleteTag(name: string): Promise<boolean> {
-    const tags = await this.getAllTags();
-    
-    if (!tags[name]) {
-      throw new Error(`タグ "${name}" が見つかりません`);
+    try {
+      const tags = await this.getAllTags();
+      
+      if (!tags[name]) {
+        return false;
+      }
+      
+      delete tags[name];
+      await this.saveTags(tags);
+      
+      return true;
+    } catch (error) {
+      logger.error('Failed to delete tag', { error, name });
+      throw error;
     }
-    
-    delete tags[name];
-    
-    await this.fileService.writeFile(this.TAGS_FILE, tags);
-    logger.info(`タグを削除しました: ${name}`);
-    
-    return true;
   }
 
   /**
-   * タグの使用状況を取得する
-   * @param taskService タスクサービス
-   * @returns タグごとの使用回数
+   * タグの使用状況を取得
    */
-  async getTagUsage(taskService: any): Promise<Record<string, number>> {
-    const tags = await this.getAllTags();
-    const tasks = await taskService.getAllTasks();
-    
-    const usage: Record<string, number> = {};
-    
-    // 初期化
-    Object.keys(tags).forEach(tagName => {
-      usage[tagName] = 0;
-    });
-    
-    // 使用回数をカウント
-    tasks.forEach(task => {
-      if (task.tags && Array.isArray(task.tags)) {
-        task.tags.forEach(tag => {
-          if (usage[tag] !== undefined) {
-            usage[tag]++;
-          }
-        });
+  async getTagUsage(): Promise<Record<string, number>> {
+    try {
+      if (!this.taskService) {
+        throw new Error('TaskService is not available');
       }
-    });
-    
-    return usage;
-  }
-
-  /**
-   * 未使用のタグを削除する
-   * @param taskService タスクサービス
-   * @returns 削除されたタグ名の配列
-   */
-  async cleanupUnusedTags(taskService: any): Promise<string[]> {
-    const usage = await this.getTagUsage(taskService);
-    const unusedTags = Object.keys(usage).filter(tag => usage[tag] === 0);
-    
-    const tags = await this.getAllTags();
-    let deleted: string[] = [];
-    
-    for (const tag of unusedTags) {
-      if (tags[tag]) {
-        delete tags[tag];
-        deleted.push(tag);
-      }
+      
+      const tasks = await this.taskService.getAllTasks();
+      const usage: Record<string, number> = {};
+      
+      // すべてのタグを初期化
+      const tags = await this.getAllTags();
+      Object.keys(tags).forEach(tag => {
+        usage[tag] = 0;
+      });
+      
+      // タスクごとにタグの使用回数をカウント
+      tasks.forEach(task => {
+        if (task.tags && Array.isArray(task.tags)) {
+          task.tags.forEach(tag => {
+            if (usage[tag] !== undefined) {
+              usage[tag]++;
+            } else {
+              usage[tag] = 1;
+            }
+          });
+        }
+      });
+      
+      return usage;
+    } catch (error) {
+      logger.error('Failed to get tag usage', { error });
+      throw error;
     }
-    
-    if (deleted.length > 0) {
-      await this.fileService.writeFile(this.TAGS_FILE, tags);
-      logger.info(`未使用のタグを削除しました: ${deleted.join(', ')}`);
-    }
-    
-    return deleted;
   }
 }

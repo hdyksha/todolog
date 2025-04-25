@@ -6,16 +6,13 @@ import { taskRoutes } from './routes/taskRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import storageRoutes from './routes/storageRoutes.js';
 import directoryRoutes from './routes/directoryRoutes.js';
-import { createTagRouter } from './routes/tagRoutes.js';
+import tagRoutes from './routes/tagRoutes.js';
 import { requestLogger } from './utils/logger.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import { setupSecurity } from './middleware/security.js';
 import { setupRateLimiter } from './middleware/rate-limiter.js';
 import { etagMiddleware, cacheControl } from './middleware/cache.js';
 import { env } from './config/env.js';
-import { FileService } from './services/fileService.js';
-import { TaskService } from './services/taskService.js';
-import { TagService } from './services/tagService.js';
 
 // ESM環境でのディレクトリ名取得
 const __filename = fileURLToPath(import.meta.url);
@@ -38,11 +35,6 @@ export function createApp() {
   // キャッシュ関連のミドルウェア
   app.use(etagMiddleware);
 
-  // サービスの初期化
-  const fileService = new FileService(env.DATA_DIR);
-  const tagService = new TagService(fileService);
-  const taskService = new TaskService(fileService, undefined, tagService);
-
   // ヘルスチェックエンドポイント
   app.get('/health', cacheControl(60), (req, res) => {
     res.status(200).json({ 
@@ -56,7 +48,7 @@ export function createApp() {
   app.use('/api/settings', settingsRoutes);
   app.use('/api/storage', storageRoutes);
   app.use('/api/storage', directoryRoutes);
-  app.use('/api/tags', createTagRouter(tagService, taskService));
+  app.use('/api/tags', tagRoutes);
 
   // エラーハンドリングミドルウェア
   app.use(notFoundHandler);

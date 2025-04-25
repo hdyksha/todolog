@@ -1,0 +1,171 @@
+.tag-management {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .tag-management {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tag-form-container,
+.tag-list-container {
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.tag-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-color-secondary);
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-input);
+  color: var(--text-color-primary);
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.color-picker input[type="color"] {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.color-value {
+  font-family: monospace;
+  color: var(--text-color-secondary);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.tag-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tag-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 4px;
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-color);
+}
+
+.tag-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.tag-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.tag-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tag-name {
+  font-weight: 500;
+  color: var(--text-color-primary);
+}
+
+.tag-description {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+}
+
+.tag-usage {
+  font-size: 0.75rem;
+  color: var(--text-color-tertiary);
+}
+
+.tag-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button--icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button--icon:hover {
+  background-color: var(--bg-hover);
+}
+
+.button--icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tag-error {
+  padding: 0.75rem;
+  background-color: var(--error-bg);
+  color: var(--error-color);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.loading,
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+}

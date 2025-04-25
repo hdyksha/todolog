@@ -266,6 +266,12 @@ export class TaskService {
     return Array.from(tagsSet);
   }
   
+  // タグでタスクを検索
+  async getTasksByTag(tag: string): Promise<Task[]> {
+    const tasks = await this.getAllTasks();
+    return tasks.filter(task => task.tags && task.tags.includes(tag));
+  }
+  
   // データのバックアップを作成
   async createBackup(): Promise<string> {
     const tasksFile = await this.getTasksFilename();
