@@ -14,14 +14,23 @@
     "test:server": "cd server && npm test",
     "test:watch": "concurrently \"npm run test:client:watch\" \"npm run test:server:watch\"",
     "test:client:watch": "cd client && npx vitest watch",
-    "test:server:watch": "cd server && npx vitest watch"
+    "test:server:watch": "cd server && npx vitest watch",
+    "lint": "biome check .",
+    "lint:fix": "biome check --apply .",
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "analyze:bundle": "cd client && npm run build",
+    "analyze:duplicates": "jscpd ."
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest-axe": "^3.5.9",
     "concurrently": "^8.2.0",
     "jest-axe": "^10.0.0",
-    "msw": "^2.7.5"
+    "jscpd": "^4.0.5",
+    "msw": "^2.7.5",
+    "rollup-plugin-visualizer": "^5.14.0"
   },
   "dependencies": {
     "dotenv": "^16.3.1"

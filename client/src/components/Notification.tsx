@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import './Notification.css';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
@@ -13,7 +14,6 @@ interface NotificationProps {
 }
 
 const Notification: React.FC<NotificationProps> = ({
-  id,
   message,
   type,
   onClose,
@@ -37,7 +37,7 @@ const Notification: React.FC<NotificationProps> = ({
       <div className="notification__content">
         {message}
       </div>
-      <button className="notification__close" onClick={onClose}>
+      <button className="notification__close" onClick={onClose} type="button">
         ×
       </button>
     </div>

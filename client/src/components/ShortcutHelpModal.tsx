@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
 import Modal from './ui/Modal';
 import './ShortcutHelpModal.css';
@@ -54,8 +54,8 @@ const ShortcutHelpModal: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {groupedShortcuts[scope].map((shortcut, index) => (
-                  <tr key={index} className="shortcut-item">
+                {groupedShortcuts[scope].map((shortcut) => (
+                  <tr key={`${scope}-${shortcut.shortcut}`} className="shortcut-item">
                     <td className="shortcut-key">
                       <kbd>{shortcut.shortcut}</kbd>
                     </td>
