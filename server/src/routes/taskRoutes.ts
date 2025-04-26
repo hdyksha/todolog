@@ -2,6 +2,7 @@ import express from 'express';
 import { TaskController } from '../controllers/taskController.js';
 import { getTaskService, getTagService } from '../services/serviceContainer.js';
 import { cacheControl, noCacheAfterMutation } from '../middleware/cache.js';
+import { asyncHandler } from '../utils/errorUtils.js';
 
 /**
  * タスク関連のルートを作成する
@@ -17,22 +18,22 @@ export function createTaskRoutes() {
   const taskController = new TaskController(taskService);
 
   // タスク関連のエンドポイント
-  router.get('/', cacheControl(5), taskController.getAllTasks);
-  router.get('/:id', cacheControl(5), taskController.getTaskById);
-  router.post('/', noCacheAfterMutation, taskController.createTask);
-  router.put('/:id', noCacheAfterMutation, taskController.updateTask);
-  router.delete('/:id', noCacheAfterMutation, taskController.deleteTask);
-  router.put('/:id/toggle', noCacheAfterMutation, taskController.toggleTaskCompletion);
-  router.put('/:id/memo', noCacheAfterMutation, taskController.updateTaskMemo);
+  router.get('/', cacheControl(5), asyncHandler(taskController.getAllTasks));
+  router.get('/:id', cacheControl(5), asyncHandler(taskController.getTaskById));
+  router.post('/', noCacheAfterMutation, asyncHandler(taskController.createTask));
+  router.put('/:id', noCacheAfterMutation, asyncHandler(taskController.updateTask));
+  router.delete('/:id', noCacheAfterMutation, asyncHandler(taskController.deleteTask));
+  router.put('/:id/toggle', noCacheAfterMutation, asyncHandler(taskController.toggleTaskCompletion));
+  router.put('/:id/memo', noCacheAfterMutation, asyncHandler(taskController.updateTaskMemo));
 
-  // バックアップと復元のエンドポイント
-  router.post('/backups', taskController.createBackup);
-  router.get('/backups', cacheControl(60), taskController.listBackups);
-  router.post('/backups/:filename/restore', noCacheAfterMutation, taskController.restoreFromBackup);
+  // バックアップと復元のエンドポイント - 共通パスプレフィックスを使用
+  router.post('/backups', asyncHandler(taskController.createBackup));
+  router.get('/backups', cacheControl(60), asyncHandler(taskController.listBackups));
+  router.post('/backups/:filename/restore', noCacheAfterMutation, asyncHandler(taskController.restoreFromBackup));
 
   // エクスポート/インポートのエンドポイント
-  router.get('/export', taskController.exportTasks);
-  router.post('/import', noCacheAfterMutation, taskController.importTasks);
+  router.get('/export', asyncHandler(taskController.exportTasks));
+  router.post('/import', noCacheAfterMutation, asyncHandler(taskController.importTasks));
 
   return router;
 }

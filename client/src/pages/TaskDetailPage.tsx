@@ -10,6 +10,8 @@ import TaskMemoViewer from '../components/tasks/TaskMemoViewer';
 import LoadingIndicator from '../components/ui/LoadingIndicator';
 import ErrorDisplay from '../components/ui/ErrorDisplay';
 import Button from '../components/ui/Button';
+import api from '../services/api';
+import { Task } from '../types';
 import './TaskDetailPage.css';
 
 const TaskDetailPage: React.FC = () => {
@@ -20,6 +22,9 @@ const TaskDetailPage: React.FC = () => {
   
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memo, setMemo] = useState('');
+  const [taskDetail, setTaskDetail] = useState<Task | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState<Error | null>(null);
 
   // キーボードショートカットの設定
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
@@ -33,6 +38,29 @@ const TaskDetailPage: React.FC = () => {
       fetchTasks();
     }
   }, [tasks.length, loading, error, fetchTasks]);
+
+  // タスク詳細を個別に取得
+  useEffect(() => {
+    const fetchTaskDetail = async () => {
+      if (!id) return;
+      
+      setLoadingDetail(true);
+      setDetailError(null);
+      
+      try {
+        const detailData = await api.fetchTaskById(id);
+        setTaskDetail(detailData);
+        setMemo(detailData.memo || '');
+      } catch (error) {
+        console.error('タスク詳細の取得エラー:', error);
+        setDetailError(error instanceof Error ? error : new Error('タスク詳細の取得に失敗しました'));
+      } finally {
+        setLoadingDetail(false);
+      }
+    };
+    
+    fetchTaskDetail();
+  }, [id]);
 
   // キーボードショートカットの登録
   useEffect(() => {
@@ -68,13 +96,6 @@ const TaskDetailPage: React.FC = () => {
     };
   }, [registerShortcut, unregisterShortcut, isEditingMemo, navigate]);
 
-  // タスクが見つかったらメモを初期化
-  useEffect(() => {
-    if (task) {
-      setMemo(task.memo || '');
-    }
-  }, [task]);
-
   // メモの保存
   const handleSaveMemo = async (updatedMemo: string) => {
     if (!id) return;
@@ -82,6 +103,10 @@ const TaskDetailPage: React.FC = () => {
     try {
       await updateMemo(id, updatedMemo);
       setIsEditingMemo(false);
+      
+      // メモ更新後に詳細を再取得
+      const updatedTask = await api.fetchTaskById(id);
+      setTaskDetail(updatedTask);
     } catch (error) {
       console.error('メモ更新エラー:', error);
       throw error;
@@ -117,28 +142,32 @@ const TaskDetailPage: React.FC = () => {
     
     try {
       await toggleTaskCompletion(id);
+      
+      // 状態変更後に詳細を再取得
+      const updatedTask = await api.fetchTaskById(id);
+      setTaskDetail(updatedTask);
     } catch (error) {
       console.error('タスク状態変更エラー:', error);
     }
   };
 
   // ローディング中の表示
-  if (loading) {
+  if (loading || loadingDetail) {
     return <LoadingIndicator message="タスクを読み込み中..." />;
   }
 
   // エラー時の表示
-  if (error) {
+  if (error || detailError) {
     return (
       <ErrorDisplay
-        message={error.message}
+        message={(error || detailError)?.message || 'エラーが発生しました'}
         onRetry={() => fetchTasks(true)}
       />
     );
   }
 
   // タスクが見つからない場合
-  if (!task) {
+  if (!task && !taskDetail) {
     return (
       <div className="task-detail-page">
         <div className="error-container">
@@ -150,22 +179,25 @@ const TaskDetailPage: React.FC = () => {
     );
   }
 
+  // タスク詳細を優先して使用し、なければタスク一覧のデータを使用
+  const displayTask = taskDetail || task;
+
   return (
     <div className="task-detail-page">
       <TaskHeader
-        title={task.title}
-        isCompleted={task.completed}
+        title={displayTask.title}
+        isCompleted={displayTask.completed}
         onToggleCompletion={handleToggleCompletion}
         onDelete={handleDeleteTask}
       />
 
       <TaskMetadata
-        isCompleted={task.completed}
-        priority={task.priority}
-        tags={task.tags}
-        dueDate={task.dueDate}
-        createdAt={task.createdAt}
-        updatedAt={task.updatedAt}
+        isCompleted={displayTask.completed}
+        priority={displayTask.priority}
+        tags={displayTask.tags}
+        dueDate={displayTask.dueDate}
+        createdAt={displayTask.createdAt}
+        updatedAt={displayTask.updatedAt}
       />
 
       <div className="task-detail-memo">
@@ -191,13 +223,13 @@ const TaskDetailPage: React.FC = () => {
             onSave={handleSaveMemo}
             onCancel={() => {
               setIsEditingMemo(false);
-              setMemo(task?.memo || '');
+              setMemo(displayTask?.memo || '');
             }}
             onCheckboxChange={handleCheckboxChange}
           />
         ) : (
           <TaskMemoViewer
-            memo={task?.memo || ''}
+            memo={displayTask?.memo || ''}
             onCheckboxChange={handleCheckboxChange}
             onEdit={() => setIsEditingMemo(true)}
           />

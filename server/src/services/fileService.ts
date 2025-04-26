@@ -1,6 +1,5 @@
-import fs from 'fs/promises';
+import { access, mkdir, readFile, writeFile, copyFile, readdir } from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { logger } from '../utils/logger.js';
 import { SettingsService } from './settingsService.js';
 
@@ -61,12 +60,22 @@ export class FileService {
   private async ensureDataDir(): Promise<void> {
     const dataDir = await this.getDataDir();
     try {
-      await fs.access(dataDir);
+      await access(dataDir);
       logger.debug(`データディレクトリが存在します: ${dataDir}`);
     } catch (error) {
       logger.info(`データディレクトリを作成します: ${dataDir}`);
-      await fs.mkdir(dataDir, { recursive: true });
+      await mkdir(dataDir, { recursive: true });
     }
+  }
+
+  /**
+   * ファイルパスを生成する
+   * @param filename ファイル名
+   * @returns 完全なファイルパス
+   */
+  private async getFilePath(filename: string): Promise<string> {
+    const dataDir = await this.getDataDir();
+    return path.join(dataDir, filename);
   }
 
   /**
@@ -77,13 +86,12 @@ export class FileService {
    */
   async readFile<T>(filename: string, defaultValue: T): Promise<T> {
     await this.ensureDataDir();
-    const dataDir = await this.getDataDir();
-    const filePath = path.join(dataDir, filename);
+    const filePath = await this.getFilePath(filename);
     
     logger.info(`ファイルを読み込み中: ${filePath}`);
     
     try {
-      const data = await fs.readFile(filePath, 'utf8');
+      const data = await readFile(filePath, 'utf8');
       return JSON.parse(data) as T;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -102,13 +110,12 @@ export class FileService {
    */
   async writeFile<T>(filename: string, data: T): Promise<void> {
     await this.ensureDataDir();
-    const dataDir = await this.getDataDir();
-    const filePath = path.join(dataDir, filename);
+    const filePath = await this.getFilePath(filename);
     
     logger.info(`ファイルに書き込み中: ${filePath}`);
     
     try {
-      await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+      await writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
       logger.debug(`ファイルに書き込みました: ${filename}`);
     } catch (error) {
       logger.error(`ファイルの書き込みに失敗しました: ${filename}`, { error: (error as Error).message });
@@ -122,18 +129,17 @@ export class FileService {
    */
   async createBackup(filename: string): Promise<string> {
     await this.ensureDataDir();
-    const dataDir = await this.getDataDir();
-    const sourceFilePath = path.join(dataDir, filename);
+    const sourceFilePath = await this.getFilePath(filename);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFilename = `${filename}.${timestamp}.bak`;
-    const backupFilePath = path.join(dataDir, backupFilename);
+    const backupFilePath = await this.getFilePath(backupFilename);
     
     try {
       // ソースファイルが存在するか確認
-      await fs.access(sourceFilePath);
+      await access(sourceFilePath);
       
       // バックアップを作成
-      await fs.copyFile(sourceFilePath, backupFilePath);
+      await copyFile(sourceFilePath, backupFilePath);
       logger.info(`バックアップを作成しました: ${backupFilename}`);
       
       return backupFilename;
@@ -154,16 +160,15 @@ export class FileService {
    */
   async restoreFromBackup(backupFilename: string, targetFilename: string): Promise<void> {
     await this.ensureDataDir();
-    const dataDir = await this.getDataDir();
-    const backupFilePath = path.join(dataDir, backupFilename);
-    const targetFilePath = path.join(dataDir, targetFilename);
+    const backupFilePath = await this.getFilePath(backupFilename);
+    const targetFilePath = await this.getFilePath(targetFilename);
     
     try {
       // バックアップファイルが存在するか確認
-      await fs.access(backupFilePath);
+      await access(backupFilePath);
       
       // 復元先にコピー
-      await fs.copyFile(backupFilePath, targetFilePath);
+      await copyFile(backupFilePath, targetFilePath);
       logger.info(`バックアップから復元しました: ${backupFilename} -> ${targetFilename}`);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -184,7 +189,7 @@ export class FileService {
     const dataDir = await this.getDataDir();
     
     try {
-      const files = await fs.readdir(dataDir);
+      const files = await readdir(dataDir);
       const backupPattern = new RegExp(`^${baseFilename}\\..*\\.bak$`);
       
       return files.filter(file => backupPattern.test(file));
@@ -204,7 +209,7 @@ export class FileService {
     const dataDir = await this.getDataDir();
     
     try {
-      const files = await fs.readdir(dataDir);
+      const files = await readdir(dataDir);
       
       if (extension) {
         return files.filter(file => file.endsWith(extension));

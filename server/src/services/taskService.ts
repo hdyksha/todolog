@@ -49,45 +49,63 @@ export class TaskService {
       const existingTags = await this.tagService.getAllTags();
       logger.info(`既存のタグを確認: ${Object.keys(existingTags).join(', ')}`);
       
-      for (const tag of tags) {
-        // タグが存在しない場合のみ登録
-        if (!existingTags[tag]) {
-          logger.info(`新しいタグを登録します: ${tag}`);
-          // デフォルトの色とタグの説明を設定
-          const defaultColors = [
-            '#4a90e2', '#50b83c', '#f49342', '#9c6ade', '#47c1bf', 
-            '#5c6ac4', '#de3618', '#8a8a8a', '#bf0711', '#00848e'
-          ];
-          const randomColor = defaultColors[Math.floor(Math.random() * defaultColors.length)];
-          
-          await this.tagService.createTag(tag, {
-            color: randomColor,
-            description: `${tag}に関するタスク`
-          });
-          
-          logger.info(`新しいタグを自動登録しました: ${tag}`);
-        }
-      }
+      const newTags = tags.filter(tag => !existingTags[tag]);
+      if (newTags.length === 0) return;
+      
+      logger.info(`新しいタグを登録します: ${newTags.join(', ')}`);
+      
+      // 新しいタグを登録
+      await Promise.all(newTags.map(tag => this.registerSingleTag(tag)));
     } catch (error) {
       logger.error('タグの自動登録に失敗しました', { error: (error as Error).message });
     }
   }
+  
+  /**
+   * 単一のタグを登録する
+   * @param tag タグ名
+   */
+  private async registerSingleTag(tag: string): Promise<void> {
+    if (!this.tagService) return;
+    
+    try {
+      // デフォルトの色とタグの説明を設定
+      const defaultColors = [
+        '#4a90e2', '#50b83c', '#f49342', '#9c6ade', '#47c1bf', 
+        '#5c6ac4', '#de3618', '#8a8a8a', '#bf0711', '#00848e'
+      ];
+      const randomColor = defaultColors[Math.floor(Math.random() * defaultColors.length)];
+      
+      await this.tagService.createTag(tag, {
+        color: randomColor,
+        description: `${tag}に関するタスク`
+      });
+      
+      logger.info(`新しいタグを自動登録しました: ${tag}`);
+    } catch (error) {
+      logger.error(`タグ "${tag}" の登録に失敗しました`, { error: (error as Error).message });
+    }
+  }
 
-  // 全タスクの取得（フィルタリングとソート機能付き）
-  async getAllTasks(options?: {
-    tags?: string[];
-    completed?: boolean;
-    priority?: string;
-    sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority';
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<Task[]> {
+  /**
+   * タスクデータを読み込み、古いデータ形式を新しい形式に変換する
+   * @returns 変換済みのタスク配列
+   */
+  private async loadAndNormalizeTaskData(): Promise<Task[]> {
     const tasksFile = await this.getTasksFilename();
     logger.info(`タスクを読み込み中: ${tasksFile}`);
     
-    let tasks = await this.fileService.readFile<Task[]>(tasksFile, []);
-    
-    // カテゴリからタグへの移行処理
-    tasks = tasks.map(task => {
+    const tasks = await this.fileService.readFile<Task[]>(tasksFile, []);
+    return this.normalizeTaskData(tasks);
+  }
+  
+  /**
+   * タスクデータを正規化する（古い形式から新しい形式への変換）
+   * @param tasks タスク配列
+   * @returns 正規化されたタスク配列
+   */
+  private normalizeTaskData(tasks: Task[]): Task[] {
+    return tasks.map(task => {
       // 古いデータ形式（category）から新しいデータ形式（tags）への変換
       if (!task.tags && task.category) {
         const newTask = {
@@ -109,55 +127,123 @@ export class TaskService {
       
       return task;
     });
+  }
+  
+  /**
+   * タスクをフィルタリングする
+   * @param tasks タスク配列
+   * @param options フィルタリングオプション
+   * @returns フィルタリングされたタスク配列
+   */
+  private filterTasks(tasks: Task[], options?: {
+    tags?: string[];
+    completed?: boolean;
+    priority?: string;
+  }): Task[] {
+    if (!options) return tasks;
+    
+    let filteredTasks = [...tasks];
+    
+    // タグでフィルタリング
+    if (options.tags && options.tags.length > 0) {
+      filteredTasks = filteredTasks.filter(task => 
+        options.tags!.some(tag => task.tags.includes(tag))
+      );
+    }
+    
+    // 完了状態でフィルタリング
+    if (options.completed !== undefined) {
+      filteredTasks = filteredTasks.filter(task => 
+        task.completed === options.completed
+      );
+    }
+    
+    // 優先度でフィルタリング
+    if (options.priority !== undefined) {
+      filteredTasks = filteredTasks.filter(task => 
+        task.priority === options.priority
+      );
+    }
+    
+    return filteredTasks;
+  }
+  
+  /**
+   * タスクをソートする
+   * @param tasks タスク配列
+   * @param sortBy ソート対象のフィールド
+   * @param sortOrder ソート順序
+   * @returns ソートされたタスク配列
+   */
+  private sortTasks(
+    tasks: Task[], 
+    sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority',
+    sortOrder: 'asc' | 'desc' = 'asc'
+  ): Task[] {
+    if (!sortBy) return tasks;
+    
+    const sortedTasks = [...tasks];
+    const multiplier = sortOrder === 'desc' ? -1 : 1;
+    
+    sortedTasks.sort((a, b) => {
+      const fieldA = a[sortBy];
+      const fieldB = b[sortBy];
+      
+      if (fieldA === undefined && fieldB === undefined) return 0;
+      if (fieldA === undefined) return multiplier;
+      if (fieldB === undefined) return -multiplier;
+      
+      if (typeof fieldA === 'string' && typeof fieldB === 'string') {
+        return fieldA.localeCompare(fieldB) * multiplier;
+      }
+      
+      return 0;
+    });
+    
+    return sortedTasks;
+  }
+
+  /**
+   * 全タスクの取得（フィルタリングとソート機能付き）
+   * @param options フィルタリングとソートのオプション
+   * @returns タスク配列
+   */
+  async getAllTasks(options?: {
+    tags?: string[];
+    completed?: boolean;
+    priority?: string;
+    sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority';
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<Task[]> {
+    // タスクデータを読み込み、正規化
+    let tasks = await this.loadAndNormalizeTaskData();
     
     // フィルタリング
-    if (options) {
-      if (options.tags && options.tags.length > 0) {
-        tasks = tasks.filter(task => {
-          // タスクのタグが指定されたタグのいずれかを含む場合にマッチ
-          return options.tags!.some(tag => task.tags.includes(tag));
-        });
-      }
-      
-      if (options.completed !== undefined) {
-        tasks = tasks.filter(task => task.completed === options.completed);
-      }
-      
-      if (options.priority !== undefined) {
-        tasks = tasks.filter(task => task.priority === options.priority);
-      }
-      
-      // ソート
-      if (options.sortBy) {
-        const sortOrder = options.sortOrder === 'desc' ? -1 : 1;
-        
-        tasks.sort((a, b) => {
-          const fieldA = a[options.sortBy as keyof Task];
-          const fieldB = b[options.sortBy as keyof Task];
-          
-          if (fieldA === undefined && fieldB === undefined) return 0;
-          if (fieldA === undefined) return sortOrder;
-          if (fieldB === undefined) return -sortOrder;
-          
-          if (typeof fieldA === 'string' && typeof fieldB === 'string') {
-            return fieldA.localeCompare(fieldB) * sortOrder;
-          }
-          
-          return 0;
-        });
-      }
+    tasks = this.filterTasks(tasks, options);
+    
+    // ソート
+    if (options?.sortBy) {
+      tasks = this.sortTasks(tasks, options.sortBy, options.sortOrder || 'asc');
     }
     
     return tasks;
   }
 
-  // IDによるタスクの取得
+  /**
+   * IDによるタスクの取得
+   * @param id タスクID
+   * @returns タスクオブジェクトまたはnull
+   */
   async getTaskById(id: string): Promise<Task | null> {
     const tasks = await this.getAllTasks();
     return tasks.find(task => task.id === id) || null;
   }
 
-  // タスクの作成
+  /**
+   * タスクの作成
+   * @param taskData 作成するタスクのデータ
+   * @returns 作成されたタスク
+   */
   async createTask(taskData: CreateTaskInput): Promise<Task> {
     const tasksFile = await this.getTasksFilename();
     const tasks = await this.getAllTasks();
@@ -184,7 +270,12 @@ export class TaskService {
     return newTask;
   }
 
-  // タスクの更新
+  /**
+   * タスクの更新
+   * @param id 更新するタスクのID
+   * @param taskData 更新データ
+   * @returns 更新されたタスクまたはnull
+   */
   async updateTask(id: string, taskData: UpdateTaskInput): Promise<Task | null> {
     const tasksFile = await this.getTasksFilename();
     const tasks = await this.getAllTasks();
@@ -212,7 +303,11 @@ export class TaskService {
     return updatedTask;
   }
 
-  // タスクの削除
+  /**
+   * タスクの削除
+   * @param id 削除するタスクのID
+   * @returns 削除成功の場合true、タスクが見つからない場合false
+   */
   async deleteTask(id: string): Promise<boolean> {
     const tasksFile = await this.getTasksFilename();
     const tasks = await this.getAllTasks();
@@ -230,7 +325,11 @@ export class TaskService {
     return true;
   }
 
-  // タスクの完了状態の切り替え
+  /**
+   * タスクの完了状態の切り替え
+   * @param id タスクID
+   * @returns 更新されたタスクまたはnull
+   */
   async toggleTaskCompletion(id: string): Promise<Task | null> {
     const task = await this.getTaskById(id);
     
@@ -241,7 +340,12 @@ export class TaskService {
     return this.updateTask(id, { completed: !task.completed });
   }
 
-  // タスクのメモ更新
+  /**
+   * タスクのメモ更新
+   * @param id タスクID
+   * @param memo 新しいメモ内容
+   * @returns 更新されたタスクまたはnull
+   */
   async updateTaskMemo(id: string, memo: string): Promise<Task | null> {
     const task = await this.getTaskById(id);
     
@@ -252,7 +356,10 @@ export class TaskService {
     return this.updateTask(id, { memo });
   }
   
-  // タグ一覧の取得
+  /**
+   * タグ一覧の取得
+   * @returns タグの配列
+   */
   async getTags(): Promise<string[]> {
     const tasks = await this.getAllTasks();
     const tagsSet = new Set<string>();
@@ -266,36 +373,54 @@ export class TaskService {
     return Array.from(tagsSet);
   }
   
-  // タグでタスクを検索
+  /**
+   * タグでタスクを検索
+   * @param tag 検索するタグ
+   * @returns タスクの配列
+   */
   async getTasksByTag(tag: string): Promise<Task[]> {
-    const tasks = await this.getAllTasks();
-    return tasks.filter(task => task.tags && task.tags.includes(tag));
+    return this.getAllTasks({ tags: [tag] });
   }
   
-  // データのバックアップを作成
+  /**
+   * データのバックアップを作成
+   * @returns バックアップファイル名
+   */
   async createBackup(): Promise<string> {
     const tasksFile = await this.getTasksFilename();
     return this.fileService.createBackup(tasksFile);
   }
   
-  // バックアップからデータを復元
+  /**
+   * バックアップからデータを復元
+   * @param backupFilename バックアップファイル名
+   */
   async restoreFromBackup(backupFilename: string): Promise<void> {
     const tasksFile = await this.getTasksFilename();
     await this.fileService.restoreFromBackup(backupFilename, tasksFile);
   }
   
-  // 利用可能なバックアップ一覧を取得
+  /**
+   * 利用可能なバックアップ一覧を取得
+   * @returns バックアップファイル名の配列
+   */
   async listBackups(): Promise<string[]> {
     const tasksFile = await this.getTasksFilename();
     return this.fileService.listBackups(tasksFile);
   }
   
-  // タスクデータをエクスポート
+  /**
+   * タスクデータをエクスポート
+   * @returns タスクの配列
+   */
   async exportTasks(): Promise<Task[]> {
     return this.getAllTasks();
   }
   
-  // タスクデータをインポート
+  /**
+   * タスクデータをインポート
+   * @param tasks インポートするタスクの配列
+   */
   async importTasks(tasks: Task[]): Promise<void> {
     const tasksFile = await this.getTasksFilename();
     // バックアップを作成してから上書き

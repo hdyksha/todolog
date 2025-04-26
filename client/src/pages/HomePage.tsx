@@ -18,6 +18,7 @@ import ActiveTaskList from '../components/tasks/ActiveTaskList';
 import LoadingIndicator from '../components/ui/LoadingIndicator';
 import ErrorDisplay from '../components/ui/ErrorDisplay';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import api from '../services/api';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -126,9 +127,15 @@ const HomePage: React.FC = () => {
   }, [currentTask, updateTask]);
 
   // タスク編集モーダルを開く
-  const openEditModal = useCallback((task: Task) => {
-    setCurrentTask(task);
-    setIsEditModalOpen(true);
+  const openEditModal = useCallback(async (task: Task) => {
+    try {
+      // タスクの詳細情報を取得（メモを含む完全なデータ）
+      const taskDetail = await api.fetchTaskById(task.id);
+      setCurrentTask(taskDetail);
+      setIsEditModalOpen(true);
+    } catch (error) {
+      console.error('タスク詳細の取得エラー:', error);
+    }
   }, []);
 
   // タスク削除確認ダイアログを開く
