@@ -2,24 +2,43 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { taskRoutes } from './routes/taskRoutes.js';
-import settingsRoutes from './routes/settingsRoutes.js';
-import storageRoutes from './routes/storageRoutes.js';
-import directoryRoutes from './routes/directoryRoutes.js';
-import tagRoutes from './routes/tagRoutes.js';
+import { createTaskRoutes } from './routes/taskRoutes.js';
+import { createSettingsRoutes } from './routes/settingsRoutes.js';
+import { createStorageRoutes } from './routes/storageRoutes.js';
+import { createDirectoryRoutes } from './routes/directoryRoutes.js';
+import { createTagRoutes } from './routes/tagRoutes.js';
 import { requestLogger } from './utils/logger.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import { setupSecurity } from './middleware/security.js';
 import { setupRateLimiter } from './middleware/rate-limiter.js';
 import { etagMiddleware, cacheControl } from './middleware/cache.js';
 import { env } from './config/env.js';
+import { config } from 'dotenv';
+import { initializeServices } from './services/serviceContainer.js';
+
+// .env ファイルから環境変数を読み込む
+config();
 
 // ESM環境でのディレクトリ名取得
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export function createApp() {
+/**
+ * アプリケーションを作成する
+ * @param options アプリケーション設定オプション
+ * @returns Express アプリケーション
+ */
+export function createApp(options: {
+  settingsDir?: string;
+  settingsFile?: string;
+} = {}) {
   const app = express();
+
+  // サービスの初期化
+  initializeServices({
+    settingsDir: options.settingsDir,
+    settingsFile: options.settingsFile
+  });
 
   // セキュリティ設定
   setupSecurity(app);
@@ -44,11 +63,11 @@ export function createApp() {
   });
 
   // APIルートの設定
-  app.use('/api/tasks', taskRoutes);
-  app.use('/api/settings', settingsRoutes);
-  app.use('/api/storage', storageRoutes);
-  app.use('/api/storage', directoryRoutes);
-  app.use('/api/tags', tagRoutes);
+  app.use('/api/tasks', createTaskRoutes());
+  app.use('/api/settings', createSettingsRoutes());
+  app.use('/api/storage', createStorageRoutes());
+  app.use('/api/storage', createDirectoryRoutes());
+  app.use('/api/tags', createTagRoutes());
 
   // エラーハンドリングミドルウェア
   app.use(notFoundHandler);

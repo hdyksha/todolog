@@ -1,35 +1,38 @@
 import express from 'express';
 import { TaskController } from '../controllers/taskController.js';
-import { TaskService } from '../services/taskService.js';
-import { FileService } from '../services/fileService.js';
-import { SettingsService } from '../services/settingsService.js';
-import { TagService } from '../services/tagService.js';
+import { getTaskService, getTagService } from '../services/serviceContainer.js';
 import { cacheControl, noCacheAfterMutation } from '../middleware/cache.js';
 
-// サービスのインスタンス化
-const settingsService = new SettingsService();
-const fileService = new FileService(undefined, settingsService);
-const tagService = new TagService(fileService);
-const taskService = new TaskService(fileService, settingsService, tagService);
-const taskController = new TaskController(taskService);
+/**
+ * タスク関連のルートを作成する
+ */
+export function createTaskRoutes() {
+  const router = express.Router();
+  
+  // サービスの取得
+  const taskService = getTaskService();
+  const tagService = getTagService();
+  
+  // コントローラーの作成
+  const taskController = new TaskController(taskService);
 
-// ルーターの作成
-export const taskRoutes = express.Router();
+  // タスク関連のエンドポイント
+  router.get('/', cacheControl(5), taskController.getAllTasks);
+  router.get('/:id', cacheControl(5), taskController.getTaskById);
+  router.post('/', noCacheAfterMutation, taskController.createTask);
+  router.put('/:id', noCacheAfterMutation, taskController.updateTask);
+  router.delete('/:id', noCacheAfterMutation, taskController.deleteTask);
+  router.put('/:id/toggle', noCacheAfterMutation, taskController.toggleTaskCompletion);
+  router.put('/:id/memo', noCacheAfterMutation, taskController.updateTaskMemo);
 
-// タスク関連のエンドポイント
-taskRoutes.get('/', cacheControl(5), taskController.getAllTasks);
-taskRoutes.get('/:id', cacheControl(5), taskController.getTaskById);
-taskRoutes.post('/', noCacheAfterMutation, taskController.createTask);
-taskRoutes.put('/:id', noCacheAfterMutation, taskController.updateTask);
-taskRoutes.delete('/:id', noCacheAfterMutation, taskController.deleteTask);
-taskRoutes.put('/:id/toggle', noCacheAfterMutation, taskController.toggleTaskCompletion);
-taskRoutes.put('/:id/memo', noCacheAfterMutation, taskController.updateTaskMemo);
+  // バックアップと復元のエンドポイント
+  router.post('/backups', taskController.createBackup);
+  router.get('/backups', cacheControl(60), taskController.listBackups);
+  router.post('/backups/:filename/restore', noCacheAfterMutation, taskController.restoreFromBackup);
 
-// バックアップと復元のエンドポイント
-taskRoutes.post('/backups', taskController.createBackup);
-taskRoutes.get('/backups', cacheControl(60), taskController.listBackups);
-taskRoutes.post('/backups/:filename/restore', noCacheAfterMutation, taskController.restoreFromBackup);
+  // エクスポート/インポートのエンドポイント
+  router.get('/export', taskController.exportTasks);
+  router.post('/import', noCacheAfterMutation, taskController.importTasks);
 
-// エクスポート/インポートのエンドポイント
-taskRoutes.get('/export', taskController.exportTasks);
-taskRoutes.post('/import', noCacheAfterMutation, taskController.importTasks);
+  return router;
+}

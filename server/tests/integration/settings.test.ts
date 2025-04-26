@@ -1,37 +1,22 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/app.js';
+import { setupTestSettings } from '../helpers/testSettings.js';
 import fs from 'fs/promises';
 import path from 'path';
-import os from 'os';
 
 describe('設定API統合テスト', () => {
   const app = createApp();
-  const testSettingsDir = path.join(os.tmpdir(), `todolog-test-${Date.now()}`);
-  const testSettingsFile = path.join(testSettingsDir, 'settings.json');
+  let testSettings;
   
   // テスト用の設定ディレクトリを作成
   beforeAll(async () => {
-    try {
-      await fs.mkdir(testSettingsDir, { recursive: true });
-    } catch (error) {
-      console.error('テスト用ディレクトリの作成に失敗しました:', error);
-    }
-    
-    // 環境変数を設定（テスト用）
-    process.env.SETTINGS_DIR = testSettingsDir;
+    testSettings = await setupTestSettings();
   });
   
   // テスト用の設定ディレクトリを削除
   afterAll(async () => {
-    try {
-      await fs.rm(testSettingsDir, { recursive: true, force: true });
-    } catch (error) {
-      console.error('テスト用ディレクトリの削除に失敗しました:', error);
-    }
-    
-    // 環境変数をリセット
-    delete process.env.SETTINGS_DIR;
+    await testSettings.cleanup();
   });
   
   describe('GET /api/settings', () => {
@@ -102,7 +87,7 @@ describe('設定API統合テスト', () => {
   
   describe('PUT /api/settings/storage/data-dir', () => {
     it('データディレクトリを設定する', async () => {
-      const newDataDir = path.join(testSettingsDir, 'custom-data');
+      const newDataDir = path.join(testSettings.settingsDir, 'custom-data');
       
       const response = await request(app)
         .put('/api/settings/storage/data-dir')

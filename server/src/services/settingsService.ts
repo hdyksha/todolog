@@ -20,9 +20,16 @@ export class SettingsService {
    * @param settingsFile 設定ファイル名（デフォルトはsettings.json）
    */
   constructor(settingsDir?: string, settingsFile?: string) {
-    this.settingsDir = settingsDir || path.join(os.homedir(), '.todolog');
-    this.settingsFile = settingsFile || 'settings.json';
+    // 引数 > 環境変数 > デフォルト値 の優先順位
+    this.settingsDir = settingsDir || 
+                       process.env.SETTINGS_DIR || 
+                       path.join(os.homedir(), '.todolog');
+    this.settingsFile = settingsFile || 
+                        process.env.SETTINGS_FILE || 
+                        'settings.json';
     this.settings = { ...defaultSettings };
+    
+    logger.debug(`設定ディレクトリ: ${this.settingsDir}, 設定ファイル: ${this.settingsFile}`);
   }
 
   /**
@@ -53,7 +60,7 @@ export class SettingsService {
     }
 
     // ファイルの最終更新時刻を確認
-    const filePath = path.join(this.settingsDir, this.settingsFile);
+    const filePath = this.getSettingsFilePath();
     try {
       const stats = await fs.stat(filePath);
       const fileModifiedTime = stats.mtimeMs;
@@ -81,10 +88,18 @@ export class SettingsService {
   }
 
   /**
+   * 設定ファイルのフルパスを取得する
+   * @returns 設定ファイルのフルパス
+   */
+  private getSettingsFilePath(): string {
+    return path.join(this.settingsDir, this.settingsFile);
+  }
+
+  /**
    * 設定ファイルからデータを読み込む
    */
   private async loadSettings(): Promise<void> {
-    const filePath = path.join(this.settingsDir, this.settingsFile);
+    const filePath = this.getSettingsFilePath();
     
     try {
       await fs.access(filePath);
@@ -124,7 +139,7 @@ export class SettingsService {
    */
   private async saveSettings(): Promise<void> {
     await this.ensureSettingsDir();
-    const filePath = path.join(this.settingsDir, this.settingsFile);
+    const filePath = this.getSettingsFilePath();
     
     try {
       await fs.writeFile(filePath, JSON.stringify(this.settings, null, 2), 'utf8');

@@ -3,6 +3,7 @@ import path from 'path';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import { TaskService } from './taskService.js';
+import { getTaskService } from './serviceContainer.js';
 
 // タグの型定義
 interface Tag {
@@ -131,6 +132,19 @@ export class TagService {
       delete tags[name];
       await this.saveTags(tags);
       
+      // 関連するタスクからもタグを削除
+      if (this.taskService) {
+        await this.taskService.removeTagFromAllTasks(name);
+      } else {
+        // TaskServiceが設定されていない場合は取得を試みる
+        try {
+          const taskService = getTaskService();
+          await taskService.removeTagFromAllTasks(name);
+        } catch (error) {
+          logger.warn('TaskServiceが利用できないため、タスクからタグを削除できません', { tag: name });
+        }
+      }
+      
       return true;
     } catch (error) {
       logger.error('Failed to delete tag', { error, name });
@@ -143,8 +157,14 @@ export class TagService {
    */
   async getTagUsage(): Promise<Record<string, number>> {
     try {
+      // TaskServiceが設定されていない場合
       if (!this.taskService) {
-        throw new Error('TaskService is not available');
+        try {
+          this.taskService = getTaskService();
+        } catch (error) {
+          logger.warn('TaskServiceが利用できないため、タグの使用状況を取得できません');
+          return {};
+        }
       }
       
       const tasks = await this.taskService.getAllTasks();
