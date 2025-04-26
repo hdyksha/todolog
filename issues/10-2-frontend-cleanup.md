@@ -294,10 +294,11 @@ URLパスを `/tasks/:id` に統一しました：
   - [x] `TaskQuickAdd` コンポーネントの作成
   - [x] `TaskFilterBar` コンポーネントの作成
   - [x] `ActiveTaskList` コンポーネントの作成
-- [ ] `TaskDetailPage.tsx`の分割
-  - [ ] `TaskHeader` コンポーネントの作成
-  - [ ] `TaskMetadata` コンポーネントの作成
-  - [ ] `TaskMemoEditor` コンポーネントの作成
+- [x] `TaskDetailPage.tsx`の分割
+  - [x] `TaskHeader` コンポーネントの作成
+  - [x] `TaskMetadata` コンポーネントの作成
+  - [x] `TaskMemoEditor` コンポーネントの作成
+  - [x] `TaskMemoViewer` コンポーネントの作成
 - [x] 共通コンポーネントの追加
   - [x] `ConfirmDialog` コンポーネントの作成
   - [x] `LoadingIndicator` コンポーネントの作成
@@ -321,11 +322,8 @@ URLパスを `/tasks/:id` に統一しました：
 
 ### 週1（2025-04-28 ~ 2025-05-04）
 - 月: コンポーネントの分割（HomePage.tsx）✅
-- 火: コンポーネントの分割（TaskDetailPage.tsx）
+- 火: コンポーネントの分割（TaskDetailPage.tsx）✅
 - 水: 共通コンポーネントの追加 ✅
-- 木: パフォーマンス最適化（部分的に完了）
+- 木: パフォーマンス最適化 ✅
 - 金: エラー処理の統合
 - 土/日: テスト拡充（部分的に完了）
-- 木: パフォーマンス最適化
-- 金: エラー処理の統合
-- 土/日: テスト拡充

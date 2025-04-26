@@ -1,0 +1,19 @@
+.task-memo-viewer-wrapper {
+  padding: 1rem;
+  min-height: 100px;
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.task-memo-viewer-wrapper:hover {
+  background-color: var(--color-background-hover);
+}
+
+.task-memo-empty {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0;
+}
