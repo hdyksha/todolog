@@ -1,4 +1,5 @@
-import React from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import './MarkdownHelpModal.css';
 
 interface MarkdownHelpModalProps {
@@ -7,7 +8,7 @@ interface MarkdownHelpModalProps {
 
 const MarkdownHelpModal: React.FC<MarkdownHelpModalProps> = ({ onClose }) => {
   // Escキーでモーダルを閉じる
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
@@ -25,7 +26,12 @@ const MarkdownHelpModal: React.FC<MarkdownHelpModalProps> = ({ onClose }) => {
       <div className="markdown-help-modal" onClick={(e) => e.stopPropagation()}>
         <div className="markdown-help-modal-header">
           <h2>マークダウン記法ヘルプ</h2>
-          <button className="markdown-help-modal-close" onClick={onClose}>
+          <button 
+            className="markdown-help-modal-close" 
+            onClick={onClose}
+            type="button"
+            aria-label="閉じる"
+          >
             ×
           </button>
         </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Task, Priority } from '../types';
 import Button from './ui/Button';
 import TagBadge from './tags/TagBadge';
@@ -103,6 +103,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
               onEditMemo(task.id);
             }
           }}
+          aria-label={`${task.title}の詳細を表示`}
         >
           詳細
         </Button>

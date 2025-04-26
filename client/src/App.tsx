@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TaskProvider } from './contexts/TaskContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -15,7 +15,7 @@ import SettingsPage from './pages/SettingsPage';
 import TagManagementPage from './pages/TagManagementPage';
 import NotificationContainer from './components/NotificationContainer';
 import ShortcutHelpModal from './components/ShortcutHelpModal';
-import './styles/variables.css';
+import './styles/common.css';
 import './styles/theme.css';
 import './App.css';
 
@@ -23,31 +23,32 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <NotificationProvider>
-          <SettingsProvider>
-            <ServerSettingsProvider>
-              <TaskFilesProvider>
+        <SettingsProvider>
+          <ServerSettingsProvider>
+            <NotificationProvider>
+              <KeyboardShortcutsProvider>
                 <TaskProvider>
-                  <TagProvider>
-                    <KeyboardShortcutsProvider>
-                      <NotificationContainer />
-                      <ShortcutHelpModal />
-                      <Routes>
-                        <Route path="/" element={<MainLayout />}>
-                          <Route index element={<HomePage />} />
-                          <Route path="tasks/:id" element={<TaskDetailPage />} />
-                          <Route path="settings" element={<SettingsPage />} />
-                          <Route path="tags" element={<TagManagementPage />} />
-                          <Route path="*" element={<div>ページが見つかりません</div>} />
-                        </Route>
-                      </Routes>
-                    </KeyboardShortcutsProvider>
-                  </TagProvider>
+                  <TaskFilesProvider>
+                    <TagProvider>
+                      <div className="app">
+                        <Routes>
+                          <Route path="/" element={<MainLayout />}>
+                            <Route index element={<HomePage />} />
+                            <Route path="tasks/:id" element={<TaskDetailPage />} />
+                            <Route path="settings" element={<SettingsPage />} />
+                            <Route path="tags" element={<TagManagementPage />} />
+                          </Route>
+                        </Routes>
+                        <NotificationContainer />
+                        <ShortcutHelpModal />
+                      </div>
+                    </TagProvider>
+                  </TaskFilesProvider>
                 </TaskProvider>
-              </TaskFilesProvider>
-            </ServerSettingsProvider>
-          </SettingsProvider>
-        </NotificationProvider>
+              </KeyboardShortcutsProvider>
+            </NotificationProvider>
+          </ServerSettingsProvider>
+        </SettingsProvider>
       </ThemeProvider>
     </BrowserRouter>
   );
