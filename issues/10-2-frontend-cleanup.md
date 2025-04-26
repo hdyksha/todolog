@@ -309,23 +309,19 @@ URLパスを `/tasks/:id` に統一しました：
 - [x] `useMemo`と`useCallback`の適切な使用
 - [ ] ~~大きなリストの仮想化~~ (見送り)
 
-### テストカバレッジの向上
-- [x] 新しく追加したコンポーネントのテストの作成
-  - [x] `TaskQuickAdd.test.tsx`
-  - [x] `LoadingIndicator.test.tsx`
-  - [x] `ErrorDisplay.test.tsx`
-  - [x] `ConfirmDialog.test.tsx`
-  - [x] `TaskHeader.test.tsx`
-  - [x] `TaskMetadata.test.tsx`
-  - [x] `TaskMemoEditor.test.tsx`
-  - [x] `TaskMemoViewer.test.tsx`
-- [x] アクセシビリティテストの追加
-  - [x] `TaskHeader.a11y.test.tsx`
-  - [x] `TaskMetadata.a11y.test.tsx`
-  - [x] `TaskMemoEditor.a11y.test.tsx`
-  - [x] `TaskMemoViewer.a11y.test.tsx`
-- [ ] インテグレーションテストの追加
-- [ ] エッジケースのテスト追加
+### インテグレーションテストの追加
+- [x] `TaskDetailInteractions.test.tsx` - タスク詳細ページの操作テスト
+  - [x] タスクの詳細表示
+  - [x] タスクの完了状態切り替え
+  - [x] タスクの削除
+  - [x] メモの編集
+  - [x] マークダウンヘルプの表示
+- [x] `TaskListInteractions.test.tsx` - タスク一覧ページの操作テスト
+  - [x] タスク一覧の表示
+  - [x] クイック追加でのタスク作成
+  - [x] タスクの完了状態切り替え
+  - [x] タスク詳細ページへの遷移
+  - [x] フィルター適用
 
 ## 実装スケジュール
 
