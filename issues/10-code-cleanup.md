@@ -179,7 +179,7 @@ TodoLogアプリケーションのコードベースを見直し、冗長な記�
 | フェーズ | 状態 | 完了日 | 備考 |
 |---------|------|-------|------|
 | フェーズ1: コード分析 | 完了 | 2025-04-26 | 詳細は [10-1-code-analysis.md](./10-1-code-analysis.md) を参照 |
-| フェーズ2: フロントエンドクリーンアップ | 進行中 | - | 詳細は [10-2-frontend-cleanup.md](./10-2-frontend-cleanup.md) を参照 |
+| フェーズ2: フロントエンドクリーンアップ | 進行中 | - | 詳細は [10-2-frontend-cleanup.md](./10-2-frontend-cleanup.md) を参照<br>- HomePage.tsxの分割完了<br>- 共通コンポーネント追加完了<br>- テスト追加完了 |
 | フェーズ3: バックエンドクリーンアップ | 未開始 | - | 詳細は [10-3-backend-cleanup.md](./10-3-backend-cleanup.md) を参照 |
 | フェーズ4: 共通ユーティリティ最適化 | 未開始 | - | 詳細は [10-4-common-utils.md](./10-4-common-utils.md) を参照 |
 | フェーズ5: パフォーマンス最適化 | 未開始 | - | 詳細は [10-5-performance.md](./10-5-performance.md) を参照 |

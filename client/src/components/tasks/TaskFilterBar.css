@@ -1,0 +1,35 @@
+.task-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-section {
+  width: 100%;
+}
+
+.sort-section {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.clear-filters-button {
+  align-self: flex-end;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .task-filter-bar {
+    padding: 0.75rem;
+  }
+  
+  .sort-section {
+    justify-content: flex-start;
+  }
+}

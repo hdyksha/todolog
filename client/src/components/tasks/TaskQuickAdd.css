@@ -1,0 +1,12 @@
+.quick-add-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .quick-add-form {
+    flex-direction: column;
+  }
+}

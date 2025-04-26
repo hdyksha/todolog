@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTaskContext } from '../contexts/TaskContext';
 import { useTaskActions } from '../hooks/useTaskActions';
 import { useTaskFilters } from '../hooks/useTaskFilters';
-import { useSettings } from '../contexts/SettingsContext';
-import { useArchiveStats } from '../hooks/useArchiveStats';
 import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
 import { useTagStats } from '../hooks/useTagStats';
 import { useTags } from '../hooks/useTags';
-import { Priority, Task } from '../types';
+import { Task, Priority } from '../types';
 import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import TaskForm from '../components/tasks/TaskForm';
-import FilterPanel from '../components/filters/FilterPanel';
-import TaskSortControl from '../components/tasks/TaskSortControl';
-import TagBadge from '../components/tags/TagBadge';
 import ArchiveSection from '../components/archive/ArchiveSection';
+import TaskQuickAdd from '../components/tasks/TaskQuickAdd';
+import TaskFilterBar from '../components/tasks/TaskFilterBar';
+import ActiveTaskList from '../components/tasks/ActiveTaskList';
+import LoadingIndicator from '../components/ui/LoadingIndicator';
+import ErrorDisplay from '../components/ui/ErrorDisplay';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -24,11 +25,12 @@ const HomePage: React.FC = () => {
   const { fetchTasks, addTask, toggleTaskCompletion, deleteTask, updateTask } = useTaskActions();
   const { tags } = useTags();
   const { usage: tagUsage } = useTagStats(tasks, tags);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // タスクのフィルタリングとソート
@@ -87,16 +89,12 @@ const HomePage: React.FC = () => {
   }, []);
 
   // クイック追加ハンドラー
-  const handleQuickAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTaskTitle.trim()) {
-      addTask(newTaskTitle, Priority.Medium);
-      setNewTaskTitle('');
-    }
-  };
+  const handleQuickAdd = useCallback(async (title: string, priority: Priority) => {
+    return await addTask(title, priority);
+  }, [addTask]);
 
   // タスク作成ハンドラー
-  const handleCreateTask = async (taskData: Partial<Task>) => {
+  const handleCreateTask = useCallback(async (taskData: Partial<Task>) => {
     setIsSubmitting(true);
     try {
       await addTask(taskData.title!, taskData.priority!, taskData.tags, taskData.dueDate, taskData.memo);
@@ -106,10 +104,10 @@ const HomePage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [addTask]);
 
   // タスク編集ハンドラー
-  const handleEditTask = async (taskData: Partial<Task>) => {
+  const handleEditTask = useCallback(async (taskData: Partial<Task>) => {
     if (!currentTask) return;
     
     setIsSubmitting(true);
@@ -125,49 +123,50 @@ const HomePage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [currentTask, updateTask]);
 
   // タスク編集モーダルを開く
-  const openEditModal = (task: Task) => {
+  const openEditModal = useCallback((task: Task) => {
     setCurrentTask(task);
     setIsEditModalOpen(true);
-  };
+  }, []);
+
+  // タスク削除確認ダイアログを開く
+  const openDeleteConfirm = useCallback((id: string) => {
+    setTaskToDelete(id);
+    setIsDeleteConfirmOpen(true);
+  }, []);
 
   // タスク削除ハンドラー
-  const handleDeleteTask = (id: string) => {
-    if (window.confirm('このタスクを削除してもよろしいですか？')) {
-      deleteTask(id);
+  const handleDeleteTask = useCallback(async () => {
+    if (taskToDelete) {
+      await deleteTask(taskToDelete);
+      setTaskToDelete(null);
     }
-  };
+  }, [taskToDelete, deleteTask]);
 
   // タスク詳細ページへの遷移ハンドラー
-  const handleViewTaskDetails = (id: string) => {
+  const handleViewTaskDetails = useCallback((id: string) => {
     navigate(`/tasks/${id}`);
-  };
+  }, [navigate]);
 
   // カテゴリでフィルタリング
-  const handleCategoryClick = (tag: string) => {
+  const handleCategoryClick = useCallback((tag: string) => {
     setFilters({ ...filters, tags: [tag] });
-  };
+  }, [filters, setFilters]);
 
   // ローディング中の表示
   if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>読み込み中...</p>
-      </div>
-    );
+    return <LoadingIndicator message="タスクを読み込み中..." />;
   }
 
   // エラー時の表示
   if (error) {
     return (
-      <div className="error-container">
-        <h2>エラーが発生しました</h2>
-        <p>{error.message}</p>
-        <Button onClick={() => fetchTasks(true)}>再読み込み</Button>
-      </div>
+      <ErrorDisplay
+        message={error.message}
+        onRetry={() => fetchTasks(true)}
+      />
     );
   }
 
@@ -176,164 +175,45 @@ const HomePage: React.FC = () => {
       <h1>タスク管理</h1>
       
       <div className="task-actions-container">
-        <form className="quick-add-form" onSubmit={handleQuickAdd}>
-          <Input
-            type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            placeholder="新しいタスクを入力..."
-            label="クイック追加"
-            fullWidth
-          />
-          <Button type="submit" variant="primary">
-            追加
-          </Button>
-        </form>
+        <TaskQuickAdd onAddTask={handleQuickAdd} />
         
         <Button 
           variant="secondary"
           onClick={() => setIsCreateModalOpen(true)}
+          type="button"
         >
           詳細作成
         </Button>
       </div>
 
-      {/* フィルターパネル */}
-      <FilterPanel
+      {/* フィルターバー */}
+      <TaskFilterBar
         filters={filters}
         onFilterChange={setFilters}
+        onClearFilters={resetFilters}
+        sort={sort}
+        onSortChange={setSort}
         availableTags={tags}
         tagUsage={tagUsage}
-        onClearFilters={resetFilters}
       />
 
-      <div className="task-list-header">
-        <h2>タスク一覧</h2>
-        <TaskSortControl currentSort={sort} onSortChange={setSort} />
-      </div>
-
-      {/* アクティブなタスクセクション */}
-      <div className="task-list-section">
-        <h2 className="section-title">アクティブなタスク ({sortedTasks.filter(task => !task.completed).length})</h2>
-        <div className="task-list">
-          {sortedTasks.filter(task => !task.completed).length === 0 ? (
-            <div className="empty-state">
-              {tasks.length === 0 ? (
-                <>
-                  <p>タスクはありません</p>
-                  <p>新しいタスクを追加してください</p>
-                </>
-              ) : (
-                <>
-                  <p>条件に一致するアクティブなタスクはありません</p>
-                  <Button variant="text" onClick={resetFilters}>
-                    フィルターをクリア
-                  </Button>
-                </>
-              )}
-            </div>
-          ) : (
-            <ul className="task-items">
-              {sortedTasks.filter(task => !task.completed).map((task) => (
-                <li
-                  key={task.id}
-                  className="task-item"
-                >
-                  <div 
-                    className="task-item-content"
-                    onClick={() => handleViewTaskDetails(task.id)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={task.completed}
-                      onClick={(e) => e.stopPropagation()} // クリックイベントの伝播を停止
-                      onChange={(e) => {
-                        toggleTaskCompletion(task.id);
-                      }}
-                      className="task-checkbox"
-                      aria-label={`${task.title}を${task.completed ? '未完了' : '完了'}としてマーク`}
-                    />
-                    <span className="task-title">{task.title}</span>
-                    
-                    <div className="task-meta">
-                      {task.priority && (
-                        <span className={`task-priority priority-${task.priority}`}>
-                          {task.priority === Priority.High
-                            ? '高'
-                            : task.priority === Priority.Medium
-                            ? '中'
-                            : '低'}
-                        </span>
-                      )}
-                      
-                      {task.tags && task.tags.length > 0 && (
-                        <div className="task-tags">
-                          {task.tags.map(tag => (
-                            <TagBadge
-                              key={tag}
-                              tag={tag}
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCategoryClick(tag);
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                      
-                      {task.dueDate && (
-                        <span className="task-due-date">
-                          {new Date(task.dueDate).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="task-actions">
-                    <Button
-                      variant="text"
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation(); // クリックイベントの伝播を停止
-                        openEditModal(task);
-                      }}
-                    >
-                      編集
-                    </Button>
-                    <Button
-                      variant="text"
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation(); // クリックイベントの伝播を停止
-                        handleViewTaskDetails(task.id);
-                      }}
-                    >
-                      詳細
-                    </Button>
-                    <Button
-                      variant="text"
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation(); // クリックイベントの伝播を停止
-                        handleDeleteTask(task.id);
-                      }}
-                    >
-                      削除
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+      {/* アクティブなタスクリスト */}
+      <ActiveTaskList
+        tasks={sortedTasks}
+        onToggleComplete={toggleTaskCompletion}
+        onDelete={openDeleteConfirm}
+        onEdit={openEditModal}
+        onViewDetails={handleViewTaskDetails}
+        onTagClick={handleCategoryClick}
+        onClearFilters={resetFilters}
+        allTasksCount={tasks.length}
+      />
 
       {/* アーカイブセクション */}
       <ArchiveSection
         tasks={sortedTasks}
         onToggleComplete={toggleTaskCompletion}
-        onDelete={handleDeleteTask}
+        onDelete={openDeleteConfirm}
         onEdit={openEditModal}
         onEditMemo={handleViewTaskDetails}
       />
@@ -366,6 +246,18 @@ const HomePage: React.FC = () => {
           />
         )}
       </Modal>
+
+      {/* 削除確認ダイアログ */}
+      <ConfirmDialog
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteTask}
+        title="タスクの削除"
+        message="このタスクを削除してもよろしいですか？この操作は元に戻せません。"
+        confirmLabel="削除"
+        cancelLabel="キャンセル"
+        variant="danger"
+      />
     </div>
   );
 };

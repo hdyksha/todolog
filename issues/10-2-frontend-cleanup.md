@@ -290,34 +290,42 @@ URLパスを `/tasks/:id` に統一しました：
 ## 今後の課題
 
 ### さらなるコンポーネントの分割
-- [ ] `HomePage.tsx`の分割
-  - [ ] `TaskQuickAdd` コンポーネントの作成
-  - [ ] `TaskFilterBar` コンポーネントの作成
-  - [ ] `ActiveTaskList` コンポーネントの作成
+- [x] `HomePage.tsx`の分割
+  - [x] `TaskQuickAdd` コンポーネントの作成
+  - [x] `TaskFilterBar` コンポーネントの作成
+  - [x] `ActiveTaskList` コンポーネントの作成
 - [ ] `TaskDetailPage.tsx`の分割
   - [ ] `TaskHeader` コンポーネントの作成
   - [ ] `TaskMetadata` コンポーネントの作成
   - [ ] `TaskMemoEditor` コンポーネントの作成
-- [ ] 共通コンポーネントの追加
-  - [ ] `ConfirmDialog` コンポーネントの作成
-  - [ ] `LoadingIndicator` コンポーネントの作成
+- [x] 共通コンポーネントの追加
+  - [x] `ConfirmDialog` コンポーネントの作成
+  - [x] `LoadingIndicator` コンポーネントの作成
+  - [x] `ErrorDisplay` コンポーネントの作成
 
 ### パフォーマンス最適化
-- [ ] `React.memo`を活用した不要な再レンダリングの防止
-- [ ] `useMemo`と`useCallback`の適切な使用
+- [x] `React.memo`を活用した不要な再レンダリングの防止
+- [x] `useMemo`と`useCallback`の適切な使用
 - [ ] 大きなリストの仮想化
 
 ### テストカバレッジの向上
-- [ ] 新しく追加したユーティリティ関数のテストの拡充
+- [x] 新しく追加したコンポーネントのテストの作成
+  - [x] `TaskQuickAdd.test.tsx`
+  - [x] `LoadingIndicator.test.tsx`
+  - [x] `ErrorDisplay.test.tsx`
+  - [x] `ConfirmDialog.test.tsx`
 - [ ] インテグレーションテストの追加
 - [ ] エッジケースのテスト追加
 
 ## 実装スケジュール
 
 ### 週1（2025-04-28 ~ 2025-05-04）
-- 月: コンポーネントの分割（HomePage.tsx）
+- 月: コンポーネントの分割（HomePage.tsx）✅
 - 火: コンポーネントの分割（TaskDetailPage.tsx）
-- 水: 共通コンポーネントの追加
+- 水: 共通コンポーネントの追加 ✅
+- 木: パフォーマンス最適化（部分的に完了）
+- 金: エラー処理の統合
+- 土/日: テスト拡充（部分的に完了）
 - 木: パフォーマンス最適化
 - 金: エラー処理の統合
 - 土/日: テスト拡充
