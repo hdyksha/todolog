@@ -307,7 +307,7 @@ URLパスを `/tasks/:id` に統一しました：
 ### パフォーマンス最適化
 - [x] `React.memo`を活用した不要な再レンダリングの防止
 - [x] `useMemo`と`useCallback`の適切な使用
-- [ ] 大きなリストの仮想化
+- [ ] ~~大きなリストの仮想化~~ (見送り)
 
 ### テストカバレッジの向上
 - [x] 新しく追加したコンポーネントのテストの作成
@@ -315,6 +315,15 @@ URLパスを `/tasks/:id` に統一しました：
   - [x] `LoadingIndicator.test.tsx`
   - [x] `ErrorDisplay.test.tsx`
   - [x] `ConfirmDialog.test.tsx`
+  - [x] `TaskHeader.test.tsx`
+  - [x] `TaskMetadata.test.tsx`
+  - [x] `TaskMemoEditor.test.tsx`
+  - [x] `TaskMemoViewer.test.tsx`
+- [x] アクセシビリティテストの追加
+  - [x] `TaskHeader.a11y.test.tsx`
+  - [x] `TaskMetadata.a11y.test.tsx`
+  - [x] `TaskMemoEditor.a11y.test.tsx`
+  - [x] `TaskMemoViewer.a11y.test.tsx`
 - [ ] インテグレーションテストの追加
 - [ ] エッジケースのテスト追加
 
