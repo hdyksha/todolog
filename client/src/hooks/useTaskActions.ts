@@ -105,7 +105,9 @@ export const useTaskActions = () => {
     
     try {
       const updatedTask = await api.toggleTaskCompletion(id);
+      // completedAt フィールドを含む更新されたタスクを処理
       dispatch({ type: 'TOGGLE_TASK_SUCCESS', payload: updatedTask });
+      return updatedTask;
     } catch (error) {
       dispatch({ 
         type: 'TOGGLE_TASK_ERROR', 
@@ -122,6 +124,7 @@ export const useTaskActions = () => {
     try {
       const updatedTask = await api.updateTaskMemo(id, memo);
       dispatch({ type: 'UPDATE_MEMO_SUCCESS', payload: updatedTask });
+      return updatedTask;
     } catch (error) {
       dispatch({ 
         type: 'UPDATE_MEMO_ERROR', 

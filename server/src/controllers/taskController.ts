@@ -28,7 +28,7 @@ export class TaskController {
       const tasks = await this.taskService.getAllTasks(options);
       
       // 一覧表示用に必要なフィールドのみを含むタスクリストを返す
-      const simplifiedTasks = tasks.map(({ id, title, completed, priority, tags, dueDate, createdAt, updatedAt }) => ({
+      const simplifiedTasks = tasks.map(({ id, title, completed, priority, tags, dueDate, createdAt, updatedAt, completedAt }) => ({
         id,
         title,
         completed,
@@ -37,6 +37,7 @@ export class TaskController {
         dueDate,
         createdAt,
         updatedAt,
+        completedAt,
         // メモは一覧表示時には不要なので含めない
       }));
       

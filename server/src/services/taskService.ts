@@ -177,7 +177,7 @@ export class TaskService {
    */
   private sortTasks(
     tasks: Task[], 
-    sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority',
+    sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority' | 'completedAt',
     sortOrder: 'asc' | 'desc' = 'asc'
   ): Task[] {
     if (!sortBy) return tasks;
@@ -186,8 +186,16 @@ export class TaskService {
     const multiplier = sortOrder === 'desc' ? -1 : 1;
     
     sortedTasks.sort((a, b) => {
-      const fieldA = a[sortBy];
-      const fieldB = b[sortBy];
+      // completedAt の場合、存在しなければ updatedAt にフォールバック
+      let fieldA, fieldB;
+      
+      if (sortBy === 'completedAt') {
+        fieldA = a.completedAt || a.updatedAt;
+        fieldB = b.completedAt || b.updatedAt;
+      } else {
+        fieldA = a[sortBy];
+        fieldB = b[sortBy];
+      }
       
       if (fieldA === undefined && fieldB === undefined) return 0;
       if (fieldA === undefined) return multiplier;
@@ -212,7 +220,7 @@ export class TaskService {
     tags?: string[];
     completed?: boolean;
     priority?: string;
-    sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority';
+    sortBy?: 'createdAt' | 'updatedAt' | 'dueDate' | 'priority' | 'completedAt';
     sortOrder?: 'asc' | 'desc';
   }): Promise<Task[]> {
     // タスクデータを読み込み、正規化
@@ -285,8 +293,26 @@ export class TaskService {
       return null;
     }
     
+    const currentTask = tasks[taskIndex];
+    
+    // 完了状態が変更される場合、completedAt を適切に設定
+    if (taskData.completed !== undefined && taskData.completed !== currentTask.completed) {
+      // completedAt が明示的に指定されていない場合のみ自動設定
+      if (taskData.completedAt === undefined) {
+        if (taskData.completed) {
+          // 完了状態に変更する場合は現在時刻を設定
+          taskData.completedAt = new Date().toISOString();
+          logger.info(`タスク ${id} が完了しました。完了日時: ${taskData.completedAt}`);
+        } else {
+          // 未完了状態に戻す場合は null に設定
+          taskData.completedAt = null;
+          logger.info(`タスク ${id} が未完了に戻されました。完了日時をクリアします。`);
+        }
+      }
+    }
+    
     const updatedTask: Task = {
-      ...tasks[taskIndex],
+      ...currentTask,
       ...taskData,
       updatedAt: new Date().toISOString(),
     };
@@ -337,7 +363,19 @@ export class TaskService {
       return null;
     }
     
-    return this.updateTask(id, { completed: !task.completed });
+    // 完了状態を反転
+    const newCompletedState = !task.completed;
+    
+    // 完了状態に変更する場合は completedAt に現在時刻を設定
+    // 未完了状態に戻す場合は completedAt を null に設定
+    const completedAt = newCompletedState ? new Date().toISOString() : null;
+    
+    logger.info(`タスク ${id} の完了状態を ${newCompletedState} に変更します。完了日時: ${completedAt || 'なし'}`);
+    
+    return this.updateTask(id, { 
+      completed: newCompletedState,
+      completedAt
+    });
   }
 
   /**

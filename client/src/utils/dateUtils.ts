@@ -10,12 +10,12 @@ export interface TasksByDate {
 }
 
 /**
- * タスクを完了日（updatedAt）に基づいて日付ごとにグループ化する
+ * タスクを完了日（completedAt または updatedAt）に基づいて日付ごとにグループ化する
  */
 export const groupTasksByDate = (tasks: Task[]): TasksByDate => {
   return tasks.reduce((groups, task) => {
-    // タスクの完了日（updatedAt）から日付部分のみを抽出
-    const dateStr = new Date(task.updatedAt).toISOString().split('T')[0];
+    // タスクの完了日（completedAt または updatedAt）から日付部分のみを抽出
+    const dateStr = new Date(task.completedAt || task.updatedAt).toISOString().split('T')[0];
     
     if (!groups[dateStr]) {
       groups[dateStr] = [];
