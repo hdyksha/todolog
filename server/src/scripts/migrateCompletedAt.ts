@@ -14,9 +14,9 @@
 import path from 'path';
 import { getFileService } from '../services/serviceContainer.js';
 import { Task } from '../models/task.model.js';
-import { logger } from '../utils/logger.js';
 import fs from 'fs/promises';
 
+// 環境変数からデータディレクトリを取得、または現在のディレクトリの下の data を使用
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const DEFAULT_TASKS_FILE = 'tasks.json';
 
@@ -32,28 +32,33 @@ async function migrateCompletedAt(filePath?: string): Promise<void> {
       ? targetFile 
       : path.join(DATA_DIR, targetFile);
     
-    logger.info(`タスクデータのマイグレーションを開始します: ${fullPath}`);
+    console.log(`タスクデータのマイグレーションを開始します: ${fullPath}`);
     
     // ファイルの存在確認
     try {
       await fs.access(fullPath);
     } catch (error) {
-      logger.error(`ファイルが見つかりません: ${fullPath}`);
+      console.error(`ファイルが見つかりません: ${fullPath}`);
       throw new Error(`ファイルが見つかりません: ${fullPath}`);
     }
     
-    // FileServiceの取得
-    const fileService = getFileService();
-    
-    // タスクデータの読み込み
-    const tasksData = await fileService.readJsonFile<Task[]>(fullPath);
+    // ファイルを直接読み込む
+    const fileContent = await fs.readFile(fullPath, 'utf8');
+    const tasksData = JSON.parse(fileContent) as Task[];
     
     if (!tasksData || !Array.isArray(tasksData)) {
-      logger.error('タスクデータの読み込みに失敗しました。有効なタスク配列ではありません。');
+      console.error('タスクデータの読み込みに失敗しました。有効なタスク配列ではありません。');
       throw new Error('タスクデータの読み込みに失敗しました。有効なタスク配列ではありません。');
     }
     
-    logger.info(`${tasksData.length} 件のタスクデータを処理します`);
+    console.log(`${tasksData.length} 件のタスクデータを処理します`);
+    
+    // 既に completedAt フィールドがあるタスクの数を確認
+    const alreadyMigratedCount = tasksData.filter(task => 'completedAt' in task).length;
+    if (alreadyMigratedCount === tasksData.length) {
+      console.log('すべてのタスクは既にマイグレーション済みです。変更は行われません。');
+      return;
+    }
     
     // completedAt フィールドの追加
     const migratedTasks = tasksData.map(task => {
@@ -64,6 +69,7 @@ async function migrateCompletedAt(filePath?: string): Promise<void> {
       
       // 完了済みタスクの場合は updatedAt の値を completedAt にコピー
       if (task.completed) {
+        console.log(`タスク "${task.title}" に completedAt フィールドを追加: ${task.updatedAt}`);
         return {
           ...task,
           completedAt: task.updatedAt
@@ -71,40 +77,27 @@ async function migrateCompletedAt(filePath?: string): Promise<void> {
       }
       
       // 未完了タスクの場合は completedAt を null に設定
+      console.log(`タスク "${task.title}" に completedAt フィールドを追加: null`);
       return {
         ...task,
         completedAt: null
       };
     });
     
-    // 更新されたデータの保存
-    await fileService.writeJsonFile(fullPath, migratedTasks);
+    // 更新されたデータを直接ファイルに書き込む
+    await fs.writeFile(fullPath, JSON.stringify(migratedTasks, null, 2), 'utf8');
     
     const completedTasksCount = migratedTasks.filter(task => task.completed).length;
-    logger.info(`マイグレーション完了: ${migratedTasks.length} 件のタスクデータを更新しました`);
-    logger.info(`完了済みタスク: ${completedTasksCount} 件`);
+    const migratedCount = tasksData.length - alreadyMigratedCount;
+    
+    console.log(`マイグレーション完了: ${migratedCount} 件のタスクデータを更新しました`);
+    console.log(`完了済みタスク: ${completedTasksCount} 件`);
     
     return;
   } catch (error) {
-    logger.error('マイグレーション中にエラーが発生しました', error);
+    console.error('マイグレーション中にエラーが発生しました', error);
     throw error;
   }
-}
-
-// スクリプトが直接実行された場合のみ実行
-if (process.argv[1] === import.meta.url) {
-  // コマンドライン引数からファイルパスを取得
-  const targetFile = process.argv[2];
-  
-  migrateCompletedAt(targetFile)
-    .then(() => {
-      logger.info('マイグレーションが正常に完了しました');
-      process.exit(0);
-    })
-    .catch(error => {
-      logger.error('マイグレーションに失敗しました', error);
-      process.exit(1);
-    });
 }
 
 export { migrateCompletedAt };

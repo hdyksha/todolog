@@ -10,7 +10,7 @@
     "dev": "tsx watch src/index.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "migrate:completedAt": "tsx src/scripts/migrateCompletedAt.ts"
+    "migrate:completedAt": "tsx src/scripts/runMigration.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
