@@ -21,6 +21,7 @@ export const mockTasks: Task[] = [
     priority: Priority.High,
     createdAt: '2025-03-15T08:30:00.000Z',
     updatedAt: '2025-04-01T15:45:00.000Z',
+    completedAt: '2025-04-01T15:45:00.000Z',
     memo: '完了済みのタスクです。',
     tags: ['テスト', '完了'],
     dueDate: '2025-03-31T23:59:59.000Z'

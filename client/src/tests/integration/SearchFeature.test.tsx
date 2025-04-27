@@ -122,7 +122,7 @@ describe('検索機能', () => {
     );
     
     // フィルターをクリアボタンをクリック
-    fireEvent.click(screen.getByRole('button', { name: /フィルターをクリア/i }));
+    fireEvent.click(screen.getByRole('button', { name: /クリア$/i }));
     
     // クリア関数が呼ばれたことを確認
     expect(onClearFilters).toHaveBeenCalledTimes(1);

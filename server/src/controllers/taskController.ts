@@ -74,7 +74,13 @@ export class TaskController {
       // リクエストボディのバリデーション
       const taskData = CreateTaskSchema.parse(req.body);
       
-      const newTask = await this.taskService.createTask(taskData);
+      // completedAtを明示的にnullに設定
+      const taskDataWithCompletedAt = {
+        ...taskData,
+        completedAt: null
+      };
+      
+      const newTask = await this.taskService.createTask(taskDataWithCompletedAt);
       
       // タスクデータのタイムスタンプを更新
       updateTaskDataTimestamp();

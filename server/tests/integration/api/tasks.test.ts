@@ -11,6 +11,23 @@ vi.mock('../../../src/config/env.js', () => ({
   },
 }));
 
+// 現在時刻のモック
+const mockDate = new Date('2025-01-01T00:00:00Z');
+const originalDate = global.Date;
+
+beforeEach(() => {
+  // Dateのモック
+  global.Date = vi.fn(() => mockDate) as any;
+  global.Date.now = vi.fn(() => mockDate.getTime());
+  global.Date.parse = originalDate.parse;
+  global.Date.UTC = originalDate.UTC;
+  global.Date.prototype = originalDate.prototype;
+});
+
+afterEach(() => {
+  global.Date = originalDate;
+});
+
 // FileServiceのモック
 vi.mock('../../../src/services/fileService.js', () => {
   const mockTasks = [];
@@ -55,7 +72,7 @@ describe('タスクAPI', () => {
   
   describe('GET /api/tasks', () => {
     it('空のタスクリストを返すべき', async () => {
-      const response = await request(app).get('/api/tasks');
+      const response = await request(createApp()).get('/api/tasks');
       
       expect(response.status).toBe(200);
       expect(response.body).toEqual([]);
@@ -63,7 +80,7 @@ describe('タスクAPI', () => {
     
     it('タスクリストを返すべき', async () => {
       // モックされたFileServiceを使用しているため、ファイルシステムの操作は不要
-      const response = await request(app).get('/api/tasks');
+      const response = await request(createApp()).get('/api/tasks');
       
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -72,7 +89,7 @@ describe('タスクAPI', () => {
   
   describe('GET /api/tasks/:id', () => {
     it('存在しないタスクの場合は404を返すべき', async () => {
-      const response = await request(app).get('/api/tasks/non-existent-id');
+      const response = await request(createApp()).get('/api/tasks/non-existent-id');
       
       expect(response.status).toBe(404);
     });
@@ -86,7 +103,7 @@ describe('タスクAPI', () => {
         tags: ['テスト'],
       };
       
-      const response = await request(app)
+      const response = await request(createApp())
         .post('/api/tasks')
         .send(newTask)
         .set('Accept', 'application/json');
@@ -100,6 +117,7 @@ describe('タスクAPI', () => {
       expect(response.body).toHaveProperty('completed', false);
       expect(response.body).toHaveProperty('createdAt');
       expect(response.body).toHaveProperty('updatedAt');
+      expect(response.body).toHaveProperty('completedAt', null);
     });
     
     it('無効なデータの場合は422を返すべき', async () => {
@@ -108,7 +126,7 @@ describe('タスクAPI', () => {
         priority: 'high',
       };
       
-      const response = await request(app)
+      const response = await request(createApp())
         .post('/api/tasks')
         .send(invalidTask)
         .set('Accept', 'application/json');
@@ -123,7 +141,7 @@ describe('タスクAPI', () => {
         title: '更新後のタスク',
       };
       
-      const response = await request(app)
+      const response = await request(createApp())
         .put('/api/tasks/non-existent-id')
         .send(updateData)
         .set('Accept', 'application/json');
@@ -141,9 +159,46 @@ describe('タスクAPI', () => {
   
   describe('DELETE /api/tasks/:id', () => {
     it('存在しないタスクの場合は404を返すべき', async () => {
-      const response = await request(app).delete('/api/tasks/non-existent-id');
+      const response = await request(createApp()).delete('/api/tasks/non-existent-id');
       
       expect(response.status).toBe(404);
     });
   });
 });
+  describe('PUT /api/tasks/:id/toggle', () => {
+    it('タスクの完了状態を切り替えるべき', async () => {
+      // 新しいタスクを作成
+      const newTask = {
+        title: '切り替えテスト',
+        priority: 'medium',
+      };
+      
+      // 同じアプリインスタンスを使用して、タスクを作成してからトグルする
+      const app = createApp();
+      
+      const createResponse = await request(app)
+        .post('/api/tasks')
+        .send(newTask)
+        .set('Accept', 'application/json');
+      
+      const taskId = createResponse.body.id;
+      
+      // 完了状態に切り替え
+      const toggleResponse = await request(app)
+        .put(`/api/tasks/${taskId}/toggle`)
+        .set('Accept', 'application/json');
+      
+      expect(toggleResponse.status).toBe(200);
+      expect(toggleResponse.body).toHaveProperty('completed', true);
+      expect(toggleResponse.body).toHaveProperty('completedAt', mockDate.toISOString());
+      
+      // 未完了状態に戻す
+      const toggleBackResponse = await request(app)
+        .put(`/api/tasks/${taskId}/toggle`)
+        .set('Accept', 'application/json');
+      
+      expect(toggleBackResponse.status).toBe(200);
+      expect(toggleBackResponse.body).toHaveProperty('completed', false);
+      expect(toggleBackResponse.body).toHaveProperty('completedAt', null);
+    });
+  });
