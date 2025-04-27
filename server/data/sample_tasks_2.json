@@ -4,119 +4,167 @@
     "title": "個人プロジェクトの計画",
     "completed": true,
     "priority": "high",
-    "tags": ["個人開発", "計画"],
+    "tags": [
+      "個人開発",
+      "計画"
+    ],
     "createdAt": "2025-03-25T18:00:00.000Z",
     "updatedAt": "2025-04-21T20:15:00.000Z",
-    "memo": "ポートフォリオサイトのリニューアル計画を立てる"
+    "memo": "ポートフォリオサイトのリニューアル計画を立てる",
+    "completedAt": "2025-04-21T20:15:00.000Z"
   },
   {
     "id": "202",
     "title": "技術書の読書",
     "completed": true,
     "priority": "medium",
-    "tags": ["学習", "読書"],
+    "tags": [
+      "学習",
+      "読書"
+    ],
     "createdAt": "2025-03-28T19:30:00.000Z",
     "updatedAt": "2025-04-21T22:00:00.000Z",
-    "memo": "「実践TypeScript」を読み終える"
+    "memo": "「実践TypeScript」を読み終える",
+    "completedAt": "2025-04-21T22:00:00.000Z"
   },
   {
     "id": "203",
     "title": "オンライン講座の受講",
     "completed": false,
     "priority": "medium",
-    "tags": ["学習", "オンライン"],
+    "tags": [
+      "学習",
+      "オンライン"
+    ],
     "createdAt": "2025-03-30T20:45:00.000Z",
     "updatedAt": "2025-04-21T23:30:00.000Z",
-    "memo": "React Hooksの応用講座を受講する"
+    "memo": "React Hooksの応用講座を受講する",
+    "completedAt": null
   },
   {
     "id": "204",
     "title": "ブログ記事の執筆",
     "completed": false,
     "priority": "low",
-    "tags": ["ブログ", "執筆"],
+    "tags": [
+      "ブログ",
+      "執筆"
+    ],
     "createdAt": "2025-04-01T21:00:00.000Z",
     "updatedAt": "2025-04-22T00:45:00.000Z",
-    "memo": "最近学んだTypeScriptの型システムについての記事を書く"
+    "memo": "最近学んだTypeScriptの型システムについての記事を書く",
+    "completedAt": null
   },
   {
     "id": "205",
     "title": "ポートフォリオサイトの更新",
     "completed": false,
     "priority": "high",
-    "tags": ["個人開発", "ポートフォリオ"],
+    "tags": [
+      "個人開発",
+      "ポートフォリオ"
+    ],
     "createdAt": "2025-04-03T17:15:00.000Z",
     "updatedAt": "2025-04-22T01:30:00.000Z",
-    "memo": "最新のプロジェクトをポートフォリオに追加する"
+    "memo": "最新のプロジェクトをポートフォリオに追加する",
+    "completedAt": null
   },
   {
     "id": "206",
     "title": "オープンソースへの貢献",
     "completed": true,
     "priority": "low",
-    "tags": ["オープンソース", "開発"],
+    "tags": [
+      "オープンソース",
+      "開発"
+    ],
     "createdAt": "2025-04-05T22:30:00.000Z",
     "updatedAt": "2025-04-22T02:15:00.000Z",
-    "memo": "お気に入りのOSSプロジェクトにプルリクエストを送る"
+    "memo": "お気に入りのOSSプロジェクトにプルリクエストを送る",
+    "completedAt": "2025-04-22T02:15:00.000Z"
   },
   {
     "id": "207",
     "title": "新しい技術の調査",
     "completed": false,
     "priority": "medium",
-    "tags": ["学習", "調査"],
+    "tags": [
+      "学習",
+      "調査"
+    ],
     "createdAt": "2025-04-08T18:45:00.000Z",
     "updatedAt": "2025-04-22T03:00:00.000Z",
-    "memo": "Next.js 13の新機能について調査する"
+    "memo": "Next.js 13の新機能について調査する",
+    "completedAt": null
   },
   {
     "id": "208",
     "title": "コーディング練習",
     "completed": true,
     "priority": "medium",
-    "tags": ["学習", "コーディング"],
+    "tags": [
+      "学習",
+      "コーディング"
+    ],
     "createdAt": "2025-04-10T19:00:00.000Z",
     "updatedAt": "2025-04-22T04:30:00.000Z",
-    "memo": "アルゴリズム問題を5問解く"
+    "memo": "アルゴリズム問題を5問解く",
+    "completedAt": "2025-04-22T04:30:00.000Z"
   },
   {
     "id": "209",
     "title": "デザインスキルの向上",
     "completed": false,
     "priority": "low",
-    "tags": ["学習", "デザイン"],
+    "tags": [
+      "学習",
+      "デザイン"
+    ],
     "createdAt": "2025-04-12T20:15:00.000Z",
     "updatedAt": "2025-04-22T05:45:00.000Z",
-    "memo": "Figmaのチュートリアルを完了する"
+    "memo": "Figmaのチュートリアルを完了する",
+    "completedAt": null
   },
   {
     "id": "210",
     "title": "個人アプリのバグ修正",
     "completed": false,
     "priority": "high",
-    "tags": ["個人開発", "バグ修正"],
+    "tags": [
+      "個人開発",
+      "バグ修正"
+    ],
     "createdAt": "2025-04-15T21:30:00.000Z",
     "updatedAt": "2025-04-22T06:00:00.000Z",
-    "memo": "ユーザーから報告されたバグを修正する"
+    "memo": "ユーザーから報告されたバグを修正する",
+    "completedAt": null
   },
   {
     "id": "211",
     "title": "技術ミートアップへの参加",
     "completed": true,
     "priority": "medium",
-    "tags": ["ネットワーキング", "学習"],
+    "tags": [
+      "ネットワーキング",
+      "学習"
+    ],
     "createdAt": "2025-04-17T18:00:00.000Z",
     "updatedAt": "2025-04-22T07:15:00.000Z",
-    "memo": "地元のReactミートアップに参加する"
+    "memo": "地元のReactミートアップに参加する",
+    "completedAt": "2025-04-22T07:15:00.000Z"
   },
   {
     "id": "212",
     "title": "サイドプロジェクトの開発",
     "completed": false,
     "priority": "high",
-    "tags": ["個人開発", "サイドプロジェクト"],
+    "tags": [
+      "個人開発",
+      "サイドプロジェクト"
+    ],
     "createdAt": "2025-04-19T22:45:00.000Z",
     "updatedAt": "2025-04-22T08:30:00.000Z",
-    "memo": "天気予報APIを使った小さなアプリを作る"
+    "memo": "天気予報APIを使った小さなアプリを作る",
+    "completedAt": null
   }
 ]
