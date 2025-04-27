@@ -2,24 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { FileService } from '../../../src/services/fileService.js';
 
 // fsのモック
-vi.mock('fs/promises', () => {
-  return {
-    default: {
-      access: vi.fn(),
-      readFile: vi.fn(),
-      writeFile: vi.fn(),
-      mkdir: vi.fn(),
-      copyFile: vi.fn(),
-      readdir: vi.fn(),
-    },
-    access: vi.fn(),
-    readFile: vi.fn(),
-    writeFile: vi.fn(),
-    mkdir: vi.fn(),
-    copyFile: vi.fn(),
-    readdir: vi.fn(),
-  };
-});
+vi.mock('fs/promises', () => ({
+  access: vi.fn(),
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+  mkdir: vi.fn(),
+  copyFile: vi.fn(),
+  readdir: vi.fn(),
+}));
 
 // pathのモック
 vi.mock('path', () => {
@@ -42,7 +32,7 @@ vi.mock('../../../src/utils/logger.js', () => ({
 }));
 
 // 実際のモジュールをインポート
-import fs from 'fs/promises';
+import { access, readFile, writeFile, mkdir, copyFile, readdir } from 'fs/promises';
 import path from 'path';
 
 describe('FileService', () => {
@@ -63,12 +53,12 @@ describe('FileService', () => {
       const mockData = { test: 'data' };
       const mockJsonString = JSON.stringify(mockData);
       
-      (fs.access as any).mockResolvedValue(undefined);
-      (fs.readFile as any).mockResolvedValue(mockJsonString);
+      (access as any).mockResolvedValue(undefined);
+      (readFile as any).mockResolvedValue(mockJsonString);
       
       const result = await fileService.readFile('test.json', null);
       
-      expect(fs.readFile).toHaveBeenCalledWith(
+      expect(readFile).toHaveBeenCalledWith(
         path.join(testDataDir, 'test.json'),
         'utf8'
       );
@@ -80,8 +70,8 @@ describe('FileService', () => {
       const error = new Error('File not found');
       (error as any).code = 'ENOENT';
       
-      (fs.access as any).mockResolvedValue(undefined);
-      (fs.readFile as any).mockRejectedValue(error);
+      (access as any).mockResolvedValue(undefined);
+      (readFile as any).mockRejectedValue(error);
       
       const result = await fileService.readFile('non-existent.json', defaultValue);
       
@@ -91,8 +81,8 @@ describe('FileService', () => {
     it('その他のエラーの場合は例外をスローするべき', async () => {
       const error = new Error('Some other error');
       
-      (fs.access as any).mockResolvedValue(undefined);
-      (fs.readFile as any).mockRejectedValue(error);
+      (access as any).mockResolvedValue(undefined);
+      (readFile as any).mockRejectedValue(error);
       
       await expect(fileService.readFile('test.json', null)).rejects.toThrow();
     });
@@ -102,12 +92,12 @@ describe('FileService', () => {
     it('データをファイルに書き込むべき', async () => {
       const data = { test: 'data' };
       
-      (fs.access as any).mockResolvedValue(undefined);
-      (fs.writeFile as any).mockResolvedValue(undefined);
+      (access as any).mockResolvedValue(undefined);
+      (writeFile as any).mockResolvedValue(undefined);
       
       await fileService.writeFile('test.json', data);
       
-      expect(fs.writeFile).toHaveBeenCalledWith(
+      expect(writeFile).toHaveBeenCalledWith(
         path.join(testDataDir, 'test.json'),
         JSON.stringify(data, null, 2),
         'utf8'
@@ -118,8 +108,8 @@ describe('FileService', () => {
       const data = { test: 'data' };
       const error = new Error('Write error');
       
-      (fs.access as any).mockResolvedValue(undefined);
-      (fs.writeFile as any).mockRejectedValue(error);
+      (access as any).mockResolvedValue(undefined);
+      (writeFile as any).mockRejectedValue(error);
       
       await expect(fileService.writeFile('test.json', data)).rejects.toThrow();
     });
@@ -133,12 +123,12 @@ describe('FileService', () => {
       const mockDate = new Date('2025-01-01T00:00:00Z');
       const spy = vi.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
       
-      (fs.access as any).mockResolvedValue(undefined);
-      (fs.copyFile as any).mockResolvedValue(undefined);
+      (access as any).mockResolvedValue(undefined);
+      (copyFile as any).mockResolvedValue(undefined);
       
       const result = await fileService.createBackup(filename);
       
-      expect(fs.copyFile).toHaveBeenCalled();
+      expect(copyFile).toHaveBeenCalled();
       expect(result).toContain('test.json.2025-01-01T00-00-00');
       
       spy.mockRestore();
@@ -148,7 +138,7 @@ describe('FileService', () => {
       const error = new Error('File not found');
       (error as any).code = 'ENOENT';
       
-      (fs.access as any).mockRejectedValue(error);
+      (access as any).mockRejectedValue(error);
       
       await expect(fileService.createBackup('non-existent.json')).rejects.toThrow();
     });
@@ -163,8 +153,8 @@ describe('FileService', () => {
         'other.json',
       ];
       
-      (fs.access as any).mockResolvedValue(undefined);
-      (fs.readdir as any).mockResolvedValue(files);
+      (access as any).mockResolvedValue(undefined);
+      (readdir as any).mockResolvedValue(files);
       
       const result = await fileService.listBackups('test.json');
       

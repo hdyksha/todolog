@@ -1,9 +1,9 @@
 .filter-panel {
   background-color: var(--color-background-secondary);
   border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-sm);
+  padding: 12px;
+  margin-bottom: 0; /* マージンを削除 */
+  box-shadow: none; /* 親要素にシャドウがあるので削除 */
 }
 
 .filter-panel-header {
@@ -11,14 +11,14 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .filter-quick-actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
 }
 
@@ -29,7 +29,7 @@
 
 .filter-search-input {
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 14px;
@@ -50,12 +50,12 @@
 }
 
 .filter-button {
-  padding: 6px 12px;
+  padding: 4px 10px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background-color: var(--color-background);
   color: var(--color-text);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -101,12 +101,12 @@
 }
 
 .filter-panel-expanded {
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid var(--color-border);
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 16px;
 }
 
 .filter-section {
@@ -114,15 +114,15 @@
 }
 
 .filter-section-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--color-text-muted);
 }
 
 .filter-category-select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background-color: var(--color-background);

@@ -1,176 +1,98 @@
+@import './common.css';
+
 /* ライトモード（デフォルト） */
 :root[data-theme="light"] {
-  --color-primary: #3b82f6;
-  --color-primary-light: #93c5fd;
-  --color-primary-dark: #2563eb;
-  
-  --color-success: #10b981;
-  --color-success-light: #a7f3d0;
-  --color-success-dark: #059669;
-  
-  --color-warning: #f59e0b;
-  --color-warning-light: #fcd34d;
-  --color-warning-dark: #d97706;
-  
-  --color-error: #ef4444;
-  --color-error-light: #fca5a5;
-  --color-error-dark: #dc2626;
-  
-  --color-info: #3b82f6;
-  --color-info-light: #93c5fd;
-  --color-info-dark: #2563eb;
-  
-  --color-text: #1f2937;
-  --color-text-muted: #6b7280;
-  --color-text-light: #9ca3af;
-  
+  /* テーマ固有の色 */
   --color-background: #ffffff;
-  --color-background-secondary: #f9fafb;
-  --color-background-tertiary: #f3f4f6;
-  --color-background-hover: #f3f4f6;
-  --color-background-disabled: #e5e7eb;
+  --color-background-secondary: #f8fafc;
+  --color-background-tertiary: #f1f5f9;
   
-  /* RGB値を追加 */
-  --color-background-rgb: 255, 255, 255;
-  --color-background-secondary-rgb: 249, 250, 251;
-  --color-background-tertiary-rgb: 243, 244, 246;
+  --color-text: #1e293b;
+  --color-text-light: #64748b;
+  --color-text-lighter: #94a3b8;
   
-  --color-border: #e5e7eb;
-  --color-border-focus: #93c5fd;
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+  --color-border-dark: #cbd5e1;
   
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* カード、モーダル、ドロップダウンの背景 */
+  --color-surface: #ffffff;
+  --color-surface-hover: #f8fafc;
+  
+  /* スクロールバー */
+  --color-scrollbar-thumb: #cbd5e1;
+  --color-scrollbar-track: #f1f5f9;
+  
+  /* 入力フィールド */
+  --color-input-background: #ffffff;
+  --color-input-border: #cbd5e1;
+  --color-input-focus-border: #3b82f6;
+  
+  /* タスク関連 */
+  --color-task-completed-bg: #f1f5f9;
+  --color-task-completed-text: #64748b;
+  --color-task-overdue: #ef4444;
+  
+  /* タグ関連 */
+  --color-tag-bg: #e2e8f0;
+  --color-tag-text: #1e293b;
 }
 
 /* ダークモード */
 :root[data-theme="dark"] {
-  --color-primary: #3b82f6;
-  --color-primary-light: #1d4ed8;
-  --color-primary-dark: #60a5fa;
+  /* テーマ固有の色 */
+  --color-background: #0f172a;
+  --color-background-secondary: #1e293b;
+  --color-background-tertiary: #334155;
   
-  --color-success: #10b981;
-  --color-success-light: #065f46;
-  --color-success-dark: #34d399;
+  --color-text: #f8fafc;
+  --color-text-light: #cbd5e1;
+  --color-text-lighter: #94a3b8;
   
-  --color-warning: #f59e0b;
-  --color-warning-light: #92400e;
-  --color-warning-dark: #fbbf24;
+  --color-border: #334155;
+  --color-border-light: #475569;
+  --color-border-dark: #1e293b;
   
-  --color-error: #ef4444;
-  --color-error-light: #991b1b;
-  --color-error-dark: #f87171;
+  /* カード、モーダル、ドロップダウンの背景 */
+  --color-surface: #1e293b;
+  --color-surface-hover: #334155;
   
-  --color-info: #3b82f6;
-  --color-info-light: #1e40af;
-  --color-info-dark: #60a5fa;
+  /* スクロールバー */
+  --color-scrollbar-thumb: #475569;
+  --color-scrollbar-track: #1e293b;
   
-  --color-text: #f9fafb;
-  --color-text-muted: #d1d5db;
-  --color-text-light: #9ca3af;
+  /* 入力フィールド */
+  --color-input-background: #1e293b;
+  --color-input-border: #475569;
+  --color-input-focus-border: #3b82f6;
   
-  --color-background: #111827;
-  --color-background-secondary: #1f2937;
-  --color-background-tertiary: #374151;
-  --color-background-hover: #374151;
-  --color-background-disabled: #4b5563;
+  /* タスク関連 */
+  --color-task-completed-bg: #1e293b;
+  --color-task-completed-text: #94a3b8;
+  --color-task-overdue: #f87171;
   
-  /* RGB値を追加 */
-  --color-background-rgb: 17, 24, 39;
-  --color-background-secondary-rgb: 31, 41, 55;
-  --color-background-tertiary-rgb: 55, 65, 81;
+  /* タグ関連 */
+  --color-tag-bg: #334155;
+  --color-tag-text: #f8fafc;
   
-  --color-border: #374151;
-  --color-border-focus: #2563eb;
+  /* ダークモードでの色の調整 */
+  --color-primary: #60a5fa;
+  --color-primary-light: #93c5fd;
+  --color-primary-dark: #3b82f6;
   
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-}
-
-/* アニメーションとトランジション */
-.fade-enter {
-  opacity: 0;
-}
-
-.fade-enter-active {
-  opacity: 1;
-  transition: opacity var(--transition-normal);
-}
-
-.fade-exit {
-  opacity: 1;
-}
-
-.fade-exit-active {
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-
-.slide-up-enter {
-  transform: translateY(20px);
-  opacity: 0;
-}
-
-.slide-up-enter-active {
-  transform: translateY(0);
-  opacity: 1;
-  transition: transform var(--transition-normal), opacity var(--transition-normal);
-}
-
-.slide-up-exit {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.slide-up-exit-active {
-  transform: translateY(20px);
-  opacity: 0;
-  transition: transform var(--transition-normal), opacity var(--transition-normal);
-}
-
-/* タスクリストのアニメーション */
-.task-item-enter {
-  opacity: 0;
-  transform: translateX(-10px);
-}
-
-.task-item-enter-active {
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity var(--transition-normal), transform var(--transition-normal);
-}
-
-.task-item-exit {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.task-item-exit-active {
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: opacity var(--transition-normal), transform var(--transition-normal);
-}
-
-/* ページトランジション */
-.page-transition-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.page-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity var(--transition-normal), transform var(--transition-normal);
-}
-
-.page-transition-exit {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.page-transition-exit-active {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  --color-success: #34d399;
+  --color-success-light: #6ee7b7;
+  --color-success-dark: #10b981;
+  
+  --color-warning: #fbbf24;
+  --color-warning-light: #fcd34d;
+  --color-warning-dark: #f59e0b;
+  
+  --color-error: #f87171;
+  --color-error-light: #fca5a5;
+  --color-error-dark: #ef4444;
+  
+  --color-info: #60a5fa;
+  --color-info-light: #93c5fd;
+  --color-info-dark: #3b82f6;
 }

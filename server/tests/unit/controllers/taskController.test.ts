@@ -9,6 +9,11 @@ vi.mock('../../../src/middleware/cache.js', () => ({
   updateTaskDataTimestamp: vi.fn(),
 }));
 
+// エラーハンドリングユーティリティのモック
+vi.mock('../../../src/utils/errorUtils.js', () => ({
+  handleApiError: vi.fn(),
+}));
+
 // TaskServiceのモック
 const mockTaskService = {
   getAllTasks: vi.fn(),
@@ -24,6 +29,7 @@ const mockTaskService = {
   restoreFromBackup: vi.fn(),
   exportTasks: vi.fn(),
   importTasks: vi.fn(),
+  getTags: vi.fn(),
 } as unknown as TaskService;
 
 // リクエスト、レスポンス、ネクストのモック
@@ -64,6 +70,7 @@ describe('TaskController', () => {
           priority: 'medium',
           createdAt: '2025-01-01T00:00:00Z',
           updatedAt: '2025-01-01T00:00:00Z',
+          tags: [],
         },
         {
           id: '2',
@@ -72,6 +79,7 @@ describe('TaskController', () => {
           priority: 'high',
           createdAt: '2025-01-01T00:00:00Z',
           updatedAt: '2025-01-01T00:00:00Z',
+          tags: [],
         },
       ];
       
@@ -88,7 +96,7 @@ describe('TaskController', () => {
       expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'private, max-age=10');
     });
     
-    it('エラーが発生した場合はnextを呼び出すべき', async () => {
+    it('エラーが発生した場合はhandleApiErrorを呼び出すべき', async () => {
       const error = new Error('テストエラー');
       mockTaskService.getAllTasks.mockRejectedValue(error);
       
@@ -97,7 +105,9 @@ describe('TaskController', () => {
       
       await taskController.getAllTasks(req, res, mockNext);
       
-      expect(mockNext).toHaveBeenCalledWith(error);
+      // handleApiErrorがインポートされ、呼び出されることを確認
+      const { handleApiError } = await import('../../../src/utils/errorUtils.js');
+      expect(handleApiError).toHaveBeenCalledWith(error, res, 'タスク一覧の取得');
     });
   });
   
@@ -110,6 +120,7 @@ describe('TaskController', () => {
         priority: 'medium',
         createdAt: '2025-01-01T00:00:00Z',
         updatedAt: '2025-01-01T00:00:00Z',
+        tags: [],
       };
       
       mockTaskService.getTaskById.mockResolvedValue(mockTask);
@@ -154,6 +165,7 @@ describe('TaskController', () => {
         completed: false,
         createdAt: '2025-01-01T00:00:00Z',
         updatedAt: '2025-01-01T00:00:00Z',
+        tags: [],
       };
       
       mockTaskService.createTask.mockResolvedValue(createdTask);
@@ -185,6 +197,7 @@ describe('TaskController', () => {
         completed: false,
         createdAt: '2025-01-01T00:00:00Z',
         updatedAt: '2025-01-01T00:00:00Z',
+        tags: [],
       };
       
       mockTaskService.updateTask.mockResolvedValue(updatedTask);

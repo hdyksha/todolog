@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { logger, requestLogger } from '../../../src/utils/logger.js';
+import { env } from '../../../src/config/env.js';
+
+// envのモック
+vi.mock('../../../src/config/env.js', () => ({
+  env: {
+    LOG_LEVEL: 'info',
+    NODE_ENV: 'test'
+  }
+}));
 
 describe('Logger', () => {
   it('loggerオブジェクトが存在するべき', () => {
@@ -14,11 +23,14 @@ describe('Logger', () => {
     let req;
     let res;
     let next;
+    let logSpy;
 
     beforeEach(() => {
       req = {
         method: 'GET',
         url: '/test',
+        ip: '127.0.0.1',
+        query: {}
       };
       
       res = {
@@ -32,8 +44,14 @@ describe('Logger', () => {
       
       next = vi.fn();
       
-      // loggerのinfoメソッドをモック化
-      logger.info = vi.fn();
+      // loggerのlogメソッドをモック化
+      logSpy = vi.spyOn(logger, 'log').mockImplementation(() => {});
+      vi.spyOn(logger, 'debug').mockImplementation(() => {});
+      vi.spyOn(logger, 'info').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
     });
 
     it('リクエストロガーがnext()を呼び出すべき', () => {
@@ -45,7 +63,8 @@ describe('Logger', () => {
       requestLogger(req, res, next);
       
       expect(res.on).toHaveBeenCalledWith('finish', expect.any(Function));
-      expect(logger.info).toHaveBeenCalledWith(expect.objectContaining({
+      expect(logSpy).toHaveBeenCalledWith('info', expect.objectContaining({
+        message: expect.stringContaining('GET /test 200'),
         method: 'GET',
         url: '/test',
         status: 200,

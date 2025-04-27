@@ -1,0 +1,77 @@
+.task-detail-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius);
+}
+
+.task-detail-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.task-status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.task-status.active {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.task-status.completed {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.task-priority {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.task-priority.priority-high {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger-dark);
+}
+
+.task-priority.priority-medium {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.task-priority.priority-low {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.task-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.task-date {
+  font-weight: 500;
+}
+
+.task-detail-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .task-detail-info {
+    grid-template-columns: 1fr;
+  }
+}

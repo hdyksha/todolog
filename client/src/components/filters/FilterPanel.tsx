@@ -81,7 +81,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               size="small"
               onClick={onClearFilters}
             >
-              フィルターをクリア
+              クリア
             </Button>
           )}
         </div>
@@ -93,7 +93,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           aria-expanded={isExpanded}
           aria-controls="filter-panel-expanded"
         >
-          {isExpanded ? '詳細フィルターを隠す' : '詳細フィルターを表示'}
+          {isExpanded ? '詳細フィルターを隠す' : '詳細フィルター'}
         </Button>
       </div>
       

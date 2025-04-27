@@ -89,6 +89,7 @@ describe('Error Handlers', () => {
         error: {
           code: 'InternalServerError',
           message: 'テストエラー',
+          stack: expect.any(String)
         }
       });
     });

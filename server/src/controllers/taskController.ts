@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { TaskService } from '../services/taskService.js';
 import { CreateTaskSchema, UpdateTaskSchema, TaskFilterSchema, MemoUpdateSchema } from '../models/task.model.js';
-import { logger } from '../utils/logger.js';
 import { z } from 'zod';
 import { BadRequestError, NotFoundError, ValidationError } from '../utils/error.js';
 import { updateTaskDataTimestamp } from '../middleware/cache.js';
+import { handleApiError } from '../utils/errorUtils.js';
 
 export class TaskController {
   private taskService: TaskService;
@@ -27,11 +27,24 @@ export class TaskController {
       const options = filterResult.data;
       const tasks = await this.taskService.getAllTasks(options);
       
+      // 一覧表示用に必要なフィールドのみを含むタスクリストを返す
+      const simplifiedTasks = tasks.map(({ id, title, completed, priority, tags, dueDate, createdAt, updatedAt }) => ({
+        id,
+        title,
+        completed,
+        priority,
+        tags,
+        dueDate,
+        createdAt,
+        updatedAt,
+        // メモは一覧表示時には不要なので含めない
+      }));
+      
       // キャッシュヘッダーの設定
       res.setHeader('Cache-Control', 'private, max-age=10');
-      res.status(200).json(tasks);
+      res.status(200).json(simplifiedTasks);
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'タスク一覧の取得');
     }
   };
 
@@ -50,7 +63,7 @@ export class TaskController {
       res.setHeader('Cache-Control', 'private, max-age=30');
       res.status(200).json(task);
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'タスクの取得');
     }
   };
 
@@ -71,7 +84,7 @@ export class TaskController {
         next(new ValidationError(error));
         return;
       }
-      next(error);
+      handleApiError(error, res, 'タスクの作成');
     }
   };
 
@@ -99,7 +112,7 @@ export class TaskController {
         next(new ValidationError(error));
         return;
       }
-      next(error);
+      handleApiError(error, res, 'タスクの更新');
     }
   };
 
@@ -119,7 +132,7 @@ export class TaskController {
       
       res.status(204).end();
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'タスクの削除');
     }
   };
   
@@ -139,7 +152,7 @@ export class TaskController {
       
       res.status(200).json(updatedTask);
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'タスクの完了状態の切り替え');
     }
   };
 
@@ -167,7 +180,7 @@ export class TaskController {
         next(new ValidationError(error));
         return;
       }
-      next(error);
+      handleApiError(error, res, 'タスクのメモ更新');
     }
   };
 
@@ -177,7 +190,7 @@ export class TaskController {
       const tags = await this.taskService.getTags();
       res.status(200).json(tags);
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'タグ一覧の取得');
     }
   };
 
@@ -187,7 +200,7 @@ export class TaskController {
       const backupFile = await this.taskService.createBackup();
       res.status(201).json({ filename: backupFile });
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'バックアップの作成');
     }
   };
 
@@ -197,7 +210,7 @@ export class TaskController {
       const backups = await this.taskService.listBackups();
       res.status(200).json(backups);
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'バックアップ一覧の取得');
     }
   };
 
@@ -212,7 +225,7 @@ export class TaskController {
       
       res.status(200).json({ message: 'バックアップから復元しました' });
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'バックアップからの復元');
     }
   };
 
@@ -222,7 +235,7 @@ export class TaskController {
       const tasks = await this.taskService.getAllTasks({});
       res.status(200).json(tasks);
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'タスクデータのエクスポート');
     }
   };
 
@@ -243,7 +256,7 @@ export class TaskController {
       
       res.status(200).json({ message: 'タスクデータをインポートしました' });
     } catch (error) {
-      next(error);
+      handleApiError(error, res, 'タスクデータのインポート');
     }
   };
 }

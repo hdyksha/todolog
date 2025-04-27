@@ -6,7 +6,27 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error"
+      },
+      "complexity": {
+        "noForEach": "warn",
+        "useOptionalChain": "warn"
+      },
+      "performance": {
+        "noDelete": "warn"
+      },
+      "style": {
+        "noNegationElse": "warn",
+        "useShorthandArrayType": "warn"
+      },
+      "suspicious": {
+        "noConsoleLog": "warn",
+        "noEmptyInterface": "warn",
+        "noExplicitAny": "warn"
+      }
     }
   },
   "formatter": {

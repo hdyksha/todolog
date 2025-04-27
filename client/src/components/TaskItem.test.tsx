@@ -102,7 +102,7 @@ describe('TaskItem', () => {
       />
     );
 
-    const detailButton = screen.getByRole('button', { name: '詳細' });
+    const detailButton = screen.getByRole('button', { name: 'テストタスクの詳細を表示' });
     fireEvent.click(detailButton);
 
     expect(mockEditMemo).toHaveBeenCalledWith('1');

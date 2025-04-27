@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,6 +10,12 @@ export default defineConfig({
       // Fast Refresh の設定
       fastRefresh: true,
       // バベルの設定は削除（デフォルト設定を使用）
+    }),
+    visualizer({
+      open: true,
+      filename: 'dist/stats.html',
+      gzipSize: true,
+      brotliSize: true,
     }),
   ],
   resolve: {

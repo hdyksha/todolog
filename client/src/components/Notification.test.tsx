@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '../test/utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '../test/utils';
 import Notification from './Notification';
 
 describe('Notification コンポーネント', () => {
@@ -34,7 +34,7 @@ describe('Notification コンポーネント', () => {
   it('異なる種類の通知が正しく表示される', () => {
     const types: Array<'success' | 'error' | 'info' | 'warning'> = ['success', 'error', 'info', 'warning'];
     
-    types.forEach(type => {
+    for (const type of types) {
       const { unmount } = render(
         <Notification 
           id={1}
@@ -48,7 +48,7 @@ describe('Notification コンポーネント', () => {
       expect(notification).toHaveClass(`notification--${type}`);
       
       unmount();
-    });
+    }
   });
 
   it('閉じるボタンをクリックすると onClose が呼ばれる', () => {

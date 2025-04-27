@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import Notification from './Notification';
 import './NotificationContainer.css';
