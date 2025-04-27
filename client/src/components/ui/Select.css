@@ -7,16 +7,16 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: var(--text-color);
+  color: var(--color-text);
 }
 
 .select-input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background-color: var(--input-bg);
-  color: var(--text-color);
+  background-color: var(--color-input-background);
+  color: var(--color-text);
   font-size: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
   appearance: none;
@@ -28,8 +28,8 @@
 
 .select-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px var(--primary-color-light);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
 }
 
 .select-input:disabled {
@@ -57,17 +57,17 @@
 }
 
 .select-container.has-error .select-input {
-  border-color: var(--error-color);
+  border-color: var(--color-error);
 }
 
 .select-error {
-  color: var(--error-color);
+  color: var(--color-error);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
 
 .required-mark {
-  color: var(--error-color);
+  color: var(--color-error);
   margin-left: 0.25rem;
 }
 

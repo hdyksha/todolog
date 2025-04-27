@@ -12,7 +12,7 @@
 
 .tag-form-container,
 .tag-list-container {
-  background-color: var(--bg-card);
+  background-color: var(--color-surface);
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
@@ -32,23 +32,23 @@
 
 .form-group label {
   font-weight: 500;
-  color: var(--text-color-secondary);
+  color: var(--color-text-light);
 }
 
 .form-group input[type="text"],
 .form-group textarea {
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background-color: var(--bg-input);
-  color: var(--text-color-primary);
+  background-color: var(--color-input-background);
+  color: var(--color-text);
 }
 
 .form-group input[type="text"]:focus,
 .form-group textarea:focus {
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-light), 0.2);
 }
 
 .color-picker {
@@ -91,8 +91,8 @@
   align-items: center;
   padding: 0.75rem;
   border-radius: 4px;
-  background-color: var(--bg-element);
-  border: 1px solid var(--border-color);
+  background-color: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
 }
 
 .tag-info {
@@ -117,17 +117,17 @@
 
 .tag-name {
   font-weight: 500;
-  color: var(--text-color-primary);
+  color: var(--color-text);
 }
 
 .tag-description {
   font-size: 0.875rem;
-  color: var(--text-color-secondary);
+  color: var(--color-text-light);
 }
 
 .tag-usage {
   font-size: 0.75rem;
-  color: var(--text-color-tertiary);
+  color: var(--color-text-lighter);
 }
 
 .tag-actions {
@@ -147,7 +147,7 @@
 }
 
 .button--icon:hover {
-  background-color: var(--bg-hover);
+  background-color: var(--color-surface-hover);
 }
 
 .button--icon:disabled {
@@ -157,8 +157,8 @@
 
 .tag-error {
   padding: 0.75rem;
-  background-color: var(--error-bg);
-  color: var(--error-color);
+  background-color: var(--color-error-light);
+  color: var(--color-error);
   border-radius: 4px;
   margin-bottom: 1rem;
 }
@@ -167,5 +167,5 @@
 .empty-state {
   padding: 2rem;
   text-align: center;
-  color: var(--text-color-secondary);
+  color: var(--color-text-light);
 }

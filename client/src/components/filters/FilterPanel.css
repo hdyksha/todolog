@@ -71,32 +71,32 @@
 }
 
 .filter-button.priority-high {
-  border-color: var(--color-error);
-  color: var(--color-error);
+  border-color: var(--color-priority-high-text);
+  color: var(--color-priority-high-text);
 }
 
 .filter-button.priority-high.active {
-  background-color: var(--color-error);
+  background-color: var(--color-priority-high-text);
   color: white;
 }
 
 .filter-button.priority-medium {
-  border-color: var(--color-warning);
-  color: var(--color-warning);
+  border-color: var(--color-priority-medium-text);
+  color: var(--color-priority-medium-text);
 }
 
 .filter-button.priority-medium.active {
-  background-color: var(--color-warning);
+  background-color: var(--color-priority-medium-text);
   color: white;
 }
 
 .filter-button.priority-low {
-  border-color: var(--color-success);
-  color: var(--color-success);
+  border-color: var(--color-priority-low-text);
+  color: var(--color-priority-low-text);
 }
 
 .filter-button.priority-low.active {
-  background-color: var(--color-success);
+  background-color: var(--color-priority-low-text);
   color: white;
 }
 

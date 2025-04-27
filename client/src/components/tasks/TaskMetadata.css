@@ -40,18 +40,18 @@
 }
 
 .task-priority.priority-high {
-  background-color: var(--color-danger-light);
-  color: var(--color-danger-dark);
+  background-color: var(--color-priority-high-bg);
+  color: var(--color-priority-high-text);
 }
 
 .task-priority.priority-medium {
-  background-color: var(--color-warning-light);
-  color: var(--color-warning-dark);
+  background-color: var(--color-priority-medium-bg);
+  color: var(--color-priority-medium-text);
 }
 
 .task-priority.priority-low {
-  background-color: var(--color-success-light);
-  color: var(--color-success-dark);
+  background-color: var(--color-priority-low-bg);
+  color: var(--color-priority-low-text);
 }
 
 .task-tags-container {

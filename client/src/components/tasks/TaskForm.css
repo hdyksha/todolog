@@ -74,18 +74,18 @@
 }
 
 .priority-low {
-  background-color: #8bc34a;
-  color: #fff;
+  background-color: var(--color-priority-low-bg);
+  color: var(--color-priority-low-text);
 }
 
 .priority-medium {
-  background-color: #ff9800;
-  color: #fff;
+  background-color: var(--color-priority-medium-bg);
+  color: var(--color-priority-medium-text);
 }
 
 .priority-high {
-  background-color: #f44336;
-  color: #fff;
+  background-color: var(--color-priority-high-bg);
+  color: var(--color-priority-high-text);
 }
 
 /* タグ入力スタイル */

@@ -1,13 +1,13 @@
 .task-memo-viewer {
   font-family: var(--font-family);
   line-height: 1.6;
-  color: var(--text-color);
+  color: var(--color-text);
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
 .task-memo-viewer-empty {
-  color: var(--text-muted);
+  color: var(--color-text-light);
   font-style: italic;
   padding: 1rem 0;
 }
@@ -148,18 +148,18 @@
 
 .task-memo-th,
 .task-memo-td {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   padding: 0.5em 1em;
   text-align: left;
 }
 
 .task-memo-th {
-  background-color: var(--bg-secondary, rgba(0, 0, 0, 0.03));
+  background-color: var(--color-background-secondary);
   font-weight: 600;
 }
 
 .task-memo-tr:nth-child(even) {
-  background-color: var(--bg-hover, rgba(0, 0, 0, 0.01));
+  background-color: var(--color-background-tertiary);
 }
 
 /* 画像 */

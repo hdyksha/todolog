@@ -28,6 +28,14 @@
   --color-input-border: #cbd5e1;
   --color-input-focus-border: #3b82f6;
   
+  /* 優先度の色 */
+  --color-priority-high-bg: #fca5a5;
+  --color-priority-high-text: #b91c1c;
+  --color-priority-medium-bg: #fcd34d;
+  --color-priority-medium-text: #b45309;
+  --color-priority-low-bg: #a7f3d0;
+  --color-priority-low-text: #047857;
+  
   /* タスク関連 */
   --color-task-completed-bg: #f1f5f9;
   --color-task-completed-text: #64748b;
@@ -70,6 +78,14 @@
   --color-task-completed-bg: #1e293b;
   --color-task-completed-text: #94a3b8;
   --color-task-overdue: #f87171;
+  
+  /* 優先度の色 */
+  --color-priority-high-bg: #7f1d1d;
+  --color-priority-high-text: #fca5a5;
+  --color-priority-medium-bg: #854d0e;
+  --color-priority-medium-text: #fcd34d;
+  --color-priority-low-bg: #064e3b;
+  --color-priority-low-text: #a7f3d0;
   
   /* タグ関連 */
   --color-tag-bg: #334155;

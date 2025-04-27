@@ -76,18 +76,18 @@
 }
 
 .priority-high {
-  background-color: var(--color-error-light);
-  color: var(--color-error);
+  background-color: var(--color-priority-high-bg);
+  color: var(--color-priority-high-text);
 }
 
 .priority-medium {
-  background-color: var(--color-warning-light);
-  color: var(--color-warning);
+  background-color: var(--color-priority-medium-bg);
+  color: var(--color-priority-medium-text);
 }
 
 .priority-low {
-  background-color: var(--color-success-light);
-  color: var(--color-success);
+  background-color: var(--color-priority-low-bg);
+  color: var(--color-priority-low-text);
 }
 
 .task-tags {
