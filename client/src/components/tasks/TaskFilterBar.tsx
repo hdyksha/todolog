@@ -32,6 +32,12 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
     onClearFilters();
   }, [onClearFilters]);
 
+  // フィルターが適用されているかどうか
+  const hasActiveFilters = filters.completed || 
+                          filters.priority || 
+                          filters.search || 
+                          (filters.tags && filters.tags.length > 0);
+
   return (
     <div className="task-filter-bar">
       <div className="filter-section">
@@ -44,24 +50,27 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
         />
       </div>
       
-      <div className="sort-section">
-        <TaskSortControl 
-          currentSort={sort} 
-          onSortChange={onSortChange} 
-        />
+      <div className="filter-controls-row">
+        <div className="sort-section">
+          <TaskSortControl 
+            currentSort={sort} 
+            onSortChange={onSortChange} 
+          />
+        </div>
+        
+        {hasActiveFilters && (
+          <Button 
+            variant="text" 
+            onClick={handleClearFilters}
+            className="clear-filters-button"
+            aria-label="フィルターをクリア"
+            type="button"
+            size="small"
+          >
+            フィルターをクリア
+          </Button>
+        )}
       </div>
-      
-      {(filters.completed || filters.priority || filters.search || (filters.tags && filters.tags.length > 0)) && (
-        <Button 
-          variant="text" 
-          onClick={handleClearFilters}
-          className="clear-filters-button"
-          aria-label="フィルターをクリア"
-          type="button"
-        >
-          フィルターをクリア
-        </Button>
-      )}
     </div>
   );
 };
