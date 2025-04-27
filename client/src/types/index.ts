@@ -22,6 +22,7 @@ export interface Task {
   dueDate?: string;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string | null;
   memo?: string;
 }
 
@@ -46,6 +47,6 @@ export interface UserSettings {
   defaultPriority: Priority;
   defaultView: 'all' | 'active' | 'completed';
   showCompletedTasks: boolean;
-  sortBy: 'createdAt' | 'dueDate' | 'priority' | 'title';
+  sortBy: 'createdAt' | 'dueDate' | 'priority' | 'title' | 'completedAt';
   sortDirection: 'asc' | 'desc';
 }

@@ -16,17 +16,17 @@
 
 ### フェーズ1: データモデルの拡張
 
-- [ ] **サーバーサイドのタスクモデル拡張**
-  - [ ] `task.model.ts` に `completedAt` フィールド（nullable な日時型）を追加
-  - [ ] `TaskSchema` と `CreateTaskSchema` を更新
-  - [ ] 型定義を更新
+- [x] **サーバーサイドのタスクモデル拡張**
+  - [x] `task.model.ts` に `completedAt` フィールド（nullable な日時型）を追加
+  - [x] `TaskSchema` と `CreateTaskSchema` を更新
+  - [x] 型定義を更新
 
-- [ ] **クライアントサイドの型定義更新**
-  - [ ] `client/src/types/index.ts` の `Task` インターフェースに `completedAt` フィールドを追加
+- [x] **クライアントサイドの型定義更新**
+  - [x] `client/src/types/index.ts` の `Task` インターフェースに `completedAt` フィールドを追加
 
-- [ ] **データベースマイグレーション**
-  - [ ] 既存のタスクデータに `completedAt` フィールドを追加するマイグレーションスクリプトを作成
-  - [ ] 既に完了しているタスクの場合は `updatedAt` の値を `completedAt` にコピー
+- [x] **データベースマイグレーション**
+  - [x] 既存のタスクデータに `completedAt` フィールドを追加するマイグレーションスクリプトを作成
+  - [x] 既に完了しているタスクの場合は `updatedAt` の値を `completedAt` にコピー
 
 ### フェーズ2: バックエンド機能の実装
 
