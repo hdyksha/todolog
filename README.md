@@ -214,6 +214,7 @@ interface Task {
   dueDate?: string;    // 期限（ISO形式の文字列）
   createdAt: string;   // 作成日時（ISO形式の文字列）
   updatedAt: string;   // 更新日時（ISO形式の文字列）
+  completedAt?: string; // 完了日時（ISO形式の文字列、未完了の場合はnull）
   memo?: string;       // メモ（オプション）
 }
 

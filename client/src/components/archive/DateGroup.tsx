@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Task } from '../../types';
 import TaskItem from '../TaskItem';
+import { formatDate } from '../../utils/dateUtils';
 import './DateGroup.css';
 
 interface DateGroupProps {
@@ -25,17 +26,11 @@ const DateGroup: React.FC<DateGroupProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   
-  // 日付を「YYYY年MM月DD日（曜日）」形式でフォーマット
-  const formatDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
-    
-    return `${year}年${month}月${day}日（${dayOfWeek}）`;
-  };
-  
+  // 日付をフォーマット
   const formattedDate = formatDate(date);
+  
+  // 完了日のラベルを作成
+  const dateLabel = `完了日: ${formattedDate}`;
   
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -62,7 +57,7 @@ const DateGroup: React.FC<DateGroupProps> = ({
         aria-expanded={isExpanded}
         aria-controls={tasksId}
       >
-        <span className="date-text">{formattedDate}</span>
+        <span className="date-text">{dateLabel}</span>
         <span className="task-count">{tasks.length}件</span>
         <span 
           className="toggle-button" 

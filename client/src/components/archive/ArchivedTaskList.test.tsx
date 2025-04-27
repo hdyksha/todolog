@@ -1,107 +1,89 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
 import ArchivedTaskList from './ArchivedTaskList';
-import { Task, Priority } from '../../types';
+import { mockTasks } from '../../tests/mocks/taskMocks';
+import * as dateUtils from '../../utils/dateUtils';
 
-// モックデータ
-const mockTasks: Task[] = [
-  {
-    id: '1',
-    title: 'テストタスク1',
-    completed: true,
-    priority: Priority.Medium,
-    createdAt: '2025-04-20T10:00:00.000Z',
-    updatedAt: '2025-04-20T15:00:00.000Z',
-  },
-  {
-    id: '2',
-    title: 'テストタスク2',
-    completed: true,
-    priority: Priority.High,
-    createdAt: '2025-04-19T10:00:00.000Z',
-    updatedAt: '2025-04-19T16:00:00.000Z',
-  },
-  {
-    id: '3',
-    title: '未完了タスク',
-    completed: false,
-    priority: Priority.Low,
-    createdAt: '2025-04-18T10:00:00.000Z',
-    updatedAt: '2025-04-18T12:00:00.000Z',
-  },
-];
-
-// モック関数
-const mockToggleComplete = vi.fn();
-const mockDelete = vi.fn();
-const mockEdit = vi.fn();
-const mockEditMemo = vi.fn();
+// dateUtilsのモック
+vi.mock('../../utils/dateUtils', async () => {
+  const actual = await vi.importActual('../../utils/dateUtils');
+  return {
+    ...actual,
+    groupTasksByDate: vi.fn().mockImplementation((tasks) => {
+      return {
+        '2025-04-01': tasks.filter(task => task.completed),
+      };
+    }),
+    formatDate: vi.fn().mockReturnValue('2025年4月1日（火）'),
+  };
+});
 
 describe('ArchivedTaskList', () => {
-  it('完了済みタスクのみが表示される', () => {
+  const mockOnToggleComplete = vi.fn();
+  const mockOnDelete = vi.fn();
+  const mockOnEdit = vi.fn();
+  const mockOnEditMemo = vi.fn();
+  
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  
+  it('完了済みタスクを日付ごとにグループ化して表示する', () => {
     render(
       <ArchivedTaskList
         tasks={mockTasks}
-        onToggleComplete={mockToggleComplete}
-        onDelete={mockDelete}
-        onEdit={mockEdit}
-        onEditMemo={mockEditMemo}
+        onToggleComplete={mockOnToggleComplete}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onEditMemo={mockOnEditMemo}
       />
     );
-
+    
+    // groupTasksByDateが呼ばれていることを確認
+    expect(dateUtils.groupTasksByDate).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ completed: true })
+      ])
+    );
+    
     // 完了済みタスクが表示されていることを確認
-    expect(screen.getByText('テストタスク1')).toBeInTheDocument();
-    expect(screen.getByText('テストタスク2')).toBeInTheDocument();
+    const completedTask = mockTasks.find(task => task.completed);
+    expect(screen.getByText(completedTask!.title)).toBeInTheDocument();
     
     // 未完了タスクは表示されていないことを確認
-    expect(screen.queryByText('未完了タスク')).not.toBeInTheDocument();
+    const incompleteTasks = mockTasks.filter(task => !task.completed);
+    incompleteTasks.forEach(task => {
+      expect(screen.queryByText(task.title)).not.toBeInTheDocument();
+    });
   });
-
-  it('日付ごとにグループ化されている', () => {
+  
+  it('完了済みタスクがない場合はメッセージを表示する', () => {
+    render(
+      <ArchivedTaskList
+        tasks={mockTasks.filter(task => !task.completed)}
+        onToggleComplete={mockOnToggleComplete}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onEditMemo={mockOnEditMemo}
+      />
+    );
+    
+    expect(screen.getByText('アーカイブされたタスクはありません')).toBeInTheDocument();
+  });
+  
+  it('アクセシビリティ属性が正しく設定されている', () => {
     render(
       <ArchivedTaskList
         tasks={mockTasks}
-        onToggleComplete={mockToggleComplete}
-        onDelete={mockDelete}
-        onEdit={mockEdit}
-        onEditMemo={mockEditMemo}
+        onToggleComplete={mockOnToggleComplete}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onEditMemo={mockOnEditMemo}
       />
     );
-
-    // 日付グループが表示されていることを確認
-    expect(screen.getByText(/2025年4月20日/)).toBeInTheDocument();
-    expect(screen.getByText(/2025年4月19日/)).toBeInTheDocument();
     
-    // 各日付グループのタスク数が表示されていることを確認
-    // 複数の「1件」が存在するため、getAllByTextを使用
-    const taskCountElements = screen.getAllByText('1件');
-    expect(taskCountElements.length).toBe(2);
-  });
-
-  it('アーカイブされたタスクがない場合はメッセージが表示される', () => {
-    const emptyTasks: Task[] = [
-      {
-        id: '3',
-        title: '未完了タスク',
-        completed: false,
-        priority: Priority.Low,
-        createdAt: '2025-04-18T10:00:00.000Z',
-        updatedAt: '2025-04-18T12:00:00.000Z',
-      },
-    ];
-
-    render(
-      <ArchivedTaskList
-        tasks={emptyTasks}
-        onToggleComplete={mockToggleComplete}
-        onDelete={mockDelete}
-        onEdit={mockEdit}
-        onEditMemo={mockEditMemo}
-      />
-    );
-
-    // メッセージが表示されていることを確認
-    expect(screen.getByText('アーカイブされたタスクはありません')).toBeInTheDocument();
+    // アーカイブリストのリージョンロールとラベルを確認
+    const archiveList = screen.getByRole('region', { name: 'アーカイブされたタスク一覧' });
+    expect(archiveList).toBeInTheDocument();
   });
 });

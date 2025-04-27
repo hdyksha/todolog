@@ -55,7 +55,7 @@ describe('フィルタリングとソート機能', () => {
     );
     
     // 詳細フィルターを表示
-    fireEvent.click(screen.getByRole('button', { name: /詳細フィルターを表示/i }));
+    fireEvent.click(screen.getByRole('button', { name: /詳細フィルター$/i }));
     
     // 優先度フィルターを選択（高のみ）
     fireEvent.click(screen.getByRole('button', { name: /^高$/i }));
@@ -127,7 +127,7 @@ describe('フィルタリングとソート機能', () => {
     );
     
     // 詳細フィルターを表示
-    fireEvent.click(screen.getByRole('button', { name: /詳細フィルターを表示/i }));
+    fireEvent.click(screen.getByRole('button', { name: /詳細フィルター$/i }));
     
     // タグフィルターを選択
     // タグフィルターの実装に依存するため、実際のUIに合わせて調整が必要

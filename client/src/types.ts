@@ -13,6 +13,7 @@ export interface Task {
   dueDate?: string | null;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string | null;
   memo?: string;
 }
 
@@ -29,7 +30,7 @@ export interface TaskFilter {
 }
 
 export interface TaskSort {
-  field: 'title' | 'priority' | 'dueDate' | 'createdAt' | 'updatedAt';
+  field: 'title' | 'priority' | 'dueDate' | 'createdAt' | 'updatedAt' | 'completedAt';
   direction: 'asc' | 'desc';
 }
 

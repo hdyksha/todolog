@@ -13,7 +13,7 @@ interface ArchivedTaskListProps {
 }
 
 /**
- * アーカイブされたタスクを日付ごとにグループ化して表示するコンポーネント
+ * アーカイブされたタスクを完了日ごとにグループ化して表示するコンポーネント
  */
 const ArchivedTaskList: React.FC<ArchivedTaskListProps> = ({
   tasks,
@@ -27,7 +27,7 @@ const ArchivedTaskList: React.FC<ArchivedTaskListProps> = ({
     return tasks.filter(task => task.completed);
   }, [tasks]);
   
-  // 日付ごとにグルーピング
+  // 完了日ごとにグルーピング
   const tasksByDate = useMemo(() => {
     return groupTasksByDate(archivedTasks);
   }, [archivedTasks]);

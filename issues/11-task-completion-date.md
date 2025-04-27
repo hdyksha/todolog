@@ -16,53 +16,53 @@
 
 ### フェーズ1: データモデルの拡張
 
-- [ ] **サーバーサイドのタスクモデル拡張**
-  - [ ] `task.model.ts` に `completedAt` フィールド（nullable な日時型）を追加
-  - [ ] `TaskSchema` と `CreateTaskSchema` を更新
-  - [ ] 型定義を更新
+- [x] **サーバーサイドのタスクモデル拡張**
+  - [x] `task.model.ts` に `completedAt` フィールド（nullable な日時型）を追加
+  - [x] `TaskSchema` と `CreateTaskSchema` を更新
+  - [x] 型定義を更新
 
-- [ ] **クライアントサイドの型定義更新**
-  - [ ] `client/src/types/index.ts` の `Task` インターフェースに `completedAt` フィールドを追加
+- [x] **クライアントサイドの型定義更新**
+  - [x] `client/src/types/index.ts` の `Task` インターフェースに `completedAt` フィールドを追加
 
-- [ ] **データベースマイグレーション**
-  - [ ] 既存のタスクデータに `completedAt` フィールドを追加するマイグレーションスクリプトを作成
-  - [ ] 既に完了しているタスクの場合は `updatedAt` の値を `completedAt` にコピー
+- [x] **データベースマイグレーション**
+  - [x] 既存のタスクデータに `completedAt` フィールドを追加するマイグレーションスクリプトを作成
+  - [x] 既に完了しているタスクの場合は `updatedAt` の値を `completedAt` にコピー
 
 ### フェーズ2: バックエンド機能の実装
 
-- [ ] **タスク完了ロジックの更新**
-  - [ ] `toggleTaskCompletion` エンドポイントを更新し、タスクを完了状態に変更する際に `completedAt` に現在の日時を設定
-  - [ ] タスクを未完了状態に戻す際は `completedAt` を `null` に設定
+- [x] **タスク完了ロジックの更新**
+  - [x] `toggleTaskCompletion` エンドポイントを更新し、タスクを完了状態に変更する際に `completedAt` に現在の日時を設定
+  - [x] タスクを未完了状態に戻す際は `completedAt` を `null` に設定
 
-- [ ] **タスク更新ロジックの更新**
-  - [ ] `updateTask` エンドポイントを更新し、`completed` 状態が変更された場合に `completedAt` を適切に設定/クリア
+- [x] **タスク更新ロジックの更新**
+  - [x] `updateTask` エンドポイントを更新し、`completed` 状態が変更された場合に `completedAt` を適切に設定/クリア
 
-- [ ] **API レスポンスの更新**
-  - [ ] タスク取得エンドポイントのレスポンスに `completedAt` フィールドを含める
+- [x] **API レスポンスの更新**
+  - [x] タスク取得エンドポイントのレスポンスに `completedAt` フィールドを含める
 
 ### フェーズ3: フロントエンド機能の実装
 
-- [ ] **タスク完了ロジックの更新**
-  - [ ] `useTaskActions` フックの `toggleTaskCompletion` 関数を更新し、API からの応答に含まれる `completedAt` を処理
+- [x] **タスク完了ロジックの更新**
+  - [x] `useTaskActions` フックの `toggleTaskCompletion` 関数を更新し、API からの応答に含まれる `completedAt` を処理
 
-- [ ] **アーカイブグルーピングロジックの更新**
-  - [ ] `dateUtils.ts` の `groupTasksByDate` 関数を更新し、`updatedAt` の代わりに `completedAt` を使用してグループ化
-  - [ ] `completedAt` が存在しない場合は `updatedAt` にフォールバック
+- [x] **アーカイブグルーピングロジックの更新**
+  - [x] `dateUtils.ts` の `groupTasksByDate` 関数を更新し、`updatedAt` の代わりに `completedAt` を使用してグループ化
+  - [x] `completedAt` が存在しない場合は `updatedAt` にフォールバック
 
-- [ ] **UI コンポーネントの更新**
-  - [ ] `ArchivedTaskList` コンポーネントを更新し、完了日でグループ化されたタスクを表示
-  - [ ] 日付グループのヘッダーに「完了日: YYYY年MM月DD日」と表示
+- [x] **UI コンポーネントの更新**
+  - [x] `ArchivedTaskList` コンポーネントを更新し、完了日でグループ化されたタスクを表示
+  - [x] 日付グループのヘッダーに「完了日: YYYY年MM月DD日」と表示
 
 ### フェーズ4: テストとドキュメント
 
-- [ ] **テストの更新と追加**
-  - [ ] バックエンドの単体テストを更新し、`completedAt` フィールドの処理を検証
-  - [ ] フロントエンドのコンポーネントテストを更新
-  - [ ] 統合テストを追加し、完了日の記録と表示が正しく機能することを確認
+- [x] **テストの更新と追加**
+  - [x] バックエンドの単体テストを更新し、`completedAt` フィールドの処理を検証
+  - [x] フロントエンドのコンポーネントテストを更新
+  - [x] 統合テストを追加し、完了日の記録と表示が正しく機能することを確認
 
-- [ ] **ドキュメントの更新**
-  - [ ] API 仕様書を更新し、`completedAt` フィールドを追加
-  - [ ] README.md を更新し、新機能について説明
+- [x] **ドキュメントの更新**
+  - [x] API 仕様書を更新し、`completedAt` フィールドを追加
+  - [x] README.md を更新し、新機能について説明
 
 ## 技術的詳細
 

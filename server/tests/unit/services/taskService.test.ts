@@ -158,9 +158,11 @@ describe('TaskService', () => {
     const toggledTask = await taskService.toggleTaskCompletion(createdTask.id);
     
     expect(toggledTask).toHaveProperty('completed', true);
+    expect(toggledTask).toHaveProperty('completedAt', mockDate.toISOString());
     
     const toggledAgain = await taskService.toggleTaskCompletion(createdTask.id);
     expect(toggledAgain).toHaveProperty('completed', false);
+    expect(toggledAgain).toHaveProperty('completedAt', null);
   });
   
   it('タグでタスクをフィルタリングできるべき', async () => {

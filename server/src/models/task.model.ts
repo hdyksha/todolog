@@ -34,6 +34,13 @@ export const CreateTaskSchema = z.object({
     .max(1000, 'メモは1000文字以内にしてください')
     .trim()
     .optional(),
+  completedAt: z
+    .string()
+    .refine(val => !val || isValidDate(val), {
+      message: '有効な日付形式ではありません',
+    })
+    .nullable()
+    .optional(),
 });
 
 // タスク更新時のスキーマ
@@ -57,6 +64,11 @@ export const TaskSchema = CreateTaskSchema.extend({
   updatedAt: z
     .string()
     .refine(isValidDate, { message: '無効な更新日時です' }),
+  completedAt: z
+    .string()
+    .refine(val => !val || isValidDate(val), { message: '無効な完了日時です' })
+    .nullable()
+    .optional(),
 });
 
 // フィルタリング用のスキーマ
@@ -65,7 +77,7 @@ export const TaskFilterSchema = z.object({
   completed: z.boolean().optional(),
   priority: PriorityEnum.optional(),
   sortBy: z
-    .enum(['createdAt', 'updatedAt', 'dueDate', 'priority'])
+    .enum(['createdAt', 'updatedAt', 'dueDate', 'priority', 'completedAt'])
     .optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
