@@ -8,14 +8,12 @@
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  align-items: flex-end;
+  align-items: flex-start; /* 上端で揃える */
 }
 
-.quick-add-form {
-  display: flex;
-  gap: 10px;
-  flex: 1;
-  align-items: flex-end;
+/* 詳細作成ボタンの高さを調整 */
+.task-actions-container > .button {
+  margin-top: 22px; /* Inputのラベル分の高さを調整 */
 }
 
 .task-list-header {
@@ -161,6 +159,15 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+  
+  .task-actions-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .task-actions-container > .button {
+    margin-top: 0.5rem;
   }
 }
 
