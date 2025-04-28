@@ -107,6 +107,8 @@ const TaskDetailPage: React.FC = () => {
       // メモ更新後に詳細を再取得
       const updatedTask = await api.fetchTaskById(id);
       setTaskDetail(updatedTask);
+      // 更新されたメモを状態に反映
+      setMemo(updatedTask.memo || '');
     } catch (error) {
       console.error('メモ更新エラー:', error);
       throw error;
@@ -223,7 +225,8 @@ const TaskDetailPage: React.FC = () => {
             onSave={handleSaveMemo}
             onCancel={() => {
               setIsEditingMemo(false);
-              setMemo(displayTask?.memo || '');
+              // キャンセル時に現在のタスク詳細のメモに戻す
+              setMemo(taskDetail?.memo || '');
             }}
             onCheckboxChange={handleCheckboxChange}
           />

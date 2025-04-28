@@ -27,6 +27,11 @@ const TaskMemoEditor: React.FC<TaskMemoEditorProps> = ({
   const [showMarkdownHelp, setShowMarkdownHelp] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // 初期メモが変更されたら、編集中のメモも更新
+  useEffect(() => {
+    setMemo(initialMemo);
+  }, [initialMemo]);
+
   // 編集モードになったらテキストエリアにフォーカス
   useEffect(() => {
     if (!isPreviewMode && textareaRef.current) {
