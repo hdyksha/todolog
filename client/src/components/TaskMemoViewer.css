@@ -106,6 +106,15 @@
   margin: 0.25em 0;
 }
 
+/* ネストされたリストの行間調整 */
+.task-memo-list .task-memo-list {
+  margin: 0.1em 0;
+}
+
+.task-memo-list .task-memo-list-item {
+  margin: 0.05em 0;
+}
+
 /* チェックボックス */
 .task-memo-checkbox-label {
   display: flex;
