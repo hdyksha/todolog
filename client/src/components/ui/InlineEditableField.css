@@ -1,0 +1,49 @@
+.inline-editable-field {
+  position: relative;
+}
+
+.inline-editable-field-display {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: var(--border-radius-md);
+  padding: 0.25rem;
+}
+
+.inline-editable-field-display:hover {
+  background-color: var(--color-background-hover);
+}
+
+.inline-editable-field-edit {
+  position: relative;
+}
+
+.inline-editable-field-error {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+  margin-top: 0.25rem;
+}
+
+.inline-editable-field-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--color-background-rgb), 0.7);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* 編集モード時のスタイル */
+.inline-editable-field.is-editing .inline-editable-field-edit {
+  z-index: 10;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+}

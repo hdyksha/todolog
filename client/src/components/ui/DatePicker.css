@@ -1,0 +1,86 @@
+.datepicker-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.datepicker-label {
+  font-size: var(--font-size-sm);
+  margin-bottom: 0.25rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.datepicker-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.datepicker-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-md);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.datepicker-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.datepicker-input:disabled {
+  background-color: var(--color-background-disabled);
+  cursor: not-allowed;
+}
+
+.datepicker-clear-button {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.datepicker-clear-button:hover {
+  color: var(--color-error);
+}
+
+.datepicker-error {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+  margin-top: 0.25rem;
+}
+
+.datepicker-container.has-error .datepicker-input {
+  border-color: var(--color-error);
+}
+
+/* カレンダーアイコンのカスタマイズ */
+.datepicker-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  filter: invert(0.5);
+}
+
+.datepicker-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .datepicker-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+  }
+}

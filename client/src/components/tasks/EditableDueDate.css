@@ -1,0 +1,62 @@
+.editable-due-date {
+  display: inline-block;
+}
+
+.due-date-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  background-color: var(--color-background-tertiary);
+  color: var(--color-text);
+}
+
+.due-date-badge.past-due {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+.due-date-badge.editable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 1.5rem;
+}
+
+.due-date-badge .edit-icon {
+  position: absolute;
+  right: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.due-date-badge.editable:hover .edit-icon {
+  opacity: 1;
+}
+
+.due-date-edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.due-date-picker {
+  margin-bottom: 0;
+}
+
+.due-date-edit-cancel {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: 0.25rem;
+  text-align: center;
+}
+
+.due-date-edit-cancel:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
