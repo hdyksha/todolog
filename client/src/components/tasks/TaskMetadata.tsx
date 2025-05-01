@@ -1,7 +1,7 @@
 import type React from 'react';
 import { Priority } from '../../types';
-import TagBadge from '../tags/TagBadge';
 import EditablePriority from './EditablePriority';
+import EditableTagList from '../tags/EditableTagList';
 import './TaskMetadata.css';
 
 interface TaskMetadataProps {
@@ -12,6 +12,7 @@ interface TaskMetadataProps {
   createdAt: string;
   updatedAt: string;
   onPriorityChange?: (priority: Priority) => Promise<void>;
+  onTagsChange?: (tags: string[]) => Promise<void>;
   editable?: boolean;
 }
 
@@ -21,11 +22,12 @@ interface TaskMetadataProps {
 const TaskMetadata: React.FC<TaskMetadataProps> = ({
   isCompleted,
   priority,
-  tags,
+  tags = [],
   dueDate,
   createdAt,
   updatedAt,
   onPriorityChange,
+  onTagsChange,
   editable = false,
 }) => {
   return (
@@ -56,16 +58,28 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
         )}
       </div>
 
-      {tags && tags.length > 0 && (
-        <div className="task-detail-tags">
-          <span className="task-detail-label">タグ</span>
+      <div className="task-detail-tags">
+        <span className="task-detail-label">タグ</span>
+        {editable && onTagsChange ? (
+          <EditableTagList
+            tags={tags}
+            onSave={onTagsChange}
+            disabled={isCompleted}
+          />
+        ) : (
           <div className="task-tags-container">
-            {tags.map(tag => (
-              <TagBadge key={tag} tag={tag} />
-            ))}
+            {tags && tags.length > 0 ? (
+              tags.map(tag => (
+                <span key={tag} className="tag-badge" aria-label={`タグ: ${tag}`}>
+                  {tag}
+                </span>
+              ))
+            ) : (
+              <span className="no-tags">タグなし</span>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {dueDate && (
         <div className="task-detail-due-date">

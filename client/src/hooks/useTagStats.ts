@@ -19,9 +19,11 @@ export const useTagStats = (
     const usage: Record<string, number> = {};
     
     // 初期化（すべてのタグを0回で初期化）
-    Object.keys(availableTags).forEach(tag => {
-      usage[tag] = 0;
-    });
+    if (availableTags) {
+      Object.keys(availableTags).forEach(tag => {
+        usage[tag] = 0;
+      });
+    }
     
     // タスクからタグの使用回数を集計
     tasks.forEach(task => {
@@ -31,7 +33,9 @@ export const useTagStats = (
             usage[tag]++;
           } else {
             // 存在しないタグ（削除されたタグなど）は無視
-            console.warn(`Unknown tag: ${tag}`);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`Unknown tag: ${tag}`);
+            }
           }
         });
       }

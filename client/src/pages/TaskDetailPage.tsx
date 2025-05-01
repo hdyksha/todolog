@@ -20,7 +20,7 @@ const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { tasks, loading, error } = useTaskContext();
   const { fetchTasks, updateMemo, toggleTaskCompletion, deleteTask } = useTaskActions();
-  const { updatePriority } = useTaskMetadataActions(id || '');
+  const { updatePriority, updateTags } = useTaskMetadataActions(id || '');
   
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memo, setMemo] = useState('');
@@ -135,35 +135,6 @@ const TaskDetailPage: React.FC = () => {
     });
   };
 
-  // タスクの削除
-  const handleDeleteTask = async () => {
-    if (!id) return;
-    
-    if (window.confirm('このタスクを削除してもよろしいですか？')) {
-      try {
-        await deleteTask(id);
-        navigate('/');
-      } catch (error) {
-        console.error('タスク削除エラー:', error);
-      }
-    }
-  };
-
-  // 完了状態の切り替え
-  const handleToggleCompletion = async () => {
-    if (!id) return;
-    
-    try {
-      await toggleTaskCompletion(id);
-      
-      // 状態変更後に詳細を再取得
-      const updatedTask = await api.fetchTaskById(id);
-      setTaskDetail(updatedTask);
-    } catch (error) {
-      console.error('タスク状態変更エラー:', error);
-    }
-  };
-
   // 優先度の更新
   const handlePriorityChange = async (newPriority: Priority) => {
     if (!id) return;
@@ -201,6 +172,75 @@ const TaskDetailPage: React.FC = () => {
       setTimeout(() => {
         setUpdateStatus(prev => ({ ...prev, error: null }));
       }, 5000);
+    }
+  };
+
+  // タグの更新
+  const handleTagsChange = async (newTags: string[]) => {
+    if (!id) return;
+    
+    setUpdateStatus({
+      loading: true,
+      error: null,
+      success: false,
+    });
+    
+    try {
+      const updatedTask = await updateTags(newTags);
+      setTaskDetail(updatedTask);
+      
+      setUpdateStatus({
+        loading: false,
+        error: null,
+        success: true,
+      });
+      
+      // 成功メッセージを一定時間後に消す
+      setTimeout(() => {
+        setUpdateStatus(prev => ({ ...prev, success: false }));
+      }, 3000);
+    } catch (error) {
+      console.error('タグ更新エラー:', error);
+      
+      setUpdateStatus({
+        loading: false,
+        error: error instanceof Error ? error.message : 'タグの更新に失敗しました',
+        success: false,
+      });
+      
+      // エラーメッセージを一定時間後に消す
+      setTimeout(() => {
+        setUpdateStatus(prev => ({ ...prev, error: null }));
+      }, 5000);
+    }
+  };
+
+  // タスクの削除
+  const handleDeleteTask = async () => {
+    if (!id) return;
+    
+    if (window.confirm('このタスクを削除してもよろしいですか？')) {
+      try {
+        await deleteTask(id);
+        navigate('/');
+      } catch (error) {
+        console.error('タスク削除エラー:', error);
+      }
+    }
+  };
+
+  // 完了状態の切り替え
+  const handleToggleCompletion = async () => {
+    if (!id) return;
+    
+    try {
+      await toggleTaskCompletion(id);
+      
+      // 状態変更後に詳細を再取得
+      const updatedTask = await api.fetchTaskById(id);
+      setTaskDetail(updatedTask);
+    } catch (error) {
+      console.error('タスク状態変更エラー:', error);
     }
   };
 
@@ -260,6 +300,7 @@ const TaskDetailPage: React.FC = () => {
         createdAt={displayTask.createdAt}
         updatedAt={displayTask.updatedAt}
         onPriorityChange={handlePriorityChange}
+        onTagsChange={handleTagsChange}
         editable={true}
       />
 

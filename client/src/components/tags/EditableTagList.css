@@ -1,0 +1,89 @@
+.editable-tags {
+  display: inline-block;
+  width: 100%;
+}
+
+.tags-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 2rem;
+  align-items: center;
+}
+
+.tags-display.editable {
+  cursor: pointer;
+  position: relative;
+  padding: 0.25rem;
+  border-radius: var(--border-radius-md);
+  transition: background-color 0.2s ease;
+}
+
+.tags-display.editable:hover {
+  background-color: var(--color-background-hover);
+}
+
+.edit-tags-icon {
+  margin-left: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tags-display.editable:hover .edit-tags-icon {
+  opacity: 1;
+}
+
+.no-tags {
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}
+
+.tags-edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  min-width: 250px;
+}
+
+.tags-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.tags-edit-save,
+.tags-edit-cancel {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background-color 0.2s ease;
+}
+
+.tags-edit-save {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.tags-edit-save:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.tags-edit-cancel {
+  color: var(--color-text-muted);
+}
+
+.tags-edit-cancel:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text);
+}
