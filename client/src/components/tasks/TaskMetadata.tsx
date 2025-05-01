@@ -1,6 +1,7 @@
 import type React from 'react';
 import { Priority } from '../../types';
 import TagBadge from '../tags/TagBadge';
+import EditablePriority from './EditablePriority';
 import './TaskMetadata.css';
 
 interface TaskMetadataProps {
@@ -10,6 +11,8 @@ interface TaskMetadataProps {
   dueDate?: string;
   createdAt: string;
   updatedAt: string;
+  onPriorityChange?: (priority: Priority) => Promise<void>;
+  editable?: boolean;
 }
 
 /**
@@ -22,6 +25,8 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
   dueDate,
   createdAt,
   updatedAt,
+  onPriorityChange,
+  editable = false,
 }) => {
   return (
     <div className="task-detail-info">
@@ -34,13 +39,21 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
 
       <div className="task-detail-priority">
         <span className="task-detail-label">優先度</span>
-        <span className={`task-priority priority-${priority}`}>
-          {priority === Priority.High
-            ? '高'
-            : priority === Priority.Medium
-            ? '中'
-            : '低'}
-        </span>
+        {editable && onPriorityChange ? (
+          <EditablePriority 
+            priority={priority} 
+            onSave={onPriorityChange} 
+            disabled={isCompleted} 
+          />
+        ) : (
+          <span className={`task-priority priority-${priority}`}>
+            {priority === Priority.High
+              ? '高'
+              : priority === Priority.Medium
+              ? '中'
+              : '低'}
+          </span>
+        )}
       </div>
 
       {tags && tags.length > 0 && (
