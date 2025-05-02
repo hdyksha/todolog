@@ -39,6 +39,12 @@ const EditableDueDate: React.FC<EditableDueDateProps> = ({
       <div
         className="due-date-display editable"
         onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        }}
         role="button"
         tabIndex={0}
         aria-label="締切日を編集"
