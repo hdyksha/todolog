@@ -58,28 +58,26 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
         )}
       </div>
 
-      <div className="task-detail-tags">
-        <span className="task-detail-label">タグ</span>
-        {editable && onTagsChange ? (
-          <EditableTagList
-            tags={tags}
-            onSave={onTagsChange}
-            disabled={isCompleted}
-          />
-        ) : (
-          <div className="task-tags-container">
-            {tags && tags.length > 0 ? (
-              tags.map(tag => (
+      {tags && tags.length > 0 && (
+        <div className="task-detail-tags">
+          <span className="task-detail-label">タグ</span>
+          {editable && onTagsChange ? (
+            <EditableTagList
+              tags={tags}
+              onSave={onTagsChange}
+              disabled={isCompleted}
+            />
+          ) : (
+            <div className="task-tags-container">
+              {tags.map(tag => (
                 <span key={tag} className="tag-badge" aria-label={`タグ: ${tag}`}>
                   {tag}
                 </span>
-              ))
-            ) : (
-              <span className="no-tags">タグなし</span>
-            )}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {dueDate && (
         <div className="task-detail-due-date">

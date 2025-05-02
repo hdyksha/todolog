@@ -9,6 +9,7 @@ import TaskDetailPage from '../../pages/TaskDetailPage';
 import { TaskProvider } from '../../contexts/TaskContext';
 import { NotificationProvider } from '../../contexts/NotificationContext';
 import { KeyboardShortcutsProvider } from '../../contexts/KeyboardShortcutsContext';
+import { TagProvider } from '../../contexts/TagContext';
 import { mockTask } from '../mocks/taskMocks';
 import api from '../../services/api';
 
@@ -45,6 +46,17 @@ vi.mock('../../components/MarkdownHelpModal', () => ({
   ),
 }));
 
+// タグサービスのモック
+vi.mock('../../services/tagService', () => ({
+  tagService: {
+    getAllTags: vi.fn().mockResolvedValue({}),
+    getTag: vi.fn().mockResolvedValue({}),
+    createTag: vi.fn().mockResolvedValue({}),
+    updateTag: vi.fn().mockResolvedValue({}),
+    deleteTag: vi.fn().mockResolvedValue({})
+  }
+}));
+
 describe('TaskDetailPage インテグレーションテスト', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -63,11 +75,13 @@ describe('TaskDetailPage インテグレーションテスト', () => {
       <MemoryRouter initialEntries={[`/tasks/${mockTask.id}`]}>
         <NotificationProvider>
           <KeyboardShortcutsProvider>
-            <TaskProvider>
-              <Routes>
-                <Route path="/tasks/:id" element={<TaskDetailPage />} />
-              </Routes>
-            </TaskProvider>
+            <TagProvider>
+              <TaskProvider>
+                <Routes>
+                  <Route path="/tasks/:id" element={<TaskDetailPage />} />
+                </Routes>
+              </TaskProvider>
+            </TagProvider>
           </KeyboardShortcutsProvider>
         </NotificationProvider>
       </MemoryRouter>
