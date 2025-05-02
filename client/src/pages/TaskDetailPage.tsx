@@ -97,6 +97,22 @@ const TaskDetailPage: React.FC = () => {
         description: 'マークダウンヘルプを表示',
         scope: 'タスク詳細'
       });
+
+      // 完了状態切り替えのショートカット
+      registerShortcut({
+        key: 'c',
+        action: () => handleToggleCompletion(),
+        description: '完了状態を切り替え',
+        scope: 'タスク詳細'
+      });
+
+      // 削除のショートカット
+      registerShortcut({
+        key: 'Delete',
+        action: () => handleDeleteTask(),
+        description: 'タスクを削除',
+        scope: 'タスク詳細'
+      });
     }
     
     // クリーンアップ関数
@@ -104,6 +120,8 @@ const TaskDetailPage: React.FC = () => {
       unregisterShortcut('e');
       unregisterShortcut('Backspace');
       unregisterShortcut('h');
+      unregisterShortcut('c');
+      unregisterShortcut('Delete');
     };
   }, [registerShortcut, unregisterShortcut, isEditingMemo, navigate]);
 

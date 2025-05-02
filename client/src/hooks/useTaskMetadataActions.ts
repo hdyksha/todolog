@@ -1,7 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTaskActions } from './useTaskActions';
 import { Priority, Task } from '../types';
 import api from '../services/api';
+import { debounce } from '../utils/debounce';
 
 /**
  * タスクのメタデータ（優先度、タグ、締切日）を編集するためのカスタムフック
@@ -33,7 +34,22 @@ export const useTaskMetadataActions = (taskId: string) => {
     }
   }, [taskId]);
 
-  // 締切日の更新
+  // 締切日の更新（デバウンス処理を追加）
+  const updateDueDateWithDebounce = useCallback(
+    debounce(async (dueDate: string | null) => {
+      try {
+        // APIを呼び出してタスクの締切日を更新
+        const updatedTask = await api.updateTask(taskId, { dueDate });
+        return updatedTask;
+      } catch (error) {
+        console.error('締切日の更新に失敗しました:', error);
+        throw error;
+      }
+    }, 300),
+    [taskId]
+  );
+
+  // 締切日の更新（通常版）
   const updateDueDate = useCallback(async (dueDate: string | null) => {
     try {
       // APIを呼び出してタスクの締切日を更新
@@ -49,6 +65,7 @@ export const useTaskMetadataActions = (taskId: string) => {
     updatePriority,
     updateTags,
     updateDueDate,
+    updateDueDateWithDebounce,
   };
 };
 

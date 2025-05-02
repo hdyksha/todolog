@@ -1,3 +1,18 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
 .editable-due-date {
   position: relative;
   width: 100%;
@@ -25,6 +40,11 @@
   margin-left: 8px;
   font-size: 0.8rem;
   opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.due-date-display.editable:hover .edit-icon {
+  opacity: 1;
 }
 
 .due-date-edit {
@@ -51,6 +71,13 @@
   background-color: var(--input-bg-color);
   color: var(--text-color);
   font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.due-date-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 59, 130, 246), 0.2);
+  outline: none;
 }
 
 .remove-due-date-button {
@@ -82,7 +109,12 @@
   border-radius: 4px;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.save-button:active,
+.cancel-button:active {
+  transform: scale(0.98);
 }
 
 .save-button {

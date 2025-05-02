@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import InlineEditableField from '../ui/InlineEditableField';
 import './EditableDueDate.css';
 
@@ -19,6 +19,11 @@ const EditableDueDate: React.FC<EditableDueDateProps> = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(
     dueDate ? new Date(dueDate).toISOString().split('T')[0] : null
   );
+
+  // dueDateが変更されたら選択日付を更新
+  useEffect(() => {
+    setSelectedDate(dueDate ? new Date(dueDate).toISOString().split('T')[0] : null);
+  }, [dueDate]);
 
   // 表示モードのレンダリング
   const renderDisplay = (value: string | null | undefined, onClick: () => void) => {
@@ -62,8 +67,9 @@ const EditableDueDate: React.FC<EditableDueDateProps> = ({
       onSave(selectedDate);
     };
 
+    // アニメーション用のクラスを追加
     return (
-      <div className="due-date-edit">
+      <div className="due-date-edit animate-fade-in">
         <div className="due-date-input-container">
           <input
             type="date"
