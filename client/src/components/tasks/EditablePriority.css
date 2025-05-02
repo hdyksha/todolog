@@ -1,0 +1,68 @@
+.editable-priority {
+  display: inline-block;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: white;
+}
+
+.priority-badge.priority-high {
+  background-color: var(--color-error);
+}
+
+.priority-badge.priority-medium {
+  background-color: var(--color-warning);
+}
+
+.priority-badge.priority-low {
+  background-color: var(--color-success);
+}
+
+.priority-badge.editable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 1.5rem;
+}
+
+.priority-badge .edit-icon {
+  position: absolute;
+  right: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.priority-badge.editable:hover .edit-icon {
+  opacity: 1;
+}
+
+.priority-edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.priority-select {
+  margin-bottom: 0;
+}
+
+.priority-edit-cancel {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: 0.25rem;
+  text-align: center;
+}
+
+.priority-edit-cancel:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}

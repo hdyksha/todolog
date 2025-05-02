@@ -9,6 +9,7 @@ import TaskDetailPage from '../../pages/TaskDetailPage';
 import { TaskProvider } from '../../contexts/TaskContext';
 import { NotificationProvider } from '../../contexts/NotificationContext';
 import { KeyboardShortcutsProvider } from '../../contexts/KeyboardShortcutsContext';
+import { TagProvider } from '../../contexts/TagContext';
 import { mockTask } from '../mocks/taskMocks';
 import api from '../../services/api';
 
@@ -45,6 +46,17 @@ vi.mock('../../components/MarkdownHelpModal', () => ({
   ),
 }));
 
+// タグサービスのモック
+vi.mock('../../services/tagService', () => ({
+  tagService: {
+    getAllTags: vi.fn().mockResolvedValue({}),
+    getTag: vi.fn().mockResolvedValue({}),
+    createTag: vi.fn().mockResolvedValue({}),
+    updateTag: vi.fn().mockResolvedValue({}),
+    deleteTag: vi.fn().mockResolvedValue({})
+  }
+}));
+
 describe('TaskDetailPage インテグレーションテスト', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -63,11 +75,13 @@ describe('TaskDetailPage インテグレーションテスト', () => {
       <MemoryRouter initialEntries={[`/tasks/${mockTask.id}`]}>
         <NotificationProvider>
           <KeyboardShortcutsProvider>
-            <TaskProvider>
-              <Routes>
-                <Route path="/tasks/:id" element={<TaskDetailPage />} />
-              </Routes>
-            </TaskProvider>
+            <TagProvider>
+              <TaskProvider>
+                <Routes>
+                  <Route path="/tasks/:id" element={<TaskDetailPage />} />
+                </Routes>
+              </TaskProvider>
+            </TagProvider>
           </KeyboardShortcutsProvider>
         </NotificationProvider>
       </MemoryRouter>
@@ -142,9 +156,18 @@ describe('TaskDetailPage インテグレーションテスト', () => {
       expect(screen.getByRole('heading', { name: mockTask.title })).toBeInTheDocument();
     });
 
-    // 編集ボタンをクリック
-    const editButton = screen.getByRole('button', { name: /編集/i });
-    fireEvent.click(editButton);
+    // メモセクションの編集ボタンを特定して取得
+    const editButtons = screen.getAllByRole('button', { name: /編集/i });
+    // メモセクションの編集ボタンは通常2番目のボタン
+    const memoEditButton = editButtons.find(button => 
+      button.closest('.task-detail-memo-actions')
+    );
+    
+    if (!memoEditButton) {
+      throw new Error('メモ編集ボタンが見つかりません');
+    }
+    
+    fireEvent.click(memoEditButton);
 
     // テキストエリアが表示されることを確認
     const textarea = await screen.findByPlaceholderText('メモを入力...');
@@ -174,9 +197,18 @@ describe('TaskDetailPage インテグレーションテスト', () => {
       expect(screen.getByRole('heading', { name: mockTask.title })).toBeInTheDocument();
     });
 
-    // 編集ボタンをクリック
-    const editButton = screen.getByRole('button', { name: /編集/i });
-    fireEvent.click(editButton);
+    // メモセクションの編集ボタンを特定して取得
+    const editButtons = screen.getAllByRole('button', { name: /編集/i });
+    // メモセクションの編集ボタンは通常2番目のボタン
+    const memoEditButton = editButtons.find(button => 
+      button.closest('.task-detail-memo-actions')
+    );
+    
+    if (!memoEditButton) {
+      throw new Error('メモ編集ボタンが見つかりません');
+    }
+    
+    fireEvent.click(memoEditButton);
 
     // ヘルプボタンをクリック
     const helpButton = screen.getByRole('button', { name: /ヘルプ/i });

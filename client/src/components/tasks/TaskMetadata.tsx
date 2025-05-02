@@ -1,6 +1,8 @@
 import type React from 'react';
 import { Priority } from '../../types';
-import TagBadge from '../tags/TagBadge';
+import EditablePriority from './EditablePriority';
+import EditableTagList from '../tags/EditableTagList';
+import EditableDueDate from './EditableDueDate';
 import './TaskMetadata.css';
 
 interface TaskMetadataProps {
@@ -10,6 +12,10 @@ interface TaskMetadataProps {
   dueDate?: string;
   createdAt: string;
   updatedAt: string;
+  onPriorityChange?: (priority: Priority) => Promise<void>;
+  onTagsChange?: (tags: string[]) => Promise<void>;
+  onDueDateChange?: (dueDate: string | null) => Promise<void>;
+  editable?: boolean;
 }
 
 /**
@@ -18,10 +24,14 @@ interface TaskMetadataProps {
 const TaskMetadata: React.FC<TaskMetadataProps> = ({
   isCompleted,
   priority,
-  tags,
+  tags = [],
   dueDate,
   createdAt,
   updatedAt,
+  onPriorityChange,
+  onTagsChange,
+  onDueDateChange,
+  editable = false,
 }) => {
   return (
     <div className="task-detail-info">
@@ -34,32 +44,80 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
 
       <div className="task-detail-priority">
         <span className="task-detail-label">優先度</span>
-        <span className={`task-priority priority-${priority}`}>
-          {priority === Priority.High
-            ? '高'
-            : priority === Priority.Medium
-            ? '中'
-            : '低'}
-        </span>
+        {editable && onPriorityChange ? (
+          <EditablePriority 
+            priority={priority} 
+            onSave={onPriorityChange} 
+            disabled={isCompleted} 
+          />
+        ) : (
+          <span className={`task-priority priority-${priority}`}>
+            {priority === Priority.High
+              ? '高'
+              : priority === Priority.Medium
+              ? '中'
+              : '低'}
+          </span>
+        )}
       </div>
 
       {tags && tags.length > 0 && (
         <div className="task-detail-tags">
           <span className="task-detail-label">タグ</span>
-          <div className="task-tags-container">
-            {tags.map(tag => (
-              <TagBadge key={tag} tag={tag} />
-            ))}
-          </div>
+          {editable && onTagsChange ? (
+            <EditableTagList
+              tags={tags}
+              onSave={onTagsChange}
+              disabled={isCompleted}
+            />
+          ) : (
+            <div className="task-tags-container">
+              {tags.map(tag => (
+                <span key={tag} className="tag-badge" aria-label={`タグ: ${tag}`}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tags && tags.length === 0 && editable && onTagsChange && (
+        <div className="task-detail-tags">
+          <span className="task-detail-label">タグ</span>
+          <EditableTagList
+            tags={[]}
+            onSave={onTagsChange}
+            disabled={isCompleted}
+          />
         </div>
       )}
 
       {dueDate && (
         <div className="task-detail-due-date">
           <span className="task-detail-label">期限</span>
-          <span className="task-date">
-            {new Date(dueDate).toLocaleDateString()}
-          </span>
+          {editable && onDueDateChange ? (
+            <EditableDueDate
+              dueDate={dueDate}
+              onSave={onDueDateChange}
+              disabled={isCompleted}
+            />
+          ) : (
+            <span className="task-date">
+              {new Date(dueDate).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      )}
+
+      {!dueDate && editable && onDueDateChange && (
+        <div className="task-detail-due-date">
+          <span className="task-detail-label">期限</span>
+          <EditableDueDate
+            dueDate={null}
+            onSave={onDueDateChange}
+            disabled={isCompleted}
+          />
         </div>
       )}
 
