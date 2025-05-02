@@ -86,12 +86,12 @@
 }
 
 .save-button {
-  background-color: var(--primary-color);
+  background-color: var(--color-primary);
   color: white;
 }
 
 .save-button:hover {
-  background-color: var(--primary-color-dark);
+  background-color: var(--color-primary-dark);
 }
 
 .cancel-button {
