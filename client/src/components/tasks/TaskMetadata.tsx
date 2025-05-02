@@ -2,6 +2,7 @@ import type React from 'react';
 import { Priority } from '../../types';
 import EditablePriority from './EditablePriority';
 import EditableTagList from '../tags/EditableTagList';
+import EditableDueDate from './EditableDueDate';
 import './TaskMetadata.css';
 
 interface TaskMetadataProps {
@@ -13,6 +14,7 @@ interface TaskMetadataProps {
   updatedAt: string;
   onPriorityChange?: (priority: Priority) => Promise<void>;
   onTagsChange?: (tags: string[]) => Promise<void>;
+  onDueDateChange?: (dueDate: string | null) => Promise<void>;
   editable?: boolean;
 }
 
@@ -28,6 +30,7 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
   updatedAt,
   onPriorityChange,
   onTagsChange,
+  onDueDateChange,
   editable = false,
 }) => {
   return (
@@ -82,9 +85,28 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
       {dueDate && (
         <div className="task-detail-due-date">
           <span className="task-detail-label">期限</span>
-          <span className="task-date">
-            {new Date(dueDate).toLocaleDateString()}
-          </span>
+          {editable && onDueDateChange ? (
+            <EditableDueDate
+              dueDate={dueDate}
+              onSave={onDueDateChange}
+              disabled={isCompleted}
+            />
+          ) : (
+            <span className="task-date">
+              {new Date(dueDate).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      )}
+
+      {!dueDate && editable && onDueDateChange && (
+        <div className="task-detail-due-date">
+          <span className="task-detail-label">期限</span>
+          <EditableDueDate
+            dueDate={null}
+            onSave={onDueDateChange}
+            disabled={isCompleted}
+          />
         </div>
       )}
 

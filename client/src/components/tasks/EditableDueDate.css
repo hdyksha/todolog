@@ -1,62 +1,121 @@
 .editable-due-date {
-  display: inline-block;
+  position: relative;
+  width: 100%;
 }
 
-.due-date-badge {
+.due-date-display {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  background-color: var(--color-background-tertiary);
-  color: var(--color-text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--text-color);
 }
 
-.due-date-badge.past-due {
-  background-color: var(--color-error-light);
-  color: var(--color-error-dark);
-}
-
-.due-date-badge.editable {
+.due-date-display.editable {
   cursor: pointer;
-  position: relative;
-  padding-right: 1.5rem;
+  transition: background-color 0.2s;
 }
 
-.due-date-badge .edit-icon {
-  position: absolute;
-  right: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+.due-date-display.editable:hover {
+  background-color: var(--hover-bg-color);
 }
 
-.due-date-badge.editable:hover .edit-icon {
-  opacity: 1;
+.due-date-display .edit-icon {
+  margin-left: 8px;
+  font-size: 0.8rem;
+  opacity: 0.6;
 }
 
-.due-date-edit-container {
+.due-date-edit {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-width: 200px;
+  gap: 8px;
+  padding: 8px;
+  background-color: var(--bg-color-secondary);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.due-date-picker {
-  margin-bottom: 0;
+.due-date-input-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-.due-date-edit-cancel {
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
+.due-date-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.remove-due-date-button {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  font-size: 0.8rem;
   cursor: pointer;
-  font-size: var(--font-size-sm);
-  padding: 0.25rem;
-  text-align: center;
+  transition: background-color 0.2s;
 }
 
-.due-date-edit-cancel:hover {
-  color: var(--color-text);
-  text-decoration: underline;
+.remove-due-date-button:hover {
+  background-color: var(--button-secondary-hover-bg);
+}
+
+.due-date-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.save-button,
+.cancel-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.save-button:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.cancel-button {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+}
+
+.cancel-button:hover {
+  background-color: var(--button-secondary-hover-bg);
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .due-date-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .due-date-actions {
+    justify-content: space-between;
+  }
+  
+  .save-button,
+  .cancel-button {
+    flex: 1;
+  }
 }

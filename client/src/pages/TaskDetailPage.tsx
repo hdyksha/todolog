@@ -20,7 +20,7 @@ const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { tasks, loading, error } = useTaskContext();
   const { fetchTasks, updateMemo, toggleTaskCompletion, deleteTask } = useTaskActions();
-  const { updatePriority, updateTags } = useTaskMetadataActions(id || '');
+  const { updatePriority, updateTags, updateDueDate } = useTaskMetadataActions(id || '');
   
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memo, setMemo] = useState('');
@@ -215,6 +215,46 @@ const TaskDetailPage: React.FC = () => {
     }
   };
 
+  // 締切日の更新
+  const handleDueDateChange = async (newDueDate: string | null) => {
+    if (!id) return;
+    
+    setUpdateStatus({
+      loading: true,
+      error: null,
+      success: false,
+    });
+    
+    try {
+      const updatedTask = await updateDueDate(newDueDate);
+      setTaskDetail(updatedTask);
+      
+      setUpdateStatus({
+        loading: false,
+        error: null,
+        success: true,
+      });
+      
+      // 成功メッセージを一定時間後に消す
+      setTimeout(() => {
+        setUpdateStatus(prev => ({ ...prev, success: false }));
+      }, 3000);
+    } catch (error) {
+      console.error('締切日更新エラー:', error);
+      
+      setUpdateStatus({
+        loading: false,
+        error: error instanceof Error ? error.message : '締切日の更新に失敗しました',
+        success: false,
+      });
+      
+      // エラーメッセージを一定時間後に消す
+      setTimeout(() => {
+        setUpdateStatus(prev => ({ ...prev, error: null }));
+      }, 5000);
+    }
+  };
+
   // タスクの削除
   const handleDeleteTask = async () => {
     if (!id) return;
@@ -301,6 +341,7 @@ const TaskDetailPage: React.FC = () => {
         updatedAt={displayTask.updatedAt}
         onPriorityChange={handlePriorityChange}
         onTagsChange={handleTagsChange}
+        onDueDateChange={handleDueDateChange}
         editable={true}
       />
 

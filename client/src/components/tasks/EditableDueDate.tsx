@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import InlineEditableField from '../ui/InlineEditableField';
-import DatePicker from '../ui/DatePicker';
 import './EditableDueDate.css';
 
 interface EditableDueDateProps {
@@ -10,69 +9,96 @@ interface EditableDueDateProps {
 }
 
 /**
- * 編集可能な締切日表示コンポーネント
+ * 締切日を編集するためのコンポーネント
  */
 const EditableDueDate: React.FC<EditableDueDateProps> = ({
   dueDate,
   onSave,
   disabled = false,
 }) => {
-  // 締切日の表示コンポーネント
-  const renderDueDateDisplay = (value: string | null | undefined, onClick: () => void) => {
-    const displayText = value 
-      ? new Date(value).toLocaleDateString() 
-      : '期限なし';
-    
-    const isPastDue = value && new Date(value) < new Date() && !disabled;
-    
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    dueDate ? new Date(dueDate).toISOString().split('T')[0] : null
+  );
+
+  // 表示モードのレンダリング
+  const renderDisplay = (value: string | null | undefined, onClick: () => void) => {
     if (disabled) {
       return (
-        <span className={`due-date-badge ${isPastDue ? 'past-due' : ''}`}>
-          {displayText}
+        <span className="due-date-display">
+          {value ? new Date(value).toLocaleDateString() : '期限なし'}
         </span>
       );
     }
-    
+
     return (
-      <span 
-        className={`due-date-badge ${isPastDue ? 'past-due' : ''} editable`}
+      <div
+        className="due-date-display editable"
         onClick={onClick}
         role="button"
         tabIndex={0}
         aria-label="締切日を編集"
       >
-        {displayText}
+        {value ? new Date(value).toLocaleDateString() : '期限なし'}
         <span className="edit-icon">✎</span>
-      </span>
+      </div>
     );
   };
 
-  // 締切日の編集コンポーネント
-  const renderDueDateEdit = (
-    currentValue: string | null | undefined,
+  // 編集モードのレンダリング
+  const renderEdit = (
+    value: string | null | undefined,
     onSave: (newValue: string | null) => void,
     onCancel: () => void
   ) => {
-    const handleChange = (newDate: string | null) => {
-      onSave(newDate);
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSelectedDate(e.target.value || null);
+    };
+
+    const handleRemoveDueDate = () => {
+      setSelectedDate(null);
+    };
+
+    const handleSave = () => {
+      onSave(selectedDate);
     };
 
     return (
-      <div className="due-date-edit-container">
-        <DatePicker
-          name="dueDate"
-          value={currentValue || null}
-          onChange={handleChange}
-          allowClear={true}
-          className="due-date-picker"
-        />
-        <button 
-          className="due-date-edit-cancel" 
-          onClick={onCancel}
-          aria-label="キャンセル"
-        >
-          キャンセル
-        </button>
+      <div className="due-date-edit">
+        <div className="due-date-input-container">
+          <input
+            type="date"
+            value={selectedDate || ''}
+            onChange={handleDateChange}
+            className="due-date-input"
+            aria-label="締切日"
+          />
+          <button
+            type="button"
+            onClick={handleRemoveDueDate}
+            className="remove-due-date-button"
+            aria-label="締切日を削除"
+          >
+            クリア
+          </button>
+        </div>
+        <div className="due-date-actions">
+          <button
+            type="button"
+            onClick={handleSave}
+            className="save-button"
+            aria-label="締切日を保存"
+          >
+            保存
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="cancel-button"
+            aria-label="キャンセル"
+          >
+            キャンセル
+          </button>
+        </div>
       </div>
     );
   };
@@ -81,8 +107,8 @@ const EditableDueDate: React.FC<EditableDueDateProps> = ({
     <InlineEditableField
       value={dueDate}
       onSave={onSave}
-      renderDisplay={renderDueDateDisplay}
-      renderEdit={renderDueDateEdit}
+      renderDisplay={renderDisplay}
+      renderEdit={renderEdit}
       className="editable-due-date"
     />
   );
