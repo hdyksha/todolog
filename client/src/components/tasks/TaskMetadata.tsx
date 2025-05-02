@@ -82,6 +82,17 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
         </div>
       )}
 
+      {tags && tags.length === 0 && editable && onTagsChange && (
+        <div className="task-detail-tags">
+          <span className="task-detail-label">タグ</span>
+          <EditableTagList
+            tags={[]}
+            onSave={onTagsChange}
+            disabled={isCompleted}
+          />
+        </div>
+      )}
+
       {dueDate && (
         <div className="task-detail-due-date">
           <span className="task-detail-label">期限</span>
