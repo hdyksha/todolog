@@ -92,6 +92,12 @@ const EditableTagList: React.FC<EditableTagListProps> = ({
       onSave(editedTags);
     };
 
+    const handleCancel = () => {
+      // キャンセル時に元のタグに戻す
+      setEditedTags(tags);
+      onCancel();
+    };
+
     return (
       <div className="tags-edit-container">
         <TagInput
@@ -110,7 +116,7 @@ const EditableTagList: React.FC<EditableTagListProps> = ({
           </button>
           <button 
             className="tags-edit-cancel" 
-            onClick={onCancel}
+            onClick={handleCancel}
             aria-label="キャンセル"
           >
             キャンセル
