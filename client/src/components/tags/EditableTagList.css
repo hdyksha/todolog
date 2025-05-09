@@ -1,34 +1,30 @@
 .editable-tags {
-  display: inline-block;
   width: 100%;
 }
 
 .tags-display {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  min-height: 2rem;
   align-items: center;
+  min-height: 32px;
 }
 
 .tags-display.editable {
   cursor: pointer;
-  position: relative;
-  padding: 0.25rem;
-  border-radius: var(--border-radius-md);
+  padding: 4px;
+  border-radius: 4px;
   transition: background-color 0.2s ease;
 }
 
 .tags-display.editable:hover {
-  background-color: var(--color-background-hover);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .edit-tags-icon {
-  margin-left: 0.5rem;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  margin-left: 8px;
+  font-size: 0.85rem;
+  color: #666;
+  opacity: 0.7;
 }
 
 .tags-display.editable:hover .edit-tags-icon {
@@ -36,54 +32,96 @@
 }
 
 .no-tags {
-  color: var(--color-text-muted);
+  color: #888;
   font-style: italic;
-  font-size: var(--font-size-sm);
+  font-size: 0.9rem;
 }
 
 .tags-edit-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background-color: var(--color-background);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-md);
-  min-width: 250px;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: fade-in 0.2s ease;
 }
 
 .tags-edit-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 8px;
+  gap: 8px;
 }
 
 .tags-edit-save,
 .tags-edit-cancel {
-  background: none;
+  padding: 4px 12px;
   border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--border-radius-sm);
+  border-radius: 4px;
   cursor: pointer;
-  font-size: var(--font-size-sm);
-  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
 }
 
 .tags-edit-save {
-  background-color: var(--color-primary);
+  background-color: #4caf50;
   color: white;
 }
 
 .tags-edit-save:hover {
-  background-color: var(--color-primary-dark);
+  background-color: #43a047;
 }
 
 .tags-edit-cancel {
-  color: var(--color-text-muted);
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
 }
 
 .tags-edit-cancel:hover {
-  background-color: var(--color-background-hover);
-  color: var(--color-text);
+  background-color: #e0e0e0;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* インライン編集用のスタイル */
+.tags-display-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 32px;
+  gap: 4px;
+}
+
+.add-tag-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: #f0f0f0;
+  border: 1px dashed #ccc;
+  color: #666;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-tag-button:hover {
+  background-color: #e0e0e0;
+  border-color: #aaa;
+}
+
+.inline-tag-input {
+  display: inline-block;
+  min-width: 150px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }

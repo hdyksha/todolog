@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import './TagInput.css';
 
 interface TagInputProps {
@@ -8,22 +8,41 @@ interface TagInputProps {
   placeholder?: string;
   maxTags?: number;
   disabled?: boolean;
+  autoFocus?: boolean;
+  onBlur?: () => void;
+  singleTagMode?: boolean;
 }
 
-const TagInput: React.FC<TagInputProps> = ({
+const TagInput = forwardRef<HTMLInputElement, TagInputProps>(({
   selectedTags,
   availableTags,
   onChange,
   placeholder = 'タグを追加...',
   maxTags = Infinity,
-  disabled = false
-}) => {
+  disabled = false,
+  autoFocus = false,
+  onBlur,
+  singleTagMode = false
+}, ref) => {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const suggestionItemsRef = useRef<Array<HTMLDivElement | null>>([]);
+
+  // 外部から渡されたrefとinternalなrefを統合
+  const setInputRefValue = (element: HTMLInputElement | null) => {
+    // 内部のrefを設定
+    inputRef.current = element;
+    
+    // 外部から渡されたrefがある場合は、それも設定
+    if (typeof ref === 'function') {
+      ref(element);
+    } else if (ref) {
+      (ref as React.MutableRefObject<HTMLInputElement | null>).current = element;
+    }
+  };
 
   // 利用可能なタグから、すでに選択されているタグを除外したリストを作成
   const availableSuggestions = Object.keys(availableTags || {})
@@ -35,7 +54,11 @@ const TagInput: React.FC<TagInputProps> = ({
     if (disabled) return;
     
     if (tag && !selectedTags.includes(tag) && selectedTags.length < maxTags) {
-      onChange([...selectedTags, tag]);
+      if (singleTagMode) {
+        onChange([tag]);
+      } else {
+        onChange([...selectedTags, tag]);
+      }
       setInputValue('');
       setShowSuggestions(false);
       setFocusedSuggestionIndex(-1);
@@ -72,6 +95,7 @@ const TagInput: React.FC<TagInputProps> = ({
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
       setFocusedSuggestionIndex(-1);
+      inputRef.current?.blur();
     } else if (e.key === 'ArrowDown' && showSuggestions) {
       e.preventDefault();
       setFocusedSuggestionIndex(prev => 
@@ -99,6 +123,9 @@ const TagInput: React.FC<TagInputProps> = ({
       ) {
         setShowSuggestions(false);
         setFocusedSuggestionIndex(-1);
+        if (onBlur) {
+          onBlur();
+        }
       }
     };
 
@@ -106,7 +133,7 @@ const TagInput: React.FC<TagInputProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [onBlur]);
 
   // フォーカスされた候補にスクロール
   useEffect(() => {
@@ -126,36 +153,45 @@ const TagInput: React.FC<TagInputProps> = ({
     suggestionItemsRef.current = suggestionItemsRef.current.slice(0, availableSuggestions.length);
   }, [availableSuggestions]);
 
+  // autoFocusが有効な場合、マウント時にフォーカスを当てる
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [autoFocus]);
+
   return (
-    <div className={`tag-input-container ${disabled ? 'tag-input-disabled' : ''}`}>
-      <div className="selected-tags">
-        {selectedTags.map(tag => (
-          <div
-            key={tag}
-            className="tag-item"
-            style={{
-              backgroundColor: availableTags[tag]?.color || '#e0e0e0'
-            }}
-          >
-            <span className="tag-text">{tag}</span>
-            {!disabled && (
-              <button
-                type="button"
-                className="tag-remove"
-                onClick={() => removeTag(tag)}
-                aria-label={`${tag}を削除`}
-                tabIndex={0}
-              >
-                ×
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-      {(!maxTags || selectedTags.length < maxTags) && !disabled && (
+    <div className={`tag-input-container ${disabled ? 'tag-input-disabled' : ''} ${singleTagMode ? 'single-tag-mode' : ''}`}>
+      {!singleTagMode && (
+        <div className="selected-tags">
+          {selectedTags.map(tag => (
+            <div
+              key={tag}
+              className="tag-item"
+              style={{
+                backgroundColor: availableTags[tag]?.color || '#e0e0e0'
+              }}
+            >
+              <span className="tag-text">{tag}</span>
+              {!disabled && (
+                <button
+                  type="button"
+                  className="tag-remove"
+                  onClick={() => removeTag(tag)}
+                  aria-label={`${tag}を削除`}
+                  tabIndex={0}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {(!maxTags || selectedTags.length < maxTags || (singleTagMode && selectedTags.length <= 1)) && !disabled && (
         <div className="tag-input-wrapper">
           <input
-            ref={inputRef}
+            ref={setInputRefValue}
             type="text"
             className="tag-input"
             value={inputValue}
@@ -165,8 +201,16 @@ const TagInput: React.FC<TagInputProps> = ({
               setFocusedSuggestionIndex(-1);
             }}
             onFocus={() => setShowSuggestions(true)}
+            onBlur={() => {
+              // 少し遅延させてサジェストのクリックを処理できるようにする
+              setTimeout(() => {
+                if (onBlur) {
+                  onBlur();
+                }
+              }, 200);
+            }}
             onKeyDown={handleKeyDown}
-            placeholder={selectedTags.length === 0 ? placeholder : ''}
+            placeholder={selectedTags.length === 0 || singleTagMode ? placeholder : ''}
             aria-label="タグを追加"
           />
           {showSuggestions && availableSuggestions.length > 0 && (
@@ -193,6 +237,6 @@ const TagInput: React.FC<TagInputProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default TagInput;

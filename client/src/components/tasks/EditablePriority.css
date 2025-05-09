@@ -3,66 +3,78 @@
 }
 
 .priority-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: var(--font-size-sm);
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: white;
-}
-
-.priority-badge.priority-high {
-  background-color: var(--color-error);
-}
-
-.priority-badge.priority-medium {
-  background-color: var(--color-warning);
-}
-
-.priority-badge.priority-low {
-  background-color: var(--color-success);
+  margin-right: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .priority-badge.editable {
   cursor: pointer;
-  position: relative;
-  padding-right: 1.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .priority-badge .edit-icon {
-  position: absolute;
-  right: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  margin-left: 4px;
+  font-size: 0.75rem;
+  opacity: 0.7;
 }
 
-.priority-badge.editable:hover .edit-icon {
+.priority-badge:hover .edit-icon {
   opacity: 1;
 }
 
-.priority-edit-container {
+.priority-high {
+  background-color: rgba(255, 76, 76, 0.15);
+  color: #e53935;
+  border: 1px solid rgba(229, 57, 53, 0.3);
+}
+
+.priority-medium {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #f57c00;
+  border: 1px solid rgba(245, 124, 0, 0.3);
+}
+
+.priority-low {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #43a047;
+  border: 1px solid rgba(67, 160, 71, 0.3);
+}
+
+/* インライン編集用のスタイル */
+.priority-badges-container {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 150px;
+  gap: 8px;
 }
 
-.priority-select {
-  margin-bottom: 0;
+.priority-badge.active {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.priority-edit-cancel {
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  padding: 0.25rem;
-  text-align: center;
+.priority-badge.inactive {
+  opacity: 0.6;
 }
 
-.priority-edit-cancel:hover {
-  color: var(--color-text);
-  text-decoration: underline;
+.priority-badge.inactive:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+
+/* アニメーション */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.priority-badge:hover {
+  animation: pulse 0.5s ease;
 }

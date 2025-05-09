@@ -5,9 +5,11 @@ interface TagBadgeProps {
   tag: string;
   color?: string;
   onClick?: (e?: React.MouseEvent) => void;
+  onRemove?: () => void;
   size?: 'small' | 'medium' | 'large';
   className?: string;
   isNew?: boolean;
+  removable?: boolean;
 }
 
 // タグ名からハッシュ値を生成し、色を決定する関数
@@ -53,9 +55,11 @@ const TagBadge: React.FC<TagBadgeProps> = ({
   tag,
   color,
   onClick,
+  onRemove,
   size = 'medium',
   className = '',
   isNew = false,
+  removable = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const backgroundColor = color || getColorFromTag(tag);
@@ -78,10 +82,18 @@ const TagBadge: React.FC<TagBadgeProps> = ({
     `tag-badge-${size}`,
     onClick ? 'tag-badge-clickable' : '',
     isNew ? 'tag-badge-new' : '',
+    removable ? 'tag-badge-removable' : '',
     className,
   ]
     .filter(Boolean)
     .join(' ');
+
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onRemove) {
+      onRemove();
+    }
+  };
 
   return (
     <span
@@ -93,6 +105,16 @@ const TagBadge: React.FC<TagBadgeProps> = ({
       aria-label={onClick ? `タグ: ${tag}（クリックで選択）` : `タグ: ${tag}`}
     >
       {tag}
+      {removable && (
+        <button
+          className="tag-badge-remove"
+          onClick={handleRemoveClick}
+          aria-label={`タグ ${tag} を削除`}
+          tabIndex={0}
+        >
+          ×
+        </button>
+      )}
     </span>
   );
 };
