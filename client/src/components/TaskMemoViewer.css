@@ -49,14 +49,28 @@
   color: var(--text-muted);
 }
 
-/* リンク */
+/* リンク - 色を変更して視認性を向上 */
 .task-memo-link {
-  color: var(--primary-color);
-  text-decoration: none;
+  color: #0066cc; /* 明確な青色 */
+  text-decoration: underline; /* 下線を追加 */
+  font-weight: 500; /* やや太字に */
+  transition: color 0.2s ease; /* ホバー時の色変化をスムーズに */
 }
 
 .task-memo-link:hover {
+  color: #004499; /* ホバー時はより濃い青色 */
   text-decoration: underline;
+}
+
+/* ダークモード対応のリンク色 */
+@media (prefers-color-scheme: dark) {
+  .task-memo-link {
+    color: #4d9eff; /* ダークモードでは明るい青色 */
+  }
+  
+  .task-memo-link:hover {
+    color: #77b6ff; /* ホバー時はさらに明るい青色 */
+  }
 }
 
 /* コード */
