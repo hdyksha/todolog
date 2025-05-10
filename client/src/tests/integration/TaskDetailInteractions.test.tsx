@@ -12,6 +12,7 @@ import { KeyboardShortcutsProvider } from '../../contexts/KeyboardShortcutsConte
 import { TagProvider } from '../../contexts/TagContext';
 import { mockTask } from '../mocks/taskMocks';
 import api from '../../services/api';
+import { Priority } from '../../types';
 
 // モックナビゲーション関数
 const mockNavigate = vi.fn();
@@ -131,9 +132,17 @@ describe('TaskDetailPage インテグレーションテスト', () => {
       expect(screen.getByRole('heading', { name: mockTask.title })).toBeInTheDocument();
     });
 
-    // 削除ボタンをクリック
-    const deleteButton = screen.getByRole('button', { name: /削除/i });
-    fireEvent.click(deleteButton);
+    // 削除ボタンをクリック - より具体的なセレクタを使用
+    const deleteButtons = screen.getAllByRole('button', { name: /削除/i });
+    const taskDeleteButton = deleteButtons.find(button => 
+      button.classList.contains('button-danger')
+    );
+    
+    if (!taskDeleteButton) {
+      throw new Error('タスク削除ボタンが見つかりません');
+    }
+    
+    fireEvent.click(taskDeleteButton);
 
     // 確認ダイアログが表示されることを確認
     expect(confirmSpy).toHaveBeenCalled();
@@ -185,6 +194,80 @@ describe('TaskDetailPage インテグレーションテスト', () => {
       expect(api.updateTaskMemo).toHaveBeenCalledWith(
         mockTask.id,
         '更新されたメモ内容'
+      );
+    });
+  });
+
+  it('優先度をインラインで変更できる', async () => {
+    renderTaskDetailPage();
+
+    // タスクのタイトルが表示されるまで待機
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: mockTask.title })).toBeInTheDocument();
+    });
+
+    // 優先度「高」をクリック
+    const highPriorityButton = screen.getByRole('button', { name: '優先度を高に設定' });
+    fireEvent.click(highPriorityButton);
+
+    // APIが呼び出されたことを確認
+    await waitFor(() => {
+      expect(api.updateTask).toHaveBeenCalledWith(
+        mockTask.id,
+        expect.objectContaining({ priority: Priority.High })
+      );
+    });
+  });
+
+  it('締切日をインラインで変更できる', async () => {
+    renderTaskDetailPage();
+
+    // タスクのタイトルが表示されるまで待機
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: mockTask.title })).toBeInTheDocument();
+    });
+
+    // 締切日の編集ボタンをクリック
+    const dueDateButton = screen.getByRole('button', { name: '締切日を編集' });
+    fireEvent.click(dueDateButton);
+
+    // 日付入力が表示されることを確認
+    const dateInput = screen.getByLabelText('締切日');
+    expect(dateInput).toBeInTheDocument();
+
+    // 日付を変更
+    fireEvent.change(dateInput, { target: { value: '2025-06-01' } });
+
+    // APIが呼び出されたことを確認
+    await waitFor(() => {
+      expect(api.updateTask).toHaveBeenCalledWith(
+        mockTask.id,
+        expect.objectContaining({ dueDate: '2025-06-01' })
+      );
+    });
+  });
+
+  it('締切日をクリアできる', async () => {
+    renderTaskDetailPage();
+
+    // タスクのタイトルが表示されるまで待機
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: mockTask.title })).toBeInTheDocument();
+    });
+
+    // 締切日の編集ボタンをクリック
+    const dueDateButton = screen.getByRole('button', { name: '締切日を編集' });
+    fireEvent.click(dueDateButton);
+
+    // クリアボタンをクリック
+    const clearButton = screen.getByRole('button', { name: '締切日をクリア' });
+    fireEvent.click(clearButton);
+
+    // APIが呼び出されたことを確認
+    await waitFor(() => {
+      expect(api.updateTask).toHaveBeenCalledWith(
+        mockTask.id,
+        expect.objectContaining({ dueDate: null })
       );
     });
   });

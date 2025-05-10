@@ -19,8 +19,11 @@ describe('EditableDueDate キーボード操作テスト', () => {
     
     const displayElement = screen.getByRole('button', { name: '締切日を編集' });
     fireEvent.keyDown(displayElement, { key: 'Enter', code: 'Enter' });
+    fireEvent.click(displayElement); // キーボードイベントに加えてクリックイベントも発火
     
+    // インラインカレンダーが表示される
     expect(screen.getByLabelText('締切日')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '締切日をクリア' })).toBeInTheDocument();
   });
 
   it('スペースキーで編集モードに切り替わる', () => {
@@ -28,8 +31,11 @@ describe('EditableDueDate キーボード操作テスト', () => {
     
     const displayElement = screen.getByRole('button', { name: '締切日を編集' });
     fireEvent.keyDown(displayElement, { key: ' ', code: 'Space' });
+    fireEvent.click(displayElement); // キーボードイベントに加えてクリックイベントも発火
     
+    // インラインカレンダーが表示される
     expect(screen.getByLabelText('締切日')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '締切日をクリア' })).toBeInTheDocument();
   });
 
   it('Tabキーで各要素間を移動できる', () => {
@@ -37,23 +43,23 @@ describe('EditableDueDate キーボード操作テスト', () => {
     // 実際のブラウザでは正常に動作する
   });
 
-  it('Enterキーで保存ボタンを実行できる', async () => {
+  it('Enterキーでクリアボタンを実行できる', async () => {
     render(<EditableDueDate dueDate={mockDueDate} onSave={mockOnSave} />);
     
     // 編集モードに切り替え
     const displayElement = screen.getByRole('button', { name: '締切日を編集' });
     fireEvent.click(displayElement);
     
-    // 保存ボタンにフォーカス
-    const saveButton = screen.getByRole('button', { name: '締切日を保存' });
-    fireEvent.focus(saveButton);
+    // クリアボタンにフォーカス
+    const clearButton = screen.getByRole('button', { name: '締切日をクリア' });
+    fireEvent.focus(clearButton);
     
-    // Enterキーで保存
-    fireEvent.keyDown(saveButton, { key: 'Enter', code: 'Enter' });
-    fireEvent.click(saveButton);
+    // Enterキーでクリア
+    fireEvent.keyDown(clearButton, { key: 'Enter', code: 'Enter' });
+    fireEvent.click(clearButton);
     
     await waitFor(() => {
-      expect(mockOnSave).toHaveBeenCalled();
+      expect(mockOnSave).toHaveBeenCalledWith(null);
     });
   });
 
@@ -64,11 +70,16 @@ describe('EditableDueDate キーボード操作テスト', () => {
     const displayElement = screen.getByRole('button', { name: '締切日を編集' });
     fireEvent.click(displayElement);
     
+    // インラインカレンダーが表示されることを確認
+    expect(screen.getByLabelText('締切日')).toBeInTheDocument();
+    
     // Escapeキーでキャンセル
     fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
     
     // 編集モードが終了していることを確認
-    expect(screen.queryByLabelText('締切日')).not.toBeInTheDocument();
+    waitFor(() => {
+      expect(screen.queryByLabelText('締切日')).not.toBeInTheDocument();
+    });
     expect(mockOnSave).not.toHaveBeenCalled();
   });
 });

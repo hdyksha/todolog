@@ -22,22 +22,21 @@ describe('EditableDueDate', () => {
     expect(screen.getByText('5/15/2025')).toBeInTheDocument();
   });
 
-  it('締切日がnullの場合は「期限なし」と表示する', () => {
+  it('締切日がnullの場合は「期限を設定」と表示する', () => {
     render(<EditableDueDate dueDate={null} onSave={mockOnSave} />);
     
-    expect(screen.getByText('期限なし')).toBeInTheDocument();
+    expect(screen.getByText('期限を設定')).toBeInTheDocument();
   });
 
-  it('クリックすると編集モードになる', () => {
+  it('クリックするとインラインカレンダーが表示される', () => {
     render(<EditableDueDate dueDate={mockDueDate} onSave={mockOnSave} />);
     
     const displayElement = screen.getByRole('button', { name: '締切日を編集' });
     fireEvent.click(displayElement);
     
-    // 編集モードでは日付入力が表示される
+    // インラインカレンダーが表示される
     expect(screen.getByLabelText('締切日')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '締切日を保存' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '締切日をクリア' })).toBeInTheDocument();
   });
 
   it('日付を変更して保存できる', async () => {
@@ -50,10 +49,6 @@ describe('EditableDueDate', () => {
     // 日付を変更
     const dateInput = screen.getByLabelText('締切日');
     fireEvent.change(dateInput, { target: { value: '2025-06-01' } });
-    
-    // 保存ボタンをクリック
-    const saveButton = screen.getByRole('button', { name: '締切日を保存' });
-    fireEvent.click(saveButton);
     
     // onSaveが正しい値で呼ばれることを確認
     await waitFor(() => {
@@ -69,40 +64,13 @@ describe('EditableDueDate', () => {
     fireEvent.click(displayElement);
     
     // クリアボタンをクリック
-    const clearButton = screen.getByRole('button', { name: '締切日を削除' });
+    const clearButton = screen.getByRole('button', { name: '締切日をクリア' });
     fireEvent.click(clearButton);
-    
-    // 保存ボタンをクリック
-    const saveButton = screen.getByRole('button', { name: '締切日を保存' });
-    fireEvent.click(saveButton);
     
     // onSaveがnullで呼ばれることを確認
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledWith(null);
     });
-  });
-
-  it('キャンセルボタンで編集をキャンセルできる', () => {
-    render(<EditableDueDate dueDate={mockDueDate} onSave={mockOnSave} />);
-    
-    // 編集モードに切り替え
-    const displayElement = screen.getByRole('button', { name: '締切日を編集' });
-    fireEvent.click(displayElement);
-    
-    // 日付を変更
-    const dateInput = screen.getByLabelText('締切日');
-    fireEvent.change(dateInput, { target: { value: '2025-06-01' } });
-    
-    // キャンセルボタンをクリック
-    const cancelButton = screen.getByRole('button', { name: 'キャンセル' });
-    fireEvent.click(cancelButton);
-    
-    // 表示モードに戻ることを確認
-    expect(screen.queryByLabelText('締切日')).not.toBeInTheDocument();
-    expect(screen.getByText('5/15/2025')).toBeInTheDocument();
-    
-    // onSaveが呼ばれないことを確認
-    expect(mockOnSave).not.toHaveBeenCalled();
   });
 
   it('disabledがtrueの場合は編集できない', () => {
