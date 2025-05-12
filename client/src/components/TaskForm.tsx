@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Task, Priority, Tag } from '../types';
 import TagInput from './tags/TagInput';
+import EditablePriority from './tasks/EditablePriority';
 import './TaskForm.css';
 
 interface TaskFormProps {
@@ -92,15 +93,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
         <div className="form-group">
           <label htmlFor="priority">優先度</label>
-          <select
-            id="priority"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as Priority)}
-          >
-            <option value={Priority.High}>高</option>
-            <option value={Priority.Medium}>中</option>
-            <option value={Priority.Low}>低</option>
-          </select>
+          <EditablePriority
+            priority={priority}
+            onSave={(newPriority) => setPriority(newPriority)}
+            inline={false}
+            className="form-priority-selector"
+          />
         </div>
 
         <div className="form-group">

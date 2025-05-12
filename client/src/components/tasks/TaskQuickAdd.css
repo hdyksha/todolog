@@ -20,3 +20,26 @@
     margin-top: 0.5rem;
   }
 }
+.quick-add-input-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.quick-add-priority-selector {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.quick-add-priority-label {
+  font-size: 0.85rem;
+  margin-right: 10px;
+  color: var(--text-secondary);
+}
+
+.quick-add-priority-badges {
+  display: flex;
+  gap: 5px;
+}

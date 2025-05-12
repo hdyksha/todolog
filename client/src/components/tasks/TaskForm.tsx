@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import TagAutocomplete from '../tags/TagAutocomplete';
 import { useTaskContext } from '../../contexts/TaskContext';
+import EditablePriority from './EditablePriority';
 import './TaskForm.css';
 
 interface TaskFormProps {
@@ -109,38 +110,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
       <div className="form-group">
         <label className="form-label">優先度</label>
         <div className="priority-selector">
-          <label className={`priority-option ${priority === Priority.Low ? 'selected' : ''}`}>
-            <input
-              type="radio"
-              name="priority"
-              value={Priority.Low}
-              checked={priority === Priority.Low}
-              onChange={() => setPriority(Priority.Low)}
-            />
-            <span className="priority-label priority-low">低</span>
-          </label>
-          
-          <label className={`priority-option ${priority === Priority.Medium ? 'selected' : ''}`}>
-            <input
-              type="radio"
-              name="priority"
-              value={Priority.Medium}
-              checked={priority === Priority.Medium}
-              onChange={() => setPriority(Priority.Medium)}
-            />
-            <span className="priority-label priority-medium">中</span>
-          </label>
-          
-          <label className={`priority-option ${priority === Priority.High ? 'selected' : ''}`}>
-            <input
-              type="radio"
-              name="priority"
-              value={Priority.High}
-              checked={priority === Priority.High}
-              onChange={() => setPriority(Priority.High)}
-            />
-            <span className="priority-label priority-high">高</span>
-          </label>
+          <EditablePriority
+            priority={priority}
+            onSave={(newPriority) => setPriority(newPriority)}
+            inline={false}
+            className="form-priority-selector"
+          />
         </div>
       </div>
       

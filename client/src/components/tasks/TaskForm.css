@@ -128,3 +128,9 @@
 .tag-remove:hover {
   color: #f44336;
 }
+.form-priority-selector {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 5px;
+}
