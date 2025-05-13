@@ -123,4 +123,17 @@ describe('UnifiedTagInput Component', () => {
     // エスケープキーでサジェストが閉じる（検証は難しいので、エラーが出なければOK）
     expect(true).toBe(true);
   });
+  
+  test('renders in inline mode', () => {
+    render(
+      <UnifiedTagInput
+        selectedTags={['タスク']}
+        onChange={mockOnChange}
+        inline={true}
+      />
+    );
+    
+    expect(screen.getByText('タスク')).toBeInTheDocument();
+    expect(screen.getByText('+ タグを追加')).toBeInTheDocument();
+  });
 });

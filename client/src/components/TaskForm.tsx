@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Task, Priority, Tag } from '../types';
-import TagInput from './tags/TagInput';
+import UnifiedTagInput from './tags/UnifiedTagInput';
 import EditablePriority from './tasks/EditablePriority';
 import './TaskForm.css';
 
@@ -103,10 +103,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
         <div className="form-group">
           <label htmlFor="tags">タグ</label>
-          <TagInput
+          <UnifiedTagInput
             selectedTags={tags}
             onChange={setTags}
-            availableTags={availableTags}
             placeholder="タグを追加..."
           />
         </div>
