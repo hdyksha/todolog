@@ -136,4 +136,29 @@ describe('UnifiedTagInput Component', () => {
     expect(screen.getByText('タスク')).toBeInTheDocument();
     expect(screen.getByText('+ タグを追加')).toBeInTheDocument();
   });
+  
+  test('works with external tags', () => {
+    const externalTags = {
+      'タスク': { color: '#ff0000' },
+      '重要': { color: '#00ff00' },
+      '会議': { color: '#0000ff' }
+    };
+    
+    render(
+      <UnifiedTagInput
+        selectedTags={['タスク']}
+        onChange={mockOnChange}
+        availableTags={externalTags}
+      />
+    );
+    
+    expect(screen.getByText('タスク')).toBeInTheDocument();
+    
+    const input = screen.getByLabelText('タグを追加');
+    fireEvent.change(input, { target: { value: '会' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    
+    // 外部から渡されたタグが正しく使用されていることを確認
+    expect(mockOnChange).toHaveBeenCalledWith(['タスク', '会議']);
+  });
 });

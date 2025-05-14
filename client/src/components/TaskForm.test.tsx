@@ -44,7 +44,8 @@ describe('TaskForm コンポーネント', () => {
     
     // 入力フィールドが空で表示されていることを確認
     expect(screen.getByLabelText(/タイトル/)).toHaveValue('');
-    expect(screen.getByLabelText(/優先度/)).toHaveValue(Priority.Medium);
+    // 優先度の確認（中が選択されていることを確認）
+    expect(screen.getByText('中')).toHaveClass('priority-badge priority-medium active');
     // タグ入力フィールドの確認
     expect(screen.getByText(/タグ/)).toBeInTheDocument();
     expect(screen.getByLabelText(/期限/)).toHaveValue('');
@@ -73,7 +74,8 @@ describe('TaskForm コンポーネント', () => {
     
     // 入力フィールドに既存のタスクデータが表示されていることを確認
     expect(screen.getByLabelText(/タイトル/)).toHaveValue('テストタスク');
-    expect(screen.getByLabelText(/優先度/)).toHaveValue(Priority.Medium);
+    // 優先度の確認（中が選択されていることを確認）
+    expect(screen.getByText('中')).toHaveClass('priority-badge priority-medium active');
     // タグが表示されていることを確認
     expect(screen.getByText(/タグ/)).toBeInTheDocument();
     // 選択されたタグが表示されていることを確認（タグの表示方法に依存）
@@ -136,8 +138,9 @@ describe('TaskForm コンポーネント', () => {
     const titleInput = screen.getByLabelText(/タイトル/);
     fireEvent.change(titleInput, { target: { value: '新しいタスク' } });
     
-    const prioritySelect = screen.getByLabelText(/優先度/);
-    fireEvent.change(prioritySelect, { target: { value: Priority.High } });
+    // 優先度を「高」に変更
+    const highPriorityButton = screen.getByText('高');
+    fireEvent.click(highPriorityButton);
     
     // タグ入力（実装に依存）
     const tagInput = screen.getByPlaceholderText(/タグを追加/);

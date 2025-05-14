@@ -107,6 +107,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             selectedTags={tags}
             onChange={setTags}
             placeholder="タグを追加..."
+            availableTags={availableTags}
           />
         </div>
 

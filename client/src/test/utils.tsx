@@ -3,6 +3,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { TaskProvider } from '../contexts/TaskContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { TagProvider } from '../contexts/TagContext';
 
 // テスト用のプロバイダーラッパー
 interface AllProvidersProps {
@@ -13,9 +14,11 @@ const AllProviders = ({ children }: AllProvidersProps) => {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <TaskProvider>
-          {children}
-        </TaskProvider>
+        <TagProvider>
+          <TaskProvider>
+            {children}
+          </TaskProvider>
+        </TagProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

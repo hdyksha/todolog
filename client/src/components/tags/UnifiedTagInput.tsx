@@ -14,11 +14,17 @@ interface UnifiedTagInputProps {
   singleTagMode?: boolean;
   inline?: boolean;
   className?: string;
+  // 外部からタグを直接渡す場合（TaskFormTagInputの代替）
+  availableTags?: Record<string, { color: string }>;
 }
 
 /**
  * 統一されたタグ入力コンポーネント
  * タスク作成/編集フォームとタスク詳細画面の両方で使用可能
+ * 
+ * 使用方法:
+ * 1. 通常使用: TagContextからタグ情報を取得
+ * 2. 外部タグ: availableTags={...} で外部からタグ情報を直接提供
  */
 const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
   selectedTags,
@@ -30,9 +36,18 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
   onBlur,
   singleTagMode = false,
   inline = false,
-  className = ''
+  className = '',
+  availableTags: externalTags
 }, ref) => {
-  const { state: { tags: tagMap, loading } } = useTagContext();
+  // 外部から渡されたタグがあればそれを使い、なければTagContextから取得
+  const useExternalTags = !!externalTags;
+  const tagContext = useTagContext();
+  
+  // データソースの選択: 外部タグまたはTagContext
+  const { tags: contextTagMap, loading } = useExternalTags 
+    ? { tags: externalTags, loading: false } 
+    : tagContext.state;
+  
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
@@ -56,14 +71,19 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
 
   // 利用可能なタグを整形
   const availableTags = React.useMemo(() => {
-    if (loading || !tagMap) return {};
+    if ((loading) || !contextTagMap) return {};
     
     const formattedTags: Record<string, { color: string }> = {};
-    Object.entries(tagMap).forEach(([tag, data]) => {
-      formattedTags[tag] = { color: data.color || '#e0e0e0' };
+    Object.entries(contextTagMap).forEach(([tag, data]) => {
+      if (typeof data === 'object' && data !== null) {
+        formattedTags[tag] = { color: data.color || '#e0e0e0' };
+      } else {
+        // externalTagsの場合、既に{color: string}形式になっている可能性がある
+        formattedTags[tag] = { color: '#e0e0e0' };
+      }
     });
     return formattedTags;
-  }, [tagMap, loading]);
+  }, [contextTagMap, loading]);
 
   // 利用可能なタグから、すでに選択されているタグを除外したリストを作成
   const availableSuggestions = Object.keys(availableTags || {})
@@ -201,7 +221,7 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
               <TagBadge
                 key={tag}
                 tag={tag}
-                color={tagMap && tagMap[tag] ? tagMap[tag].color : undefined}
+                color={contextTagMap && contextTagMap[tag] ? contextTagMap[tag].color : undefined}
                 removable={!disabled}
                 onRemove={() => removeTag(tag)}
               />
@@ -236,7 +256,7 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
                       className={`tag-suggestion-item ${focusedSuggestionIndex === index ? 'focused' : ''}`}
                       onClick={() => handleSuggestionClick(suggestion)}
                       style={{
-                        borderLeftColor: tagMap && tagMap[suggestion] ? tagMap[suggestion].color : undefined
+                        borderLeftColor: contextTagMap && contextTagMap[suggestion] ? contextTagMap[suggestion].color : undefined
                       }}
                       role="option"
                       aria-selected={focusedSuggestionIndex === index}
@@ -275,7 +295,7 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
             <TagBadge
               key={tag}
               tag={tag}
-              color={tagMap && tagMap[tag] ? tagMap[tag].color : undefined}
+              color={contextTagMap && contextTagMap[tag] ? contextTagMap[tag].color : undefined}
               removable={!disabled}
               onRemove={() => removeTag(tag)}
             />
@@ -316,7 +336,7 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
                   className={`tag-suggestion-item ${focusedSuggestionIndex === index ? 'focused' : ''}`}
                   onClick={() => handleSuggestionClick(suggestion)}
                   style={{
-                    borderLeftColor: tagMap && tagMap[suggestion] ? tagMap[suggestion].color : undefined
+                    borderLeftColor: contextTagMap && contextTagMap[suggestion] ? contextTagMap[suggestion].color : undefined
                   }}
                   role="option"
                   aria-selected={focusedSuggestionIndex === index}

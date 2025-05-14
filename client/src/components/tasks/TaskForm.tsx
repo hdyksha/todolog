@@ -3,6 +3,7 @@ import { Task, Priority } from '../../types';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { useTaskContext } from '../../contexts/TaskContext';
+import { useTagContext } from '../../contexts/TagContext';
 import EditablePriority from './EditablePriority';
 import UnifiedTagInput from '../tags/UnifiedTagInput';
 import './TaskForm.css';
@@ -21,12 +22,37 @@ const TaskForm: React.FC<TaskFormProps> = ({
   isSubmitting = false,
 }) => {
   const { tasks } = useTaskContext();
+  const { state: { tags: tagContextTags } } = useTagContext();
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Priority>(Priority.Medium);
   const [tags, setTags] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
   const [memo, setMemo] = useState('');
   const [titleError, setTitleError] = useState('');
+  
+  // タグ情報をマージ
+  const mergedTags = React.useMemo(() => {
+    // TagContextからのタグ情報（色情報を含む）
+    const mergedTagsMap: Record<string, { color: string }> = {};
+    
+    // TagContextのタグを追加
+    Object.entries(tagContextTags || {}).forEach(([tagName, tagInfo]) => {
+      mergedTagsMap[tagName] = { color: tagInfo.color || '#e0e0e0' };
+    });
+    
+    // タスクから収集したタグも追加（TagContextに存在しない場合のみ）
+    tasks.forEach(task => {
+      if (task.tags) {
+        task.tags.forEach(tag => {
+          if (!mergedTagsMap[tag]) {
+            mergedTagsMap[tag] = { color: '#e0e0e0' };
+          }
+        });
+      }
+    });
+    
+    return mergedTagsMap;
+  }, [tasks, tagContextTags]);
 
   // 編集モードの場合、既存のタスクデータをフォームに設定
   useEffect(() => {
@@ -111,6 +137,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             selectedTags={tags}
             onChange={setTags}
             placeholder="タグを入力してEnterキーで追加"
+            availableTags={mergedTags}
           />
         </div>
       </div>
