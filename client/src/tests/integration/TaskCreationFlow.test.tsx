@@ -3,32 +3,28 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { TaskProvider } from '../../contexts/TaskContext';
+import { TagProvider } from '../../contexts/TagContext';
 import TaskForm from '../../components/TaskForm';
 import { Priority } from '../../types';
 
-// モックタグデータ
-const mockAvailableTags = {
-  '仕事': { color: '#ff0000' },
-  '個人': { color: '#00ff00' },
-  '買い物': { color: '#0000ff' }
-};
+// TagContextをモック
+vi.mock('../../contexts/TagContext', () => ({
+  useTagContext: () => ({
+    state: {
+      tags: {
+        '仕事': { color: '#ff0000' },
+        '個人': { color: '#00ff00' },
+        '買い物': { color: '#0000ff' }
+      },
+      loading: false,
+      error: null
+    }
+  }),
+  TagProvider: ({ children }) => children
+}));
 
 // MSWサーバーのセットアップ
-const server = setupServer(
-  http.post('http://localhost:3001/api/tasks', async ({ request }) => {
-    const body = await request.json();
-    return HttpResponse.json({
-      id: 'new-task-id',
-      ...body,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }, { status: 201 });
-  }),
-  
-  http.get('http://localhost:3001/api/tags', () => {
-    return HttpResponse.json(mockAvailableTags);
-  })
-);
+const server = setupServer();
 
 // テスト前にサーバーを起動
 beforeAll(() => server.listen());
@@ -42,92 +38,117 @@ afterAll(() => server.close());
 describe('タスク作成フロー', () => {
   it('フォーム送信後にタスクが作成される', async () => {
     // モック関数の準備
-    const onSave = vi.fn();
+    const onSubmit = vi.fn();
     const onCancel = vi.fn();
     
     // コンポーネントのレンダリング
     render(
       <TaskProvider>
         <TaskForm 
-          availableTags={mockAvailableTags} 
-          onSave={onSave} 
+          onSave={onSubmit} 
           onCancel={onCancel} 
+          availableTags={{
+            '仕事': { color: '#ff0000' },
+            '個人': { color: '#00ff00' },
+            '買い物': { color: '#0000ff' }
+          }}
         />
       </TaskProvider>
     );
     
-    // フォームに入力
-    fireEvent.change(screen.getByLabelText(/タイトル/i), {
-      target: { value: '新しいテストタスク' }
-    });
+    // フォームに値を入力
+    const titleInput = screen.getByLabelText(/タイトル/i);
+    fireEvent.change(titleInput, { target: { value: '新しいタスク' } });
     
-    // 優先度を選択
-    fireEvent.change(screen.getByLabelText(/優先度/i), {
-      target: { value: Priority.High }
-    });
+    // 優先度を「高」に変更
+    const highPriorityButton = screen.getByText('高');
+    fireEvent.click(highPriorityButton);
     
     // タグを追加
     const tagInput = screen.getByLabelText('タグを追加');
     fireEvent.change(tagInput, { target: { value: '仕事' } });
     fireEvent.keyDown(tagInput, { key: 'Enter' });
     
-    // フォームを送信
-    const saveButton = screen.getByText('作成');
-    fireEvent.click(saveButton);
+    // 期限を設定
+    const dueDateInput = screen.getByLabelText(/期限/i);
+    fireEvent.change(dueDateInput, { target: { value: '2025-06-01' } });
     
-    // 送信成功を確認
-    await waitFor(() => {
-      expect(onSave).toHaveBeenCalledTimes(1);
-      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
-        title: '新しいテストタスク',
-        priority: Priority.High,
-        tags: ['仕事']
-      }));
-    });
+    // メモを入力
+    const memoInput = screen.getByLabelText(/メモ/i);
+    fireEvent.change(memoInput, { target: { value: 'これは新しいタスクのメモです' } });
+    
+    // フォームを送信
+    const submitButton = screen.getByText('作成');
+    fireEvent.click(submitButton);
+    
+    // onSubmitが正しいデータで呼ばれたことを確認
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      title: '新しいタスク',
+      priority: Priority.High,
+      tags: ['仕事'],
+      dueDate: expect.any(Date),
+      memo: 'これは新しいタスクのメモです',
+      completed: false
+    }));
   });
   
   it('バリデーションエラーが表示される', async () => {
     // モック関数の準備
-    const onSave = vi.fn();
+    const onSubmit = vi.fn();
     const onCancel = vi.fn();
     
     // コンポーネントのレンダリング
     render(
       <TaskProvider>
         <TaskForm 
-          availableTags={mockAvailableTags} 
-          onSave={onSave} 
+          onSave={onSubmit} 
           onCancel={onCancel} 
+          availableTags={{
+            '仕事': { color: '#ff0000' },
+            '個人': { color: '#00ff00' },
+            '買い物': { color: '#0000ff' }
+          }}
         />
       </TaskProvider>
     );
     
     // タイトルを空のままフォームを送信
-    const saveButton = screen.getByText('作成');
-    fireEvent.click(saveButton);
+    const submitButton = screen.getByText('作成');
+    fireEvent.click(submitButton);
     
     // バリデーションエラーが表示されることを確認
-    expect(screen.getByText('タイトルは必須です')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/タイトルは必須です/i)).toBeInTheDocument();
+    });
     
-    // onSaveが呼ばれていないことを確認
-    expect(onSave).not.toHaveBeenCalled();
+    // onSubmitが呼ばれていないことを確認
+    expect(onSubmit).not.toHaveBeenCalled();
   });
   
   it('キャンセルボタンが機能する', async () => {
     // モック関数の準備
-    const onSave = vi.fn();
+    const onSubmit = vi.fn();
     const onCancel = vi.fn();
     
     // コンポーネントのレンダリング
     render(
       <TaskProvider>
         <TaskForm 
-          availableTags={mockAvailableTags} 
-          onSave={onSave} 
+          onSave={onSubmit} 
           onCancel={onCancel} 
+          availableTags={{
+            '仕事': { color: '#ff0000' },
+            '個人': { color: '#00ff00' },
+            '買い物': { color: '#0000ff' }
+          }}
         />
       </TaskProvider>
     );
+    
+    // タイトルを入力
+    const titleInput = screen.getByLabelText(/タイトル/i);
+    fireEvent.change(titleInput, { target: { value: 'キャンセルするタスク' } });
     
     // キャンセルボタンをクリック
     const cancelButton = screen.getByText('キャンセル');
@@ -136,7 +157,7 @@ describe('タスク作成フロー', () => {
     // onCancelが呼ばれたことを確認
     expect(onCancel).toHaveBeenCalledTimes(1);
     
-    // onSaveが呼ばれていないことを確認
-    expect(onSave).not.toHaveBeenCalled();
+    // onSubmitが呼ばれていないことを確認
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });

@@ -1,9 +1,24 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import TaskForm from '../../components/TaskForm';
+import TaskForm from '../../components/tasks/TaskForm';
 import { Priority, Task } from '../../types';
 import { TaskProvider } from '../../contexts/TaskContext';
 import { vi } from 'vitest';
+
+// TagContextをモック
+vi.mock('../../contexts/TagContext', () => ({
+  useTagContext: () => ({
+    state: {
+      tags: {
+        '仕事': { color: '#ff0000' },
+        '個人': { color: '#00ff00' },
+        '買い物': { color: '#0000ff' }
+      },
+      loading: false,
+      error: null
+    }
+  })
+}));
 
 // モックタスク
 const mockTask: Task = {
@@ -16,15 +31,8 @@ const mockTask: Task = {
   tags: ['仕事']
 };
 
-// モックタグデータ
-const mockAvailableTags = {
-  '仕事': { color: '#ff0000' },
-  '個人': { color: '#00ff00' },
-  '買い物': { color: '#0000ff' }
-};
-
 // モック関数
-const mockOnSave = vi.fn();
+const mockOnSubmit = vi.fn();
 const mockOnCancel = vi.fn();
 
 describe('TaskForm キーボード操作', () => {
@@ -36,8 +44,7 @@ describe('TaskForm キーボード操作', () => {
     render(
       <TaskProvider>
         <TaskForm 
-          availableTags={mockAvailableTags}
-          onSave={mockOnSave} 
+          onSubmit={mockOnSubmit} 
           onCancel={mockOnCancel} 
         />
       </TaskProvider>
@@ -52,8 +59,8 @@ describe('TaskForm キーボード操作', () => {
     fireEvent.click(submitButton);
     
     // 送信関数が呼ばれたことを確認
-    expect(mockOnSave).toHaveBeenCalledTimes(1);
-    expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
+    expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+    expect(mockOnSubmit).toHaveBeenCalledWith(expect.objectContaining({
       title: 'キーボードテスト'
     }));
   });
@@ -62,8 +69,7 @@ describe('TaskForm キーボード操作', () => {
     render(
       <TaskProvider>
         <TaskForm 
-          availableTags={mockAvailableTags}
-          onSave={mockOnSave} 
+          onSubmit={mockOnSubmit} 
           onCancel={mockOnCancel} 
         />
       </TaskProvider>
@@ -79,6 +85,6 @@ describe('TaskForm キーボード操作', () => {
     
     // キャンセル関数が呼ばれたことを確認
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
-    expect(mockOnSave).not.toHaveBeenCalled();
+    expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 });

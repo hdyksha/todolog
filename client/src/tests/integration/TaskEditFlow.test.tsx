@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { TaskProvider } from '../../contexts/TaskContext';
+import { TagProvider } from '../../contexts/TagContext';
 import TaskForm from '../../components/TaskForm';
 import { Priority, Task } from '../../types';
 
@@ -19,20 +20,25 @@ const mockTask: Task = {
   memo: 'これはテスト用のメモです'
 };
 
-// モックタグデータ
-const mockAvailableTags = {
-  '仕事': { color: '#ff0000' },
-  '個人': { color: '#00ff00' },
-  '買い物': { color: '#0000ff' },
-  'テスト': { color: '#ffff00' }
-};
+// TagContextをモック
+vi.mock('../../contexts/TagContext', () => ({
+  useTagContext: () => ({
+    state: {
+      tags: {
+        '仕事': { color: '#ff0000' },
+        '個人': { color: '#00ff00' },
+        '買い物': { color: '#0000ff' },
+        'テスト': { color: '#ffff00' }
+      },
+      loading: false,
+      error: null
+    }
+  }),
+  TagProvider: ({ children }) => children
+}));
 
 // MSWサーバーのセットアップ
-const server = setupServer(
-  http.get('http://localhost:3001/api/tags', () => {
-    return HttpResponse.json(mockAvailableTags);
-  })
-);
+const server = setupServer();
 
 // テスト前にサーバーを起動
 beforeAll(() => server.listen());
@@ -54,23 +60,27 @@ describe('タスク編集フロー', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask}
-          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
+          availableTags={{
+            '仕事': { color: '#ff0000' },
+            '個人': { color: '#00ff00' },
+            '買い物': { color: '#0000ff' },
+            'テスト': { color: '#ffff00' }
+          }}
         />
       </TaskProvider>
     );
     
     // 各フィールドの値を確認
     expect(screen.getByLabelText(/タイトル/i)).toHaveValue('既存のタスク');
-    expect(screen.getByLabelText(/優先度/i)).toHaveValue(Priority.Medium);
+    expect(screen.getByText('中')).toHaveClass('priority-badge priority-medium active');
     // タグが表示されていることを確認
     expect(screen.getByText(/タグ/i)).toBeInTheDocument();
     // 選択されたタグ「テスト」が表示されていることを確認
     expect(screen.getByText('テスト')).toBeInTheDocument();
     expect(screen.getByLabelText(/期限/i)).toHaveValue('2025-05-01');
     expect(screen.getByLabelText(/メモ/i)).toHaveValue('これはテスト用のメモです');
-    expect(screen.getByLabelText(/完了/i)).not.toBeChecked();
   });
   
   it('タスクが正常に更新される', async () => {
@@ -83,9 +93,14 @@ describe('タスク編集フロー', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask}
-          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
+          availableTags={{
+            '仕事': { color: '#ff0000' },
+            '個人': { color: '#00ff00' },
+            '買い物': { color: '#0000ff' },
+            'テスト': { color: '#ffff00' }
+          }}
         />
       </TaskProvider>
     );
@@ -95,8 +110,8 @@ describe('タスク編集フロー', () => {
     fireEvent.change(titleInput, { target: { value: '更新されたタスク' } });
     
     // 優先度を変更
-    const prioritySelect = screen.getByLabelText(/優先度/i);
-    fireEvent.change(prioritySelect, { target: { value: Priority.High } });
+    const highPriorityButton = screen.getByText('高');
+    fireEvent.click(highPriorityButton);
     
     // タグを追加（実装に依存）
     // 既存のタグ「テスト」は既に選択されている
@@ -113,10 +128,6 @@ describe('タスク編集フロー', () => {
     const memoInput = screen.getByLabelText(/メモ/i);
     fireEvent.change(memoInput, { target: { value: '更新されたメモです' } });
     
-    // 完了状態を変更
-    const completedCheckbox = screen.getByLabelText(/完了/i);
-    fireEvent.click(completedCheckbox);
-    
     // フォームを送信
     fireEvent.click(screen.getByText('更新'));
     
@@ -128,8 +139,7 @@ describe('タスク編集フロー', () => {
       priority: Priority.High,
       tags: expect.arrayContaining(['テスト', '仕事']),
       dueDate: expect.any(Date),
-      memo: '更新されたメモです',
-      completed: true
+      memo: '更新されたメモです'
     }));
   });
   
@@ -143,9 +153,14 @@ describe('タスク編集フロー', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask}
-          availableTags={mockAvailableTags} 
           onSave={onSave} 
           onCancel={onCancel} 
+          availableTags={{
+            '仕事': { color: '#ff0000' },
+            '個人': { color: '#00ff00' },
+            '買い物': { color: '#0000ff' },
+            'テスト': { color: '#ffff00' }
+          }}
         />
       </TaskProvider>
     );
@@ -158,7 +173,9 @@ describe('タスク編集フロー', () => {
     fireEvent.click(screen.getByText('更新'));
     
     // バリデーションエラーが表示されることを確認
-    expect(screen.getByText('タイトルは必須です')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/タイトルは必須です/i)).toBeInTheDocument();
+    });
     
     // onSaveが呼ばれていないことを確認
     expect(onSave).not.toHaveBeenCalled();

@@ -1,10 +1,27 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import TaskForm from '../../components/TaskForm';
+import TaskForm from '../../components/tasks/TaskForm';
 import { Priority, Task } from '../../types';
 import { TaskProvider } from '../../contexts/TaskContext';
+import { TagProvider } from '../../contexts/TagContext';
 import { vi } from 'vitest';
+
+// TagContextをモック
+vi.mock('../../contexts/TagContext', () => ({
+  useTagContext: () => ({
+    state: {
+      tags: {
+        '仕事': { color: '#ff0000' },
+        '個人': { color: '#00ff00' },
+        '買い物': { color: '#0000ff' },
+        '重要': { color: '#ffff00' }
+      },
+      loading: false,
+      error: null
+    }
+  })
+}));
 
 // モックタスク
 const mockTask: Task = {
@@ -15,14 +32,6 @@ const mockTask: Task = {
   createdAt: '2023-01-01T00:00:00.000Z',
   updatedAt: '2023-01-01T00:00:00.000Z',
   tags: ['仕事', '重要']
-};
-
-// モックタグデータ
-const mockAvailableTags = {
-  '仕事': { color: '#ff0000' },
-  '個人': { color: '#00ff00' },
-  '買い物': { color: '#0000ff' },
-  '重要': { color: '#ffff00' }
 };
 
 // モック関数
@@ -42,9 +51,8 @@ describe('TaskForm コンポーネントのアクセシビリティ', () => {
     const { container } = render(
       <TaskProvider>
         <TaskForm 
-          onSave={mockOnSubmit} 
-          onCancel={mockOnCancel} 
-          availableTags={mockAvailableTags}
+          onSubmit={mockOnSubmit} 
+          onCancel={mockOnCancel}
         />
       </TaskProvider>
     );
@@ -58,9 +66,8 @@ describe('TaskForm コンポーネントのアクセシビリティ', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask} 
-          onSave={mockOnSubmit} 
-          onCancel={mockOnCancel} 
-          availableTags={mockAvailableTags}
+          onSubmit={mockOnSubmit} 
+          onCancel={mockOnCancel}
         />
       </TaskProvider>
     );
@@ -74,10 +81,9 @@ describe('TaskForm コンポーネントのアクセシビリティ', () => {
       <TaskProvider>
         <TaskForm 
           task={mockTask} 
-          onSave={mockOnSubmit} 
+          onSubmit={mockOnSubmit} 
           onCancel={mockOnCancel} 
-          isSubmitting={true} 
-          availableTags={mockAvailableTags}
+          isSubmitting={true}
         />
       </TaskProvider>
     );

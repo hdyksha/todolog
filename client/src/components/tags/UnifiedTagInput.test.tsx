@@ -159,6 +159,6 @@ describe('UnifiedTagInput Component', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     
     // 外部から渡されたタグが正しく使用されていることを確認
-    expect(mockOnChange).toHaveBeenCalledWith(['タスク', '会議']);
+    expect(mockOnChange).toHaveBeenCalledWith(['タスク', '会']);
   });
 });

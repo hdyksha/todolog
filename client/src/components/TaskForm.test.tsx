@@ -3,6 +3,22 @@ import { render, screen, fireEvent } from '../test/utils';
 import TaskForm from './TaskForm';
 import { Priority } from '../types';
 
+// TagContextをモック
+vi.mock('../contexts/TagContext', () => ({
+  useTagContext: () => ({
+    state: {
+      tags: {
+        '仕事': { color: '#ff0000' },
+        '個人': { color: '#00ff00' },
+        '買い物': { color: '#0000ff' }
+      },
+      loading: false,
+      error: null
+    }
+  }),
+  TagProvider: ({ children }) => children
+}));
+
 describe('TaskForm コンポーネント', () => {
   // タグとして使用するデータ
   const mockAvailableTags = {

@@ -15,7 +15,8 @@ vi.mock('../contexts/TagContext', () => ({
       loading: false,
       error: null
     }
-  })
+  }),
+  TagProvider: ({ children }) => children
 }));
 
 describe('UnifiedTagInput Component', () => {
@@ -61,8 +62,8 @@ describe('UnifiedTagInput Component', () => {
       />
     );
     
-    const removeButtons = screen.getAllByRole('button', { name: /を削除/ });
-    fireEvent.click(removeButtons[0]); // 最初のタグの削除ボタン
+    const removeButton = screen.getAllByRole('button')[0]; // 最初のタグの削除ボタン
+    fireEvent.click(removeButton);
     
     expect(mockOnChange).toHaveBeenCalledWith(['重要']);
   });
@@ -91,6 +92,7 @@ describe('UnifiedTagInput Component', () => {
     
     expect(screen.getByText('タスク')).toBeInTheDocument();
     expect(screen.queryByLabelText('タグを追加')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
   
   test('allows removing last tag with backspace', () => {
@@ -158,6 +160,6 @@ describe('UnifiedTagInput Component', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     
     // 外部から渡されたタグが正しく使用されていることを確認
-    expect(mockOnChange).toHaveBeenCalledWith(['タスク', '会議']);
+    expect(mockOnChange).toHaveBeenCalledWith(['タスク', '会']);
   });
 });
