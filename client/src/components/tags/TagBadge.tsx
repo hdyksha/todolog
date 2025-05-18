@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTagContext } from '../../contexts/TagContext';
+import { getTagInfo } from '../../utils/tagUtils';
 import './TagBadge.css';
 
 interface TagBadgeProps {
@@ -12,45 +14,6 @@ interface TagBadgeProps {
   removable?: boolean;
 }
 
-// タグ名からハッシュ値を生成し、色を決定する関数
-const getColorFromTag = (tag: string): string => {
-  let hash = 0;
-  for (let i = 0; i < tag.length; i++) {
-    hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  
-  // 色相を決定（0-360）
-  const hue = hash % 360;
-  
-  // HSLカラーを返す（彩度と明度は固定）
-  return `hsl(${hue}, 70%, 65%)`;
-};
-
-// コントラスト比を計算して、白または黒のテキスト色を決定する
-const getTextColor = (backgroundColor: string): string => {
-  // HSLから明度を抽出
-  const match = backgroundColor.match(/hsl\(\d+,\s*\d+%,\s*(\d+)%\)/);
-  if (match && match[1]) {
-    const lightness = parseInt(match[1], 10);
-    // 明度が50%以上なら黒、それ以下なら白
-    return lightness >= 50 ? '#000' : '#fff';
-  }
-  
-  // HEXカラーの場合
-  if (backgroundColor.startsWith('#')) {
-    const hex = backgroundColor.substring(1);
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    
-    // 明度の計算（YIQ式）
-    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    return yiq >= 128 ? '#000' : '#fff';
-  }
-  
-  return '#fff'; // デフォルトは白
-};
-
 const TagBadge: React.FC<TagBadgeProps> = ({
   tag,
   color,
@@ -62,8 +25,15 @@ const TagBadge: React.FC<TagBadgeProps> = ({
   removable = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const backgroundColor = color || getColorFromTag(tag);
-  const textColor = getTextColor(backgroundColor);
+  const { state: { tags: contextTags } } = useTagContext();
+  
+  // タグの色情報を取得
+  // 1. 明示的に指定された色を優先
+  // 2. TagContextから取得
+  // 3. タグ名からハッシュ値を生成して色を決定
+  const tagInfo = color 
+    ? { color, textColor: getTagInfo('', { '': { color } }).textColor }
+    : getTagInfo(tag, contextTags);
   
   useEffect(() => {
     // マウント時にアニメーションのためにvisibleに設定
@@ -71,8 +41,8 @@ const TagBadge: React.FC<TagBadgeProps> = ({
   }, []);
 
   const style = {
-    backgroundColor,
-    color: textColor,
+    backgroundColor: tagInfo.color,
+    color: tagInfo.textColor,
     opacity: isVisible ? 1 : 0,
     transform: isVisible ? 'translateY(0)' : 'translateY(5px)',
   };

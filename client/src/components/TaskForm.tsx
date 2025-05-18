@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Task, Priority, Tag } from '../types';
 import UnifiedTagInput from './tags/UnifiedTagInput';
 import EditablePriority from './tasks/EditablePriority';
+import { useTagContext } from '../contexts/TagContext';
+import { mergeTagSources } from '../utils/tagUtils';
 import './TaskForm.css';
 
 interface TaskFormProps {
@@ -17,6 +19,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  // TagContextからタグ情報を取得（信頼できる唯一のソース）
+  const { state: { tags: tagContextTags } } = useTagContext();
+  
   // フォームの状態
   const [title, setTitle] = useState(task?.title || '');
   const [priority, setPriority] = useState<Priority>(task?.priority || Priority.Medium);
@@ -29,6 +34,11 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
   // バリデーション状態
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // タグ情報をマージ - TagContextを信頼できる唯一のソースとして扱う
+  const mergedTags = React.useMemo(() => {
+    return mergeTagSources(tagContextTags, availableTags);
+  }, [tagContextTags, availableTags]);
 
   // タイトル入力のバリデーション
   useEffect(() => {
@@ -107,7 +117,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             selectedTags={tags}
             onChange={setTags}
             placeholder="タグを追加..."
-            availableTags={availableTags}
+            availableTags={mergedTags}
           />
         </div>
 

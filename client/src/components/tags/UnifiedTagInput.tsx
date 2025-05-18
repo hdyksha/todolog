@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import { useTagContext } from '../../contexts/TagContext';
 import TagBadge from './TagBadge';
+import { mergeTagSources } from '../../utils/tagUtils';
 import './UnifiedTagInput.css';
 
 interface UnifiedTagInputProps {
@@ -39,14 +40,13 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
   className = '',
   availableTags: externalTags
 }, ref) => {
-  // 外部から渡されたタグがあればそれを使い、なければTagContextから取得
-  const useExternalTags = !!externalTags;
-  const tagContext = useTagContext();
+  // TagContextからタグ情報を取得
+  const { state: { tags: contextTags, loading } } = useTagContext();
   
-  // データソースの選択: 外部タグまたはTagContext
-  const { tags: contextTagMap, loading } = useExternalTags 
-    ? { tags: externalTags, loading: false } 
-    : tagContext.state;
+  // 利用可能なタグ情報をマージ（優先順位: 1. TagContext, 2. 外部タグ）
+  const availableTags = React.useMemo(() => {
+    return mergeTagSources(contextTags, externalTags);
+  }, [contextTags, externalTags]);
   
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -69,22 +69,6 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
     }
   };
 
-  // 利用可能なタグを整形
-  const availableTags = React.useMemo(() => {
-    if ((loading) || !contextTagMap) return {};
-    
-    const formattedTags: Record<string, { color: string }> = {};
-    Object.entries(contextTagMap).forEach(([tag, data]) => {
-      if (typeof data === 'object' && data !== null) {
-        formattedTags[tag] = { color: data.color || '#e0e0e0' };
-      } else {
-        // externalTagsの場合、既に{color: string}形式になっている可能性がある
-        formattedTags[tag] = { color: '#e0e0e0' };
-      }
-    });
-    return formattedTags;
-  }, [contextTagMap, loading]);
-
   // 利用可能なタグから、すでに選択されているタグを除外したリストを作成
   const availableSuggestions = Object.keys(availableTags || {})
     .filter(tag => !selectedTags.includes(tag) && tag.toLowerCase().includes(inputValue.toLowerCase()))
@@ -100,79 +84,98 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
 
   // タグを追加する
   const addTag = (tag: string) => {
-    if (disabled || !tag.trim()) return;
+    if (!tag.trim() || selectedTags.includes(tag) || selectedTags.length >= maxTags) {
+      return;
+    }
     
-    if (!selectedTags.includes(tag.trim()) && selectedTags.length < maxTags) {
-      if (singleTagMode) {
-        onChange([tag.trim()]);
-      } else {
-        onChange([...selectedTags, tag.trim()]);
-      }
-      setInputValue('');
-      setShowSuggestions(false);
-      setFocusedSuggestionIndex(-1);
-      inputRef.current?.focus();
-    } else if (selectedTags.length >= maxTags) {
-      // 最大タグ数に達した場合の視覚的フィードバック
-      if (inputRef.current) {
-        inputRef.current.classList.add('tag-input-error');
-        setTimeout(() => {
-          inputRef.current?.classList.remove('tag-input-error');
-        }, 500);
-      }
+    // シングルタグモードの場合は既存のタグを置き換え
+    const newTags = singleTagMode ? [tag] : [...selectedTags, tag];
+    onChange(newTags);
+    setInputValue('');
+    setShowSuggestions(false);
+    setFocusedSuggestionIndex(-1);
+    
+    // 入力フィールドにフォーカスを戻す
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
   // タグを削除する
-  const removeTag = (tagToRemove: string) => {
-    if (disabled) return;
-    onChange(selectedTags.filter(tag => tag !== tagToRemove));
+  const removeTag = (tag: string) => {
+    const newTags = selectedTags.filter(t => t !== tag);
+    onChange(newTags);
   };
 
-  // キーボードイベントの処理
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (disabled) return;
-    
-    if (e.key === 'Enter' && inputValue && focusedSuggestionIndex === -1) {
+  // 入力フィールドのキーダウンイベントハンドラー
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
       e.preventDefault();
-      addTag(inputValue);
-    } else if (e.key === 'Enter' && focusedSuggestionIndex >= 0 && availableSuggestions[focusedSuggestionIndex]) {
-      e.preventDefault();
-      addTag(availableSuggestions[focusedSuggestionIndex]);
+      
+      // サジェストが表示されていて、フォーカスされているアイテムがある場合
+      if (showSuggestions && focusedSuggestionIndex >= 0 && focusedSuggestionIndex < availableSuggestions.length) {
+        addTag(availableSuggestions[focusedSuggestionIndex]);
+      } else {
+        // 入力値をそのまま追加
+        addTag(inputValue.trim());
+      }
     } else if (e.key === 'Backspace' && !inputValue && selectedTags.length > 0) {
+      // 入力が空で、Backspaceキーが押された場合、最後のタグを削除
       removeTag(selectedTags[selectedTags.length - 1]);
     } else if (e.key === 'Escape') {
+      // Escapeキーでサジェストを閉じる
       setShowSuggestions(false);
       setFocusedSuggestionIndex(-1);
-      inputRef.current?.blur();
     } else if (e.key === 'ArrowDown' && showSuggestions) {
+      // 下矢印キーでサジェストの次のアイテムにフォーカス
       e.preventDefault();
       setFocusedSuggestionIndex(prev => 
         prev < availableSuggestions.length - 1 ? prev + 1 : prev
       );
     } else if (e.key === 'ArrowUp' && showSuggestions) {
+      // 上矢印キーでサジェストの前のアイテムにフォーカス
       e.preventDefault();
       setFocusedSuggestionIndex(prev => prev > 0 ? prev - 1 : 0);
     }
   };
 
-  // 候補をクリックしたときの処理
-  const handleSuggestionClick = (suggestion: string) => {
-    addTag(suggestion);
+  // サジェストアイテムのクリックハンドラー
+  const handleSuggestionClick = (tag: string) => {
+    addTag(tag);
+  };
+
+  // 入力フィールドの変更ハンドラー
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    
+    // 入力があればサジェストを表示
+    if (value.trim()) {
+      setShowSuggestions(true);
+      setFocusedSuggestionIndex(-1);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  // 入力フィールドのフォーカスハンドラー
+  const handleInputFocus = () => {
+    // フォーカス時に常にサジェストを表示する（入力値の有無に関わらず）
+    setShowSuggestions(true);
   };
 
   // 外部クリックでサジェストを閉じる
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent) => {
       if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
+        suggestionsRef.current && 
+        !suggestionsRef.current.contains(e.target as Node) &&
+        inputRef.current && 
+        !inputRef.current.contains(e.target as Node)
       ) {
         setShowSuggestions(false);
-        setFocusedSuggestionIndex(-1);
-        setIsInputActive(false);
+        
+        // onBlurが指定されていれば呼び出す
         if (onBlur) {
           onBlur();
         }
@@ -198,30 +201,17 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
     }
   }, [focusedSuggestionIndex]);
 
-  // 候補リストの参照を更新
-  useEffect(() => {
-    suggestionItemsRef.current = suggestionItemsRef.current.slice(0, availableSuggestions.length);
-  }, [availableSuggestions]);
-
-  // autoFocusが有効な場合、マウント時にフォーカスを当てる
-  useEffect(() => {
-    if (autoFocus && inputRef.current) {
-      inputRef.current.focus();
-      setIsInputActive(true);
-    }
-  }, [autoFocus]);
-
-  // インラインモードの場合のレンダリング
+  // インラインモードの場合
   if (inline) {
     return (
-      <div className={`unified-tag-input-inline ${className}`}>
-        <div className="tags-display-inline">
+      <div className={`unified-tag-input inline-tag-input ${className}`}>
+        <div className="selected-tags">
           {selectedTags.length > 0 ? (
             selectedTags.map(tag => (
               <TagBadge
                 key={tag}
                 tag={tag}
-                color={contextTagMap && contextTagMap[tag] ? contextTagMap[tag].color : undefined}
+                color={availableTags[tag]?.color}
                 removable={!disabled}
                 onRemove={() => removeTag(tag)}
               />
@@ -238,15 +228,22 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
                 className="tag-input"
                 value={inputValue}
                 onChange={(e) => {
-                  setInputValue(e.target.value);
-                  setShowSuggestions(true);
-                  setFocusedSuggestionIndex(-1);
+                  handleInputChange(e);
                 }}
-                onFocus={() => setShowSuggestions(true)}
                 onKeyDown={handleKeyDown}
-                placeholder={placeholder}
+                onFocus={handleInputFocus}
+                onBlur={() => {
+                  // 少し遅延させてクリックイベントが先に処理されるようにする
+                  setTimeout(() => {
+                    setIsInputActive(false);
+                    if (onBlur) onBlur();
+                  }, 200);
+                }}
+                placeholder=""
                 autoFocus
+                aria-label="タグを追加"
               />
+              
               {showSuggestions && availableSuggestions.length > 0 && (
                 <div className="tag-suggestions" ref={suggestionsRef} role="listbox">
                   {availableSuggestions.map((suggestion, index) => (
@@ -256,7 +253,7 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
                       className={`tag-suggestion-item ${focusedSuggestionIndex === index ? 'focused' : ''}`}
                       onClick={() => handleSuggestionClick(suggestion)}
                       style={{
-                        borderLeftColor: contextTagMap && contextTagMap[suggestion] ? contextTagMap[suggestion].color : undefined
+                        borderLeftColor: availableTags[suggestion]?.color
                       }}
                       role="option"
                       aria-selected={focusedSuggestionIndex === index}
@@ -269,14 +266,10 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
               )}
             </div>
           ) : (
-            <button 
-              className="add-tag-button" 
-              onClick={() => {
-                setIsInputActive(true);
-                setTimeout(() => inputRef.current?.focus(), 0);
-              }}
-              aria-label="タグを追加"
-              disabled={disabled}
+            <button
+              className="add-tag-inline-button"
+              onClick={() => setIsInputActive(true)}
+              disabled={disabled || (maxTags && selectedTags.length >= maxTags)}
             >
               + タグを追加
             </button>
@@ -295,7 +288,7 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
             <TagBadge
               key={tag}
               tag={tag}
-              color={contextTagMap && contextTagMap[tag] ? contextTagMap[tag].color : undefined}
+              color={availableTags[tag]?.color}
               removable={!disabled}
               onRemove={() => removeTag(tag)}
             />
@@ -309,24 +302,15 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
             type="text"
             className="tag-input"
             value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-              setShowSuggestions(true);
-              setFocusedSuggestionIndex(-1);
-            }}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => {
-              // 少し遅延させてサジェストのクリックを処理できるようにする
-              setTimeout(() => {
-                if (onBlur) {
-                  onBlur();
-                }
-              }, 200);
-            }}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={selectedTags.length === 0 || singleTagMode ? placeholder : ''}
+            onFocus={handleInputFocus}
+            placeholder={placeholder}
+            disabled={disabled}
+            autoFocus={autoFocus}
             aria-label="タグを追加"
           />
+          
           {showSuggestions && availableSuggestions.length > 0 && (
             <div className="tag-suggestions" ref={suggestionsRef} role="listbox">
               {availableSuggestions.map((suggestion, index) => (
@@ -336,7 +320,7 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
                   className={`tag-suggestion-item ${focusedSuggestionIndex === index ? 'focused' : ''}`}
                   onClick={() => handleSuggestionClick(suggestion)}
                   style={{
-                    borderLeftColor: contextTagMap && contextTagMap[suggestion] ? contextTagMap[suggestion].color : undefined
+                    borderLeftColor: availableTags[suggestion]?.color
                   }}
                   role="option"
                   aria-selected={focusedSuggestionIndex === index}

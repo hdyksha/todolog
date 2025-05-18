@@ -6,6 +6,7 @@ import { useTaskContext } from '../../contexts/TaskContext';
 import { useTagContext } from '../../contexts/TagContext';
 import EditablePriority from './EditablePriority';
 import UnifiedTagInput from '../tags/UnifiedTagInput';
+import { mergeTagSources } from '../../utils/tagUtils';
 import './TaskForm.css';
 
 interface TaskFormProps {
@@ -30,29 +31,10 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const [memo, setMemo] = useState('');
   const [titleError, setTitleError] = useState('');
   
-  // タグ情報をマージ
+  // タグ情報をマージ - TagContextを信頼できる唯一のソースとして扱う
   const mergedTags = React.useMemo(() => {
-    // TagContextからのタグ情報（色情報を含む）
-    const mergedTagsMap: Record<string, { color: string }> = {};
-    
-    // TagContextのタグを追加
-    Object.entries(tagContextTags || {}).forEach(([tagName, tagInfo]) => {
-      mergedTagsMap[tagName] = { color: tagInfo.color || '#e0e0e0' };
-    });
-    
-    // タスクから収集したタグも追加（TagContextに存在しない場合のみ）
-    tasks.forEach(task => {
-      if (task.tags) {
-        task.tags.forEach(tag => {
-          if (!mergedTagsMap[tag]) {
-            mergedTagsMap[tag] = { color: '#e0e0e0' };
-          }
-        });
-      }
-    });
-    
-    return mergedTagsMap;
-  }, [tasks, tagContextTags]);
+    return mergeTagSources(tagContextTags, {});
+  }, [tagContextTags]);
 
   // 編集モードの場合、既存のタスクデータをフォームに設定
   useEffect(() => {
@@ -65,71 +47,66 @@ const TaskForm: React.FC<TaskFormProps> = ({
     }
   }, [task]);
 
-  const validateForm = (): boolean => {
-    let isValid = true;
-    
-    // タイトルのバリデーション
-    if (!title.trim()) {
-      setTitleError('タイトルは必須です');
-      isValid = false;
-    } else {
+  // タイトル入力時にエラーをクリア
+  useEffect(() => {
+    if (title && titleError) {
       setTitleError('');
     }
-    
-    return isValid;
-  };
+  }, [title, titleError]);
 
+  // フォーム送信ハンドラー
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
+
+    // バリデーション
+    if (!title.trim()) {
+      setTitleError('タイトルは必須です');
       return;
     }
-    
+
+    // タスクデータの作成
     const taskData: Partial<Task> = {
       title: title.trim(),
       priority,
-      tags: tags,
+      tags: tags.length > 0 ? tags : undefined,
+      memo: memo.trim() || undefined,
     };
-    
+
+    // 期限の設定
     if (dueDate) {
-      taskData.dueDate = new Date(dueDate).toISOString();
+      taskData.dueDate = new Date(dueDate);
+    } else {
+      taskData.dueDate = undefined;
     }
-    
-    if (memo) {
-      taskData.memo = memo;
-    }
-    
+
     onSubmit(taskData);
   };
 
   return (
-    <form className="task-form-container" onSubmit={handleSubmit}>
+    <form className="task-form" onSubmit={handleSubmit}>
       <div className="form-group">
         <Input
-          type="text"
+          id="task-title"
           label="タイトル"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          error={titleError}
+          onChange={setTitle}
+          placeholder="タスクのタイトルを入力"
           required
-          fullWidth
+          error={titleError}
+          disabled={isSubmitting}
           autoFocus
         />
       </div>
-      
+
       <div className="form-group">
         <label className="form-label">優先度</label>
-        <div className="priority-selector">
-          <EditablePriority
-            priority={priority}
-            onSave={(newPriority) => setPriority(newPriority)}
-            inline={false}
-            className="form-priority-selector"
-          />
-        </div>
+        <EditablePriority
+          priority={priority}
+          onSave={setPriority}
+          disabled={isSubmitting}
+        />
       </div>
-      
+
       <div className="form-group">
         <label className="form-label">タグ</label>
         <div className="tags-input-container">
@@ -141,21 +118,20 @@ const TaskForm: React.FC<TaskFormProps> = ({
           />
         </div>
       </div>
-      
+
       <div className="form-group">
         <Input
-          type="date"
+          id="task-due-date"
           label="期限"
+          type="date"
           value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          fullWidth
+          onChange={setDueDate}
+          disabled={isSubmitting}
         />
       </div>
-      
+
       <div className="form-group">
-        <label className="form-label" htmlFor="task-memo">
-          メモ
-        </label>
+        <label className="form-label" htmlFor="task-memo">メモ</label>
         <textarea
           id="task-memo"
           className="form-textarea"
@@ -163,9 +139,10 @@ const TaskForm: React.FC<TaskFormProps> = ({
           onChange={(e) => setMemo(e.target.value)}
           placeholder="メモを入力（オプション）"
           rows={4}
+          disabled={isSubmitting}
         />
       </div>
-      
+
       <div className="form-actions">
         <Button
           type="button"
@@ -178,9 +155,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <Button
           type="submit"
           variant="primary"
-          disabled={isSubmitting}
+          loading={isSubmitting}
         >
-          {isSubmitting ? '保存中...' : task ? '更新' : '作成'}
+          {task ? '更新' : '作成'}
         </Button>
       </div>
     </form>
