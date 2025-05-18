@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTagContext } from '../../contexts/TagContext';
-import { getTagInfo } from '../../utils/tagUtils';
+import { getTagInfo, getColorFromTag, getTextColor } from '../../utils/tagUtils';
 import './TagBadge.css';
 
 interface TagBadgeProps {
@@ -25,15 +25,26 @@ const TagBadge: React.FC<TagBadgeProps> = ({
   removable = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { state: { tags: contextTags } } = useTagContext();
+  
+  // TagContextを使用するが、利用できない場合はフォールバックする
+  let contextTags = {};
+  try {
+    const { state } = useTagContext();
+    contextTags = state.tags || {};
+  } catch (error) {
+    // TagContextが利用できない場合（テスト環境など）は何もしない
+    console.debug('TagContext not available, using fallback color generation');
+  }
   
   // タグの色情報を取得
   // 1. 明示的に指定された色を優先
   // 2. TagContextから取得
   // 3. タグ名からハッシュ値を生成して色を決定
-  const tagInfo = color 
-    ? { color, textColor: getTagInfo('', { '': { color } }).textColor }
-    : getTagInfo(tag, contextTags);
+  const backgroundColor = color || 
+    (contextTags && contextTags[tag]?.color) || 
+    getColorFromTag(tag);
+  
+  const textColor = getTextColor(backgroundColor);
   
   useEffect(() => {
     // マウント時にアニメーションのためにvisibleに設定
@@ -41,8 +52,8 @@ const TagBadge: React.FC<TagBadgeProps> = ({
   }, []);
 
   const style = {
-    backgroundColor: tagInfo.color,
-    color: tagInfo.textColor,
+    backgroundColor,
+    color: textColor,
     opacity: isVisible ? 1 : 0,
     transform: isVisible ? 'translateY(0)' : 'translateY(5px)',
   };

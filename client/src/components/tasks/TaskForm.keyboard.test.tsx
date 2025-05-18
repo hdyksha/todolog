@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import TaskForm from '../../components/tasks/TaskForm';
+import TaskForm from './TaskForm';
 import { Priority, Task } from '../../types';
 import { TaskProvider } from '../../contexts/TaskContext';
 import { vi } from 'vitest';
@@ -34,6 +34,27 @@ const mockTask: Task = {
 // モック関数
 const mockOnSubmit = vi.fn();
 const mockOnCancel = vi.fn();
+
+// Inputコンポーネントをモック
+vi.mock('../../components/ui/Input', () => ({
+  default: ({ id, label, value, onChange, placeholder, required, error, disabled, autoFocus }: any) => (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+        aria-invalid={!!error}
+        disabled={disabled}
+        autoFocus={autoFocus}
+        className="input"
+      />
+      {error && <div className="error">{error}</div>}
+    </div>
+  )
+}));
 
 describe('TaskForm キーボード操作', () => {
   beforeEach(() => {

@@ -59,17 +59,17 @@ const TaskForm: React.FC<TaskFormProps> = ({
     e.preventDefault();
 
     // バリデーション
-    if (!title.trim()) {
+    if (typeof title === 'string' && !title.trim()) {
       setTitleError('タイトルは必須です');
       return;
     }
 
     // タスクデータの作成
     const taskData: Partial<Task> = {
-      title: title.trim(),
+      title: typeof title === 'string' ? title.trim() : title,
       priority,
       tags: tags.length > 0 ? tags : undefined,
-      memo: memo.trim() || undefined,
+      memo: typeof memo === 'string' ? memo.trim() : memo,
     };
 
     // 期限の設定
@@ -155,7 +155,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <Button
           type="submit"
           variant="primary"
-          loading={isSubmitting}
+          loading={isSubmitting ? true : undefined}
         >
           {task ? '更新' : '作成'}
         </Button>
