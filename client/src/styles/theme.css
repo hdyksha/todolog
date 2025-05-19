@@ -44,6 +44,10 @@
   /* タグ関連 */
   --color-tag-bg: #e2e8f0;
   --color-tag-text: #1e293b;
+  
+  /* 引用関連 */
+  --blockquote-bg-color: #f8fafc;
+  --blockquote-border-color: #94a3b8;
 }
 
 /* ダークモード */
@@ -90,6 +94,10 @@
   /* タグ関連 */
   --color-tag-bg: #334155;
   --color-tag-text: #f8fafc;
+  
+  /* 引用関連 */
+  --blockquote-bg-color: #1e293b;
+  --blockquote-border-color: #60a5fa;
   
   /* ダークモードでの色の調整 */
   --color-primary: #60a5fa;

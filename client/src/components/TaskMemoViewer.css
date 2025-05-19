@@ -143,10 +143,23 @@
 
 /* 引用 */
 .task-memo-blockquote {
-  border-left: 4px solid var(--border-color);
+  border-left: 4px solid var(--blockquote-border-color);
+  background-color: var(--blockquote-bg-color);
   color: var(--text-muted);
   margin: 1em 0;
-  padding: 0 1em;
+  padding: 0.5em 1em;
+  border-radius: 0 4px 4px 0;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ダークモード対応の引用スタイル */
+@media (prefers-color-scheme: dark) {
+  .task-memo-blockquote {
+    border-left-color: var(--blockquote-border-color);
+    background-color: var(--blockquote-bg-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
 }
 
 /* 水平線 */

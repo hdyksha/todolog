@@ -30,6 +30,10 @@
   --color-background-hover: #f3f4f6;
   --color-background-disabled: #e5e7eb;
   
+  /* 引用関連の色 */
+  --blockquote-bg-color: #f8f9fa;
+  --blockquote-border-color: #d1d5db;
+  
   /* RGB値を追加 */
   --color-background-rgb: 255, 255, 255;
   --color-background-secondary-rgb: 249, 250, 251;
@@ -115,6 +119,10 @@
     --color-background-tertiary: #374151;
     --color-background-hover: #374151;
     --color-background-disabled: #4b5563;
+    
+    /* 引用関連の色 - ダークモード */
+    --blockquote-bg-color: rgba(255, 255, 255, 0.05);
+    --blockquote-border-color: #4b5563;
     
     /* RGB値を追加 */
     --color-background-rgb: 17, 24, 39;
