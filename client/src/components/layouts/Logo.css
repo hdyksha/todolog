@@ -1,0 +1,100 @@
+.logo {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  color: var(--color-text-on-primary, white);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  color: var(--color-text-on-primary, white);
+  position: relative;
+  animation: float 4s ease-in-out infinite;
+}
+
+.logo-icon svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+}
+
+.logo-text {
+  display: flex;
+  align-items: baseline;
+  letter-spacing: 0px;
+}
+
+.logo-text-todo {
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: 1.1em;
+  margin-right: 2px;
+  color: var(--color-text-on-primary, white);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.logo-text-log {
+  font-weight: 300;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--color-text-on-primary, white), var(--color-primary-light, #93c5fd));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: 1px;
+  text-shadow: none;
+  position: relative;
+}
+
+/* サイズバリエーション */
+.logo-small {
+  font-size: 1rem;
+}
+
+.logo-small .logo-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.logo-medium {
+  font-size: 1.25rem;
+}
+
+.logo-medium .logo-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.logo-large {
+  font-size: 1.75rem;
+}
+
+.logo-large .logo-icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* アニメーション */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* ダークモード対応 */
+:root[data-theme="dark"] .logo-text-log {
+  background: linear-gradient(90deg, var(--color-text-on-primary, white), var(--color-primary-light, #67e8f9));
+  background-clip: text;
+  -webkit-background-clip: text;
+}

@@ -20,12 +20,12 @@
 .navbar-brand {
   display: flex;
   align-items: center;
+  padding: 0 var(--spacing-sm);
 }
 
 .navbar-logo {
-  color: white;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
   text-decoration: none;
 }
 

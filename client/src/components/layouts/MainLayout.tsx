@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useKeyboardShortcuts } from '../../contexts/KeyboardShortcutsContext';
 import TaskFileSelector from './TaskFileSelector';
+import Logo from './Logo';
 import './MainLayout.css';
 
 const MainLayout: React.FC = () => {
@@ -68,7 +69,9 @@ const MainLayout: React.FC = () => {
       <header className="header">
         <div className="header__content">
           <div className="header__logo">
-            <Link to="/" className="logo-link">TodoLog</Link>
+            <Link to="/" className="logo-link">
+              <Logo size="medium" />
+            </Link>
           </div>
           
           <div className="header__actions">

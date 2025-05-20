@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import Logo from './Logo';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLogoLoaded, setIsLogoLoaded] = useState(false);
+
+  useEffect(() => {
+    // ロゴが読み込まれたことを示すフラグを設定
+    setIsLogoLoaded(true);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -14,7 +21,11 @@ const Navbar: React.FC = () => {
       <div className="navbar-container">
         <div className="navbar-brand">
           <NavLink to="/" className="navbar-logo">
-            TodoLog
+            {isLogoLoaded ? (
+              <Logo size="medium" />
+            ) : (
+              "TodoLog"
+            )}
           </NavLink>
         </div>
 

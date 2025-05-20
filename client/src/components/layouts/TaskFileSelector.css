@@ -9,23 +9,23 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
-  color: var(--color-text-primary);
+  color: var(--color-text-on-primary);
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s;
 }
 
 .task-file-selector__current:hover {
-  background-color: var(--color-bg-hover);
-  border-color: var(--color-border-hover);
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .task-file-selector__current:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 .task-file-selector__filename {
