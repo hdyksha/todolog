@@ -270,8 +270,9 @@ const UnifiedTagInput = forwardRef<HTMLInputElement, UnifiedTagInputProps>(({
               className="add-tag-inline-button"
               onClick={() => setIsInputActive(true)}
               disabled={disabled || (maxTags && selectedTags.length >= maxTags)}
+              aria-label="タグを追加"
             >
-              + タグを追加
+              <span>+</span> タグを追加
             </button>
           )}
         </div>
