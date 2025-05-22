@@ -12,6 +12,8 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  /* ダークモードでも同じ色を維持 */
+  color: var(--color-text-on-primary, white);
 }
 
 .header__content {

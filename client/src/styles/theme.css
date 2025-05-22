@@ -99,14 +99,14 @@
   --blockquote-bg-color: #1e293b;
   --blockquote-border-color: #60a5fa;
   
-  /* ダークモードでの色の調整 */
-  --color-primary: #60a5fa;
-  --color-primary-light: #93c5fd;
-  --color-primary-dark: #3b82f6;
+  /* ダークモードでの色の調整 - メニューバーとロゴの色はライトモードと同じに */
+  --color-primary: #3c4858;
+  --color-primary-light: #5c6878;
+  --color-primary-dark: #2a3240;
   
-  --color-success: #34d399;
-  --color-success-light: #6ee7b7;
-  --color-success-dark: #10b981;
+  --color-secondary: #6b7280;
+  --color-secondary-light: #9ca3af;
+  --color-secondary-dark: #4b5563;
   
   --color-warning: #fbbf24;
   --color-warning-light: #fcd34d;

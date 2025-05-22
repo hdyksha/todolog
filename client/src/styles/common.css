@@ -1,12 +1,12 @@
 /* 共通カラー変数 */
 :root {
-  --color-primary: #4a6da7;
-  --color-primary-light: #6989c0;
-  --color-primary-dark: #3a5580;
+  --color-primary: #3c4858;
+  --color-primary-light: #5c6878;
+  --color-primary-dark: #2a3240;
   
-  --color-secondary: #7c4dff;
-  --color-secondary-light: #b47cff;
-  --color-secondary-dark: #3f1dcb;
+  --color-secondary: #6b7280;
+  --color-secondary-light: #9ca3af;
+  --color-secondary-dark: #4b5563;
   
   --color-success: #4caf50;
   --color-success-light: #80e27e;
