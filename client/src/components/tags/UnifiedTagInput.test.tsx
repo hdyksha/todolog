@@ -134,7 +134,7 @@ describe('UnifiedTagInput Component', () => {
     );
     
     expect(screen.getByText('タスク')).toBeInTheDocument();
-    expect(screen.getByText('+ タグを追加')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'タグを追加' })).toBeInTheDocument();
   });
   
   test('works with external tags', () => {
