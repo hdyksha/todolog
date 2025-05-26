@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
 import ThemeToggle from '../components/ui/ThemeToggle';
@@ -157,18 +156,6 @@ const SettingsPage: React.FC = () => {
                 <option value="active">未完了</option>
                 <option value="completed">完了済み</option>
               </select>
-            </div>
-          </section>
-          
-          <section className="settings-section">
-            <h2 className="settings-section__title">タグ管理</h2>
-            <p className="settings-description">
-              タスクの分類や関連付けに使用するタグを管理します。
-            </p>
-            <div className="settings-action-link">
-              <Link to="/tags" className="button button--secondary">
-                タグ管理ページへ
-              </Link>
             </div>
           </section>
           
