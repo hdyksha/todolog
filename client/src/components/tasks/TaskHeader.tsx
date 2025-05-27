@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
+import EditableTaskTitle from './EditableTaskTitle';
 import './TaskHeader.css';
 
 interface TaskHeaderProps {
@@ -8,6 +9,7 @@ interface TaskHeaderProps {
   isCompleted: boolean;
   onToggleCompletion: () => void;
   onDelete: () => void;
+  onTitleChange?: (newTitle: string) => Promise<void>;
 }
 
 /**
@@ -19,12 +21,17 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
   isCompleted,
   onToggleCompletion,
   onDelete,
+  onTitleChange,
 }) => {
   const navigate = useNavigate();
 
   return (
     <div className="task-detail-header">
-      <h1>{title}</h1>
+      {onTitleChange ? (
+        <EditableTaskTitle title={title} onSave={onTitleChange} />
+      ) : (
+        <h1>{title}</h1>
+      )}
       <div className="task-detail-actions">
         <Button
           variant="secondary"

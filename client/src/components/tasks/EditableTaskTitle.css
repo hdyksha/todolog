@@ -1,0 +1,91 @@
+.editable-task-title {
+  position: relative;
+  width: 100%;
+}
+
+.editable-task-title__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.editable-task-title__heading {
+  margin: 0;
+  font-size: 1.75rem;
+  color: var(--color-text-primary);
+  word-break: break-word;
+  flex-grow: 1;
+  padding: 0.25rem 0.5rem;
+}
+
+.editable-task-title__edit-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-light);
+  transition: all 0.2s ease;
+}
+
+.editable-task-title__edit-button:hover {
+  background-color: var(--color-background-secondary);
+  color: var(--color-primary);
+}
+
+.editable-task-title__edit-button:focus {
+  outline: 2px solid var(--color-primary);
+  background-color: var(--color-background-secondary);
+}
+
+.editable-task-title__edit-icon {
+  font-size: 1rem;
+}
+
+.editable-task-title__input-container {
+  width: 100%;
+}
+
+.editable-task-title__input {
+  width: 100%;
+  font-size: 1.75rem;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 4px;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-weight: inherit;
+}
+
+.editable-task-title__input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.editable-task-title__input--error {
+  border-color: var(--color-danger);
+}
+
+.editable-task-title__error {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  padding: 0 0.5rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

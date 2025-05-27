@@ -28,7 +28,10 @@ type TaskAction =
   | { type: 'TOGGLE_TASK_ERROR'; payload: { id: string; error: Error } }
   | { type: 'UPDATE_MEMO_START'; payload: string }
   | { type: 'UPDATE_MEMO_SUCCESS'; payload: Task }
-  | { type: 'UPDATE_MEMO_ERROR'; payload: { id: string; error: Error } };
+  | { type: 'UPDATE_MEMO_ERROR'; payload: { id: string; error: Error } }
+  | { type: 'UPDATE_TITLE_START'; payload: string }
+  | { type: 'UPDATE_TITLE_SUCCESS'; payload: Task }
+  | { type: 'UPDATE_TITLE_ERROR'; payload: { id: string; error: Error } };;
 
 // コンテキストの型定義
 interface TaskContextType {
@@ -176,6 +179,29 @@ const taskReducer = (state: TaskState, action: TaskAction): TaskState => {
         error: null,
       };
     case 'UPDATE_MEMO_ERROR':
+      return {
+        ...state,
+        updatingTaskIds: state.updatingTaskIds.filter(id => id !== action.payload.id),
+        error: action.payload.error,
+      };
+
+    // タイトル更新
+    case 'UPDATE_TITLE_START':
+      return {
+        ...state,
+        updatingTaskIds: [...state.updatingTaskIds, action.payload],
+        error: null,
+      };
+    case 'UPDATE_TITLE_SUCCESS':
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === action.payload.id ? action.payload : task
+        ),
+        updatingTaskIds: state.updatingTaskIds.filter(id => id !== action.payload.id),
+        error: null,
+      };
+    case 'UPDATE_TITLE_ERROR':
       return {
         ...state,
         updatingTaskIds: state.updatingTaskIds.filter(id => id !== action.payload.id),

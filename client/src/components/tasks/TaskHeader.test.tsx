@@ -6,6 +6,7 @@ import TaskHeader from './TaskHeader';
 // モック関数
 const mockToggleCompletion = vi.fn();
 const mockDelete = vi.fn();
+const mockTitleChange = vi.fn();
 const mockNavigate = vi.fn();
 
 // react-router-dom の useNavigate をモック
@@ -113,5 +114,23 @@ describe('TaskHeader', () => {
 
     fireEvent.click(screen.getByText('一覧に戻る'));
     expect(mockNavigate).toHaveBeenCalledWith('/');
+  });
+
+  it('onTitleChange が提供されている場合、編集可能なタイトルを表示する', () => {
+    render(
+      <BrowserRouter>
+        <TaskHeader
+          title="テストタスク"
+          isCompleted={false}
+          onToggleCompletion={mockToggleCompletion}
+          onDelete={mockDelete}
+          onTitleChange={mockTitleChange}
+        />
+      </BrowserRouter>
+    );
+
+    // 編集ボタンが存在することを確認
+    expect(screen.getByLabelText('タスクタイトルを編集')).toBeInTheDocument();
+    expect(screen.getByText('テストタスク')).toBeInTheDocument();
   });
 });

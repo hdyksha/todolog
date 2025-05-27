@@ -181,6 +181,31 @@ export const api = {
     };
   },
 
+  // タスクのタイトルを更新する
+  async updateTaskTitle(id: string, title: string): Promise<Task> {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      },
+      body: JSON.stringify({ title }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('タイトルの更新に失敗しました');
+    }
+    
+    const task = await response.json();
+    return {
+      ...task,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+      dueDate: task.dueDate ? task.dueDate : null
+    };
+  },
+
   // カテゴリ一覧を取得する
   async fetchCategories(forceRefresh = false): Promise<string[]> {
     const response = await fetch(`${API_BASE_URL}/categories`, {

@@ -13,6 +13,7 @@ expect.extend(toHaveNoViolations);
 describe('TaskHeader アクセシビリティ', () => {
   const mockOnToggleCompletion = vi.fn();
   const mockOnDelete = vi.fn();
+  const mockOnTitleChange = vi.fn();
 
   it('アクセシビリティ違反がないこと（未完了タスク）', async () => {
     const { container } = render(
@@ -55,5 +56,20 @@ describe('TaskHeader アクセシビリティ', () => {
     const heading = document.querySelector('h1');
     expect(heading).toBeInTheDocument();
     expect(heading).toHaveTextContent('テストタスク');
+  });
+
+  it('編集可能なタイトルでもアクセシビリティ違反がないこと', async () => {
+    const { container } = render(
+      <TaskHeader
+        title="テストタスク"
+        isCompleted={false}
+        onToggleCompletion={mockOnToggleCompletion}
+        onDelete={mockOnDelete}
+        onTitleChange={mockOnTitleChange}
+      />
+    );
+    
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

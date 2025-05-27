@@ -134,6 +134,23 @@ export const useTaskActions = () => {
     }
   }, [dispatch, handleApiError]);
 
+  // タスクのタイトル更新
+  const updateTitle = useCallback(async (id: string, title: string) => {
+    dispatch({ type: 'UPDATE_TITLE_START', payload: id });
+    
+    try {
+      const updatedTask = await api.updateTaskTitle(id, title);
+      dispatch({ type: 'UPDATE_TITLE_SUCCESS', payload: updatedTask });
+      return updatedTask;
+    } catch (error) {
+      dispatch({ 
+        type: 'UPDATE_TITLE_ERROR', 
+        payload: handleApiError(error, 'タイトルの更新', id)
+      });
+      throw error;
+    }
+  }, [dispatch, handleApiError]);
+
   return {
     fetchTasks,
     addTask,
@@ -141,5 +158,6 @@ export const useTaskActions = () => {
     deleteTask,
     toggleTaskCompletion,
     updateMemo,
+    updateTitle,
   };
 };

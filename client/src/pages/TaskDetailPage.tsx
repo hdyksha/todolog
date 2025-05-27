@@ -19,7 +19,7 @@ const TaskDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { tasks, loading, error } = useTaskContext();
-  const { fetchTasks, updateMemo, toggleTaskCompletion, deleteTask } = useTaskActions();
+  const { fetchTasks, updateMemo, toggleTaskCompletion, deleteTask, updateTitle } = useTaskActions();
   const { updatePriority, updateTags, updateDueDate } = useTaskMetadataActions(id || '');
   
   const [isEditingMemo, setIsEditingMemo] = useState(false);
@@ -273,6 +273,46 @@ const TaskDetailPage: React.FC = () => {
     }
   };
 
+  // タイトルの更新
+  const handleTitleChange = async (newTitle: string) => {
+    if (!id) return;
+    
+    setUpdateStatus({
+      loading: true,
+      error: null,
+      success: false,
+    });
+    
+    try {
+      const updatedTask = await updateTitle(id, newTitle);
+      setTaskDetail(updatedTask);
+      
+      setUpdateStatus({
+        loading: false,
+        error: null,
+        success: true,
+      });
+      
+      // 成功メッセージを一定時間後に消す
+      setTimeout(() => {
+        setUpdateStatus(prev => ({ ...prev, success: false }));
+      }, 3000);
+    } catch (error) {
+      console.error('タイトル更新エラー:', error);
+      
+      setUpdateStatus({
+        loading: false,
+        error: error instanceof Error ? error.message : 'タイトルの更新に失敗しました',
+        success: false,
+      });
+      
+      // エラーメッセージを一定時間後に消す
+      setTimeout(() => {
+        setUpdateStatus(prev => ({ ...prev, error: null }));
+      }, 5000);
+    }
+  };
+
   // タスクの削除
   const handleDeleteTask = async () => {
     if (!id) return;
@@ -340,6 +380,7 @@ const TaskDetailPage: React.FC = () => {
         isCompleted={displayTask.completed}
         onToggleCompletion={handleToggleCompletion}
         onDelete={handleDeleteTask}
+        onTitleChange={handleTitleChange}
       />
 
       {updateStatus.success && (
