@@ -2,12 +2,18 @@
   display: flex;
   gap: 0.5rem;
   width: 100%;
-  align-items: flex-end; /* 下端で揃える */
+  align-items: flex-start; /* 上端で揃える */
 }
 
 /* 入力フィールドのラベルとボタンの高さを揃える */
 .quick-add-form .input-container {
   margin-bottom: 0; /* Input.cssのmargin-bottomを上書き */
+}
+
+.quick-add-button-container {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 24px; /* Inputのラベル分の高さを調整 */
 }
 
 @media (max-width: 768px) {
@@ -18,6 +24,10 @@
   
   .quick-add-form button {
     margin-top: 0.5rem;
+  }
+  
+  .quick-add-button-container {
+    padding-top: 0;
   }
 }
 .quick-add-input-container {

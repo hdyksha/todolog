@@ -63,14 +63,16 @@ const TaskQuickAdd: React.FC<TaskQuickAddProps> = ({ onAddTask }) => {
         )}
       </div>
       
-      <Button 
-        type="submit" 
-        variant="primary" 
-        disabled={isSubmitting || !newTaskTitle.trim()}
-        data-testid="quick-add-button"
-      >
-        追加
-      </Button>
+      <div className="quick-add-button-container">
+        <Button 
+          type="submit" 
+          variant="primary" 
+          disabled={isSubmitting || !newTaskTitle.trim()}
+          data-testid="quick-add-button"
+        >
+          追加
+        </Button>
+      </div>
     </form>
   );
 };
